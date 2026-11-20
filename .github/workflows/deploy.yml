@@ -1,0 +1,1031 @@
+name: deploy
+run-name: deploy ${{ inputs.target || 'all-in-one' }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Which backend host (PLAN-backend-worker-split.md). all-in-one = today's single host (docker/main). After the split: api (docker/api) or worker (docker/worker), deployed separately; all-in-one then refuses to run."
+        required: false
+        default: all-in-one
+        type: choice
+        options:
+          - all-in-one
+          - api
+          - worker
+      supabase_project_ref:
+        description: "Supabase project ref to migrate (defaults to prod). Non-prod refs require matching SUPABASE_* secret wiring."
+        required: false
+        default: "wmycgyjsenvgtczlupoe"
+      force:
+        description: "Deploy even if this exact commit is already the last successful deploy (use to restart containers / redeploy same code)."
+        required: false
+        default: false
+        type: boolean
+      skip_inflight_guard:
+        description: "EMERGENCY HOTFIX ONLY: skip the C3.5 in-flight-run wait and swap immediately. Runs still in flight on the old container may be orphaned."
+        required: false
+        default: false
+        type: boolean
+      skip_site_workers:
+        description: "EMERGENCY ONLY: do not deploy the site Cloudflare Workers (signer, static-host, site functions, gateway) in this run; the backend ships against the Workers already live."
+        required: false
+        default: false
+        type: boolean
+
+concurrency:
+  group: deployment-prod
+  cancel-in-progress: false
+
+env:
+  DEPLOY_TARGET: ${{ inputs.target || 'all-in-one' }}
+  SSH_SERVER: ${{ inputs.target == 'worker' && vars.WORKER_EC2_HOST || (inputs.target != 'worker' && '184.169.192.250' || '') }}
+  SSH_USERNAME: ubuntu
+  DEPLOY_DIR: /server/praxis-prod
+  PUBLIC_HOST: ${{ inputs.target == 'worker' && 'jobs.zaviagent.com' || 'api.zaviagent.com' }}
+  API_KNOWN_HOSTS: |
+    184.169.192.250 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAC4+WfzdafYgrPGJyy3CedPPlwR4JBkvhg7U+lU7o4J
+    184.169.192.250 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBLu3TbCslJoa/PVRQEiMpCaMG7FwDORZ4hR5SLrX8YBJM6QInTgthtbzGcsISYGCpatxp66tuOa7tMzJjlbgVP4=
+  CERTBOT_EMAIL: ravi@upcar.ai
+  CONTAINER_PORT: 4000
+
+jobs:
+  dedupe:
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+    outputs:
+      proceed: ${{ steps.guard.outputs.proceed }}
+    steps:
+      - name: Skip when this exact commit already deployed successfully
+        id: guard
+        run: |
+          if [ "${{ inputs.force }}" = "true" ]; then
+            echo "proceed=true" >> "$GITHUB_OUTPUT"
+            echo "force=true — deploying regardless of deploy history"
+            exit 0
+          fi
+          last_ok_sha="$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/deploy.yml/runs?status=success&per_page=30" -q "[.workflow_runs[] | select(.display_title == \"deploy ${DEPLOY_TARGET}\")][0].head_sha // empty" 2>/dev/null || true)"
+          if [ -n "$last_ok_sha" ] && [ "$last_ok_sha" = "$GITHUB_SHA" ]; then
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Commit ${GITHUB_SHA} is already the last successful deploy — skipping duplicate deploy. Dispatch with force=true to redeploy the same commit."
+          else
+            echo "proceed=true" >> "$GITHUB_OUTPUT"
+            echo "proceeding: last successful deploy=${last_ok_sha:-none}, current=${GITHUB_SHA}"
+          fi
+
+  check:
+    environment: production
+    needs: dedupe
+    if: ${{ github.event_name == 'workflow_dispatch' && needs.dedupe.outputs.proceed != 'false' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Install SSH key
+        uses: shimataro/ssh-key-action@87a8f067114a8ce263df83e9ed5c849953548bc3 # v2
+        with:
+          key: ${{ secrets.EC2_SSH_KEY_PRAXIS }}
+          known_hosts: ${{ inputs.target == 'worker' && vars.WORKER_EC2_KNOWN_HOSTS || env.API_KNOWN_HOSTS }}
+
+      - name: Test SSH connection
+        run: |
+          if [ "${{ env.DEPLOY_TARGET }}" = "all-in-one" ] && [ -n "${{ vars.WORKER_EC2_HOST }}" ]; then
+            echo "::error::The backend is split (WORKER_EC2_HOST is set). Deploy with -f target=api or -f target=worker. Rolling back to one host? See docs/runbooks/backend-worker-split.md step 6."
+            exit 1
+          fi
+          if [ "${{ env.DEPLOY_TARGET }}" = "all-in-one" ]; then
+            jobs_live=$(curl -s -o /dev/null -m 10 -w '%{http_code}' https://jobs.zaviagent.com/livez || true)
+            if [ "$jobs_live" != "502" ] && [ "$jobs_live" != "000" ]; then
+              echo "::error::The worker host (jobs.zaviagent.com) still answers (/livez $jobs_live). Stop it first (docs/runbooks/backend-worker-split.md step 6), then deploy all-in-one."
+              exit 1
+            fi
+          fi
+          if [ "${{ env.DEPLOY_TARGET }}" = "api" ] && [ -z "${{ vars.WORKER_EC2_HOST }}" ]; then
+            echo "::error::target=api needs a worker host (WORKER_EC2_HOST is empty), or every job stops. Deploy target=worker first, or use target=all-in-one for a single host."
+            exit 1
+          fi
+          if [ -z "${{ env.SSH_SERVER }}" ]; then
+            echo "::error::target=${{ env.DEPLOY_TARGET }} has no host. Set the WORKER_EC2_HOST and WORKER_EC2_KNOWN_HOSTS repo variables (infra/scripts/provision-worker.sh prints them)."
+            exit 1
+          fi
+          echo "Testing SSH connection to EC2 (${{ env.DEPLOY_TARGET }})..."
+          ssh -o StrictHostKeyChecking=yes \
+              -o ServerAliveInterval=30 \
+              -o ServerAliveCountMax=10 \
+              ${{ env.SSH_USERNAME }}@${{ env.SSH_SERVER }} "echo 'SSH connection successful'"
+        continue-on-error: false
+
+  validate:
+    needs: [check]
+    if: ${{ github.event_name == 'workflow_dispatch' && needs.check.result == 'success' }}
+    permissions:
+      contents: read
+      pull-requests: read
+    uses: ./.github/workflows/lint.yml
+    with:
+      skip_unit: true
+      backend_deploy: true
+
+  prod-db:
+    needs: check
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    uses: ./.github/workflows/prod-db-tests.yml
+    secrets: inherit
+
+  rls-matrix:
+    runs-on: ${{ vars.CI_RUNNER || 'ubuntu-latest' }}
+    timeout-minutes: 25
+    needs: [check]
+    if: ${{ github.event_name == 'workflow_dispatch' && !cancelled() && needs.check.result == 'success' }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Install pinned supabase CLI
+        uses: supabase/setup-cli@1dedf2c611547ede7232d26866dd3c56ab903bbb # v1
+        with:
+          version: 2.98.2
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 22
+      - name: Install deps
+        run: npm ci
+      - name: Boot ephemeral local Supabase + apply migrations
+        run: |
+          set -euo pipefail
+          boot() {
+            supabase start && supabase db reset --local
+          }
+          for attempt in 1 2 3; do
+            if boot; then
+              echo "supabase boot ok on attempt $attempt"
+              exit 0
+            fi
+            echo "supabase boot attempt $attempt failed; tearing down + retrying..." >&2
+            supabase stop --no-backup || true
+            sleep 5
+          done
+          echo "supabase boot failed after 3 attempts" >&2
+          exit 1
+      - name: Run cross-tenant RLS matrix (gating)
+        working-directory: apps/backend
+        run: |
+          set -euo pipefail
+          eval "$(supabase status -o env)"
+          export SUPABASE_URL="$API_URL"
+          export SUPABASE_ANON_KEY="$ANON_KEY"
+          export SUPABASE_SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY"
+          export SUPABASE_DB_URL="$DB_URL"
+          export REQUIRE_RLS_MATRIX=1  # a skipped suite is a FAILURE in the gate
+          export INTEGRATION=1
+          export ZAVI_TEST_PG_URL="$DB_URL"
+          npx vitest run src/__tests__/rls/cross-tenant-matrix.test.ts src/__tests__/rls/channel-actions-rls.test.ts src/__tests__/integration/inbox-handle-minted-for-every-tenant.test.ts src/services/channels/__tests__/exec-failure-sql-parity.test.ts src/__tests__/rls/channel-card-dedupe-live.test.ts src/__tests__/rls/uncertain-twin-sql-live.test.ts src/__tests__/rls/auto-company-country-live.test.ts src/__tests__/rls/autorun-under-autopilot-live.test.ts src/__tests__/rls/data-access-log-active-tenant.live.test.ts src/__tests__/rls/db-transition.live.test.ts src/__tests__/rls/db-raw-results-purge.live.test.ts src/__tests__/rls/operator-db-dynamodb-connect.live.test.ts src/__tests__/rls/db-source-generation.live.test.ts src/__tests__/rls/db-rescan-keep-last-good.live.test.ts src/__tests__/rls/hypothesis-founder-answer.live.test.ts src/__tests__/migrations/20261105100000_db_retention_cleanup-live.test.ts src/__tests__/migrations/20261110100000_team_note_quiet-live.test.ts src/__tests__/migrations/20261115210000_account_purge_link_columns-live.test.ts src/__tests__/migrations/20261116200000_account_purge_safety-live.test.ts
+      - name: Stop local Supabase
+        if: always()
+        run: supabase stop --no-backup || true
+
+  site-isolation:
+    runs-on: ${{ vars.CI_RUNNER || 'ubuntu-latest' }}
+    timeout-minutes: 20
+    needs: [check]
+    if: ${{ github.event_name == 'workflow_dispatch' && !cancelled() && needs.check.result == 'success' }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 20
+      - name: Install deps
+        run: npm ci
+      - name: Pinned Postgres 17 + PostgREST + Supabase Auth
+        run: bash scripts/ci/site-isolation-deps.sh
+      - name: Cross-site attack catalog (gating, must fail closed)
+        working-directory: apps/backend
+        env:
+          ZSI: "1"
+        run: npx vitest run src/services/site-shards/__tests__/isolation/cross-site-isolation.e2e.test.ts
+
+  migrate:
+    environment: production
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    needs: [check, validate, rls-matrix, site-isolation]
+    env:
+      SSH_SERVER: 184.169.192.250
+    steps:
+      - name: Checkout (runner needs supabase/migrations + config.toml)
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Install pinned supabase CLI
+        uses: supabase/setup-cli@1dedf2c611547ede7232d26866dd3c56ab903bbb # v1
+        with:
+          version: 2.98.2
+
+      - name: Pin node (deterministic + guarantees `node` for the check script)
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 20
+
+      - name: Install SSH key (DB traffic is tunnelled through EC2)
+        uses: shimataro/ssh-key-action@87a8f067114a8ce263df83e9ed5c849953548bc3 # v2
+        with:
+          key: ${{ secrets.EC2_SSH_KEY_PRAXIS }}
+          known_hosts: |
+            184.169.192.250 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAC4+WfzdafYgrPGJyy3CedPPlwR4JBkvhg7U+lU7o4J
+            184.169.192.250 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBLu3TbCslJoa/PVRQEiMpCaMG7FwDORZ4hR5SLrX8YBJM6QInTgthtbzGcsISYGCpatxp66tuOa7tMzJjlbgVP4=
+
+      - name: Apply + verify DB migrations
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          SUPABASE_PROJECT_REF: ${{ github.event.inputs.supabase_project_ref || 'wmycgyjsenvgtczlupoe' }}
+        run: |
+          set -euo pipefail   # NOT set -x — would leak the password
+          if [ -z "${SUPABASE_ACCESS_TOKEN:-}" ] || [ -z "${SUPABASE_DB_PASSWORD:-}" ] || [ -z "${SUPABASE_DB_URL:-}" ]; then
+            echo "::error::SUPABASE_ACCESS_TOKEN / SUPABASE_DB_PASSWORD / SUPABASE_DB_URL missing — add them to repo Actions secrets. Failing closed (no silent migration skip)."
+            exit 1
+          fi
+          if [[ "$SUPABASE_DB_URL" != *"$SUPABASE_PROJECT_REF"* ]]; then
+            echo "::error::SUPABASE_DB_URL does not appear to target SUPABASE_PROJECT_REF=$SUPABASE_PROJECT_REF. Refusing to run migrations against a mismatched database."
+            exit 1
+          fi
+          db_host="${SUPABASE_DB_URL#*@}"
+          db_host="${db_host%%/*}"
+          db_host="${db_host%%:*}"
+          if [[ "$db_host" != *.pooler.supabase.com ]]; then
+            echo "::error::SUPABASE_DB_URL must use a Supabase pooler host (*.pooler.supabase.com), not '$db_host'. GitHub-hosted runners cannot reach the direct IPv6 database host reliably."
+            exit 1
+          fi
+
+          supabase link --project-ref "$SUPABASE_PROJECT_REF"
+          enc_pw=$(SUPABASE_DB_PASSWORD="$SUPABASE_DB_PASSWORD" python3 -c 'import os,urllib.parse;print(urllib.parse.quote(os.environ["SUPABASE_DB_PASSWORD"], safe=""))')
+          echo "::add-mask::$enc_pw"
+          db_hostport="${SUPABASE_DB_URL##*@}"
+          safe_db_url="postgresql://postgres.${SUPABASE_PROJECT_REF}:${enc_pw}@${db_hostport}"
+          echo "::add-mask::$safe_db_url"
+          db_args=(--db-url "$safe_db_url")
+
+          db_port="${db_hostport%%/*}"; db_port="${db_port%%\?*}"; db_port="${db_port##*:}"
+          [[ "$db_port" =~ ^[0-9]+$ ]] || db_port=5432
+          echo "127.0.0.1 $db_host" | sudo tee -a /etc/hosts >/dev/null
+          ssh -f -N -o ExitOnForwardFailure=yes -o StrictHostKeyChecking=yes \
+              -o ServerAliveInterval=30 -o ServerAliveCountMax=10 \
+              -L "127.0.0.1:${db_port}:${db_host}:${db_port}" \
+              "${SSH_USERNAME}@${SSH_SERVER}"
+          for _ in $(seq 1 10); do
+            (exec 3<>"/dev/tcp/127.0.0.1/${db_port}") 2>/dev/null && break
+            sleep 1
+          done
+          (exec 3<>"/dev/tcp/127.0.0.1/${db_port}") 2>/dev/null || { echo "::error::SSH tunnel to the DB pooler via EC2 did not open."; exit 1; }
+
+          push_ok=0
+          for attempt in 1 2; do
+            if supabase db push "${db_args[@]}" --include-all --yes; then
+              push_ok=1; break
+            fi
+            echo "db push attempt $attempt failed; retrying once..." >&2
+            sleep 10
+          done
+          if [ "$push_ok" -ne 1 ]; then
+            echo "::group::Diagnosing migration failure"
+            orphans=$(supabase migration list "${db_args[@]}" 2>/dev/null | awk -F'|' '
+              NR>2 && NF>=2 {
+                l=$1; r=$2; gsub(/[^0-9]/,"",l); gsub(/[^0-9]/,"",r);
+                if (r!="" && l=="") print r
+              }')
+            echo "::endgroup::"
+            if [ -n "$orphans" ]; then
+              echo "::error::Deploy blocked by ORPHAN migration(s) — applied to prod but the .sql is NOT on main (someone applied a migration from a branch/worktree without committing it):"
+              for v in $orphans; do echo "::error::  orphan version: $v"; done
+              echo "::error::FIX: (a) commit the missing <version>_*.sql to main (likely sits in a branch/worktree — check 'git log --all -- supabase/migrations/<version>*'), OR (b) if it should not exist, run: supabase migration repair --status reverted <version>"
+            else
+              echo "::error::supabase db push failed twice and no orphan detected — likely a transient pooler/API blip or a real migration error. Re-run the deploy; if it persists, inspect the push output above."
+            fi
+            exit 1
+          fi
+
+          SUPABASE_DB_URL="$safe_db_url" node scripts/check-migrations.mjs
+        continue-on-error: false
+
+  build-image:
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    needs: [check]
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout (full repo = docker build context)
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Log in to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: Build + push backend image (tag :sha and :latest)
+        run: |
+          set -euo pipefail
+          export DOCKER_BUILDKIT=1
+          GHCR_OWNER="$(printf '%s' "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')"
+          IMG="ghcr.io/${GHCR_OWNER}/praxis-backend"
+          docker pull "$IMG:latest" || true
+          NODE_IMAGE="$(bash apps/backend/docker/main/pick-node-image.sh)"
+          docker build -f apps/backend/docker/main/Dockerfile \
+            --cache-from "$IMG:latest" \
+            --build-arg NODE_IMAGE="$NODE_IMAGE" \
+            --build-arg BUILDKIT_INLINE_CACHE=1 \
+            -t "$IMG:${{ github.sha }}" -t "$IMG:latest" .
+          docker push "$IMG:${{ github.sha }}"
+          docker push "$IMG:latest"
+
+      - name: Build + push voice image (non-fatal)
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          export DOCKER_BUILDKIT=1
+          GHCR_OWNER="$(printf '%s' "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')"
+          IMG="ghcr.io/${GHCR_OWNER}/praxis-voice-pipeline"
+          docker pull "$IMG:latest" || true
+          docker build -f apps/voice-pipeline/Dockerfile \
+            --cache-from "$IMG:latest" \
+            --build-arg BUILDKIT_INLINE_CACHE=1 \
+            -t "$IMG:${{ github.sha }}" -t "$IMG:latest" .
+          docker push "$IMG:${{ github.sha }}"
+          docker push "$IMG:latest"
+
+  deploy-worker:
+    environment: production
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    needs: [check, validate]
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Pin node
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 20
+
+      - name: Deploy Cloudflare Email Worker
+        if: ${{ inputs.target != 'worker' }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID || secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          if [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
+            echo "::error title=Email Worker NOT deployed::CLOUDFLARE_API_TOKEN is not set, so the Cloudflare Email Worker was skipped. The backend is about to ship WITHOUT its other half. If apps/backend/cloudflare/email-worker/ changed in this deploy, inbound email will break until someone runs 'npx wrangler deploy' by hand. Add CLOUDFLARE_API_TOKEN to repo secrets to close this."
+            exit 1
+          fi
+          if [ -z "${CLOUDFLARE_ACCOUNT_ID:-}" ]; then
+            echo "::error title=Email Worker NOT deployed::CLOUDFLARE_ACCOUNT_ID is not set. wrangler would fall back to enumerating /memberships, which a correctly-scoped deploy token cannot do (Authentication error 10000). Add CLOUDFLARE_ACCOUNT_ID to repo secrets."
+            exit 1
+          fi
+          cd apps/backend/cloudflare/email-worker
+          npm ci   # fail closed: wrangler comes from the lockfile, never a live download
+          npx --no-install wrangler deploy
+          echo "Worker deployed. Live version:"
+          npx --no-install wrangler deployments list 2>/dev/null | head -12 || true
+
+  deploy-site-workers:
+    environment: production
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    needs: [check, validate, migrate]
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Pin node
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 20
+
+      - name: Deploy site Workers (signer -> static-host -> site functions -> gateway)
+        env:
+          SKIP_SITE_WORKERS: ${{ inputs.skip_site_workers && 'true' || 'false' }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID || secrets.CLOUDFLARE_ACCOUNT_ID }}
+          ZAVI_API_ORIGIN: ${{ vars.ZAVI_API_ORIGIN }}
+          SITE_PREVIEW_DOMAIN: ${{ vars.SITE_PREVIEW_DOMAIN }}
+          ZAVI_SITE_SIGNER_WORKER_NAME: ${{ vars.ZAVI_SITE_SIGNER_WORKER_NAME }}
+          ZAVI_SITE_GATEWAY_WORKER_NAME: ${{ vars.ZAVI_SITE_GATEWAY_WORKER_NAME }}
+          ZAVI_STATIC_WORKER_NAME: ${{ vars.ZAVI_STATIC_WORKER_NAME }}
+          ZAVI_STATIC_R2_BUCKET: ${{ vars.ZAVI_STATIC_R2_BUCKET }}
+          ZAVI_STATIC_KV_NAMESPACE_ID: ${{ vars.ZAVI_STATIC_KV_NAMESPACE_ID }}
+          ZAVI_SITE_GATEWAY_RL_READ_NS: ${{ vars.ZAVI_SITE_GATEWAY_RL_READ_NS }}
+          ZAVI_SITE_GATEWAY_RL_WRITE_NS: ${{ vars.ZAVI_SITE_GATEWAY_RL_WRITE_NS }}
+          ZAVI_SITE_GATEWAY_RL_SITE_NS: ${{ vars.ZAVI_SITE_GATEWAY_RL_SITE_NS }}
+          ZAVI_SITE_GATEWAY_RL_HOOK_NS: ${{ vars.ZAVI_SITE_GATEWAY_RL_HOOK_NS }}
+          ZAVI_TURNSTILE_SITE_KEY: ${{ vars.ZAVI_TURNSTILE_SITE_KEY }}
+          ZAVI_FN_DISPATCHER_WORKER_NAME: ${{ vars.ZAVI_FN_DISPATCHER_WORKER_NAME }}
+          ZAVI_FN_OUTBOUND_WORKER_NAME: ${{ vars.ZAVI_FN_OUTBOUND_WORKER_NAME }}
+          ZAVI_FN_TAIL_WORKER_NAME: ${{ vars.ZAVI_FN_TAIL_WORKER_NAME }}
+          ZAVI_FN_NAMESPACE: ${{ vars.ZAVI_FN_NAMESPACE }}
+          ZAVI_FN_DISPATCH_HOST: ${{ vars.ZAVI_FN_DISPATCH_HOST }}
+          CLOUDFLARE_ZONE_ID: ${{ vars.CLOUDFLARE_ZONE_ID }}
+          ZAVI_FN_RL_SITE_NS: ${{ vars.ZAVI_FN_RL_SITE_NS }}
+          ZAVI_FN_RL_EGRESS_NS: ${{ vars.ZAVI_FN_RL_EGRESS_NS }}
+        run: |
+          set -euo pipefail
+          if [ "$SKIP_SITE_WORKERS" = "true" ]; then
+            echo "::warning title=Site Workers NOT deployed (skip_site_workers)::This deploy ships the backend against the site Workers already live. Re-run a normal deploy to bring them in line."
+            exit 0
+          fi
+          (cd apps/backend/cloudflare/email-worker && npm ci --no-audit --no-fund)
+          export WRANGLER="$GITHUB_WORKSPACE/apps/backend/cloudflare/email-worker/node_modules/.bin/wrangler"
+          bash scripts/ci/deploy-site-workers.sh --env prod
+
+  build-and-deploy:
+    environment: production
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    needs: [check, migrate, build-image, deploy-worker, deploy-site-workers]
+    permissions:
+      contents: read
+      packages: read
+    outputs:
+      inngest_sync_failed: ${{ steps.inngest_sync.outputs.failed }}
+    steps:
+      - name: Reinstall SSH key
+        uses: shimataro/ssh-key-action@87a8f067114a8ce263df83e9ed5c849953548bc3 # v2
+        with:
+          key: ${{ secrets.EC2_SSH_KEY_PRAXIS }}
+          known_hosts: ${{ inputs.target == 'worker' && vars.WORKER_EC2_KNOWN_HOSTS || env.API_KNOWN_HOSTS }}
+
+      - name: Set SSH options env var
+        run: |
+          echo 'SSH_OPTS=-o StrictHostKeyChecking=yes -o ServerAliveInterval=30 -o ServerAliveCountMax=10' >> "$GITHUB_ENV"
+
+      - name: Upload on-box deploy script
+        run: |
+          ssh ${{ env.SSH_OPTS }} ${{ env.SSH_USERNAME }}@${{ env.SSH_SERVER }} \
+            "cat > /tmp/praxis-deploy.sh" << 'DEPLOY_SCRIPT_EOF'
+          #!/usr/bin/env bash
+          set -euo pipefail
+
+          DEPLOY_DIR="${DEPLOY_DIR:-/server/praxis-prod}"
+          PUBLIC_HOST="${PUBLIC_HOST:-api.zaviagent.com}"
+          CERTBOT_EMAIL="${CERTBOT_EMAIL:-ravi@upcar.ai}"
+          CONTAINER_PORT="${CONTAINER_PORT:-4000}"
+          TEMP_PORT=4001
+          ROLLBACK_COMPOSE="$DEPLOY_DIR/.rollback-compose.yml"
+
+          DONE_FILE=/tmp/praxis-deploy-done
+          LOG_FILE=/tmp/praxis-deploy.log
+          rm -f "$DONE_FILE"
+          exec > >(tee -a "$LOG_FILE") 2>&1
+          echo "=== praxis-deploy.sh started $(date -u +%Y-%m-%dT%H:%M:%SZ) ==="
+
+          # --- A. Repo clone / fast-forward ------------------------------------
+          if [ ! -d "$DEPLOY_DIR/.git" ]; then
+            echo 'Cloning repo...'
+            rm -rf "$DEPLOY_DIR" 2>/dev/null || true
+            sudo mkdir -p "$(dirname "$DEPLOY_DIR")"
+            sudo chown ubuntu:ubuntu "$(dirname "$DEPLOY_DIR")"
+            git clone git@github.com-praxis:rravi149/zavi.git "$DEPLOY_DIR"
+          fi
+          cd "$DEPLOY_DIR"
+          rm -f .git/index.lock .git/refs/remotes/origin/main.lock || true
+
+          # Compose file per target (PLAN-backend-worker-split.md); voice runs next to the API only.
+          case "${DEPLOY_TARGET:-all-in-one}" in
+            api)    COMPOSE=docker/api/docker-compose.yml;    START_VOICE=1; PROBE_ROLE="-e PRAXIS_ROLE=api" ;;
+            worker) COMPOSE=docker/worker/docker-compose.yml; START_VOICE=0; PROBE_ROLE="-e PRAXIS_ROLE=worker -e PRAXIS_SECRETS_OVERLAY_ID=zavi-prod-worker" ;;
+            *)      COMPOSE=docker/main/docker-compose.yml;   START_VOICE=1; PROBE_ROLE="" ;;
+          esac
+
+          # --- A0. Snapshot the SERVING compose file (rollback insurance) ------
+          # Rendered (`config`), so an extends-based file still works from the snapshot path.
+          SNAP=apps/backend/$COMPOSE; [ -f "$SNAP" ] || SNAP=apps/backend/docker/main/docker-compose.yml
+          if [ -f "$SNAP" ] && \
+             docker compose -f "$SNAP" config -q >/dev/null 2>&1; then
+            docker compose -f "$SNAP" config > "$ROLLBACK_COMPOSE"
+            echo "Snapshotted serving compose -> $ROLLBACK_COMPOSE"
+          else
+            echo 'WARNING: pre-pull compose missing or unparseable — keeping the existing snapshot (if any).'
+          fi
+
+          # Boxes cloned before the 2026-10-11 rename still point at the old name (redirected); converge them.
+          git remote set-url origin git@github.com-praxis:rravi149/zavi.git
+          git fetch origin
+          git checkout main
+          if [ -n "${DEPLOY_SHA:-}" ]; then
+            git reset --hard "$DEPLOY_SHA"
+          else
+            git reset --hard origin/main
+          fi
+
+          # --- A1. PRE-FLIGHT compose parse gate --------------------------------
+          if ! ( cd apps/backend && docker compose -f "./$COMPOSE" config -q ); then
+            echo 'FAIL: compose file unparseable — aborting BEFORE touching the running container.'
+            echo "FAIL" > "$DONE_FILE"
+            exit 1
+          fi
+          echo 'Compose parse gate passed.'
+
+          # --- A2. Idempotent nginx auto-restart drop-in ------------------------
+          sudo mkdir -p /etc/systemd/system/nginx.service.d
+          if ! sudo cmp -s infra/systemd/nginx.service.d-override.conf /etc/systemd/system/nginx.service.d/override.conf 2>/dev/null; then
+            sudo cp infra/systemd/nginx.service.d-override.conf /etc/systemd/system/nginx.service.d/override.conf
+            sudo systemctl daemon-reload
+            echo 'Installed/updated nginx auto-restart drop-in.'
+          else
+            echo 'nginx auto-restart drop-in already current.'
+          fi
+
+          # --- B. Idempotent nginx install / patch ------------------------------
+          NGINX_NEEDS_RELOAD=0
+          if [ ! -L "/etc/nginx/sites-enabled/$PUBLIC_HOST" ]; then
+            echo "Installing nginx site for $PUBLIC_HOST..."
+            sudo cp "infra/nginx/$PUBLIC_HOST.conf" "/etc/nginx/sites-available/$PUBLIC_HOST"
+            sudo ln -sf "/etc/nginx/sites-available/$PUBLIC_HOST" "/etc/nginx/sites-enabled/$PUBLIC_HOST"
+            NGINX_NEEDS_RELOAD=1
+          else
+            echo "nginx site $PUBLIC_HOST already installed."
+          fi
+          # B2. Patch live site config to use the named upstream. Idempotent.
+          if sudo grep -q 'http://127\.0\.0\.1:4000' "/etc/nginx/sites-enabled/$PUBLIC_HOST"; then
+            echo 'Patching site config: literal :4000 -> named upstream praxis_backend...'
+            sudo sed -i 's|http://127\.0\.0\.1:4000|http://praxis_backend|g' "/etc/nginx/sites-enabled/$PUBLIC_HOST"
+            NGINX_NEEDS_RELOAD=1
+          fi
+          if [ ! -f /etc/nginx/conf.d/praxis-upstream.conf ]; then
+            echo 'Installing praxis-upstream.conf (initial install, defaults to :4000)...'
+            sudo cp infra/nginx/conf.d/praxis-upstream.conf /etc/nginx/conf.d/praxis-upstream.conf
+            NGINX_NEEDS_RELOAD=1
+          fi
+          printf 'upstream praxis_backend {\n    server 127.0.0.1:%s;\n    keepalive 32;\n}\n' "$CONTAINER_PORT" \
+            | sudo tee /etc/nginx/conf.d/praxis-upstream.conf >/dev/null
+          # B2b. Forward the caller's real IP from every proxying location.
+          # nginx drops ALL inherited proxy_set_header lines once a location sets
+          # its own (`Connection ""`), so the app saw the Docker gateway as the
+          # caller and every IP rate limit became one global bucket. The live file
+          # carries certbot's TLS edits, so patch it in place rather than copying
+          # the repo file over it. Idempotent via the marker comment; reverts on a
+          # failed `nginx -t`.
+          SITE_FILE=$(readlink -f "/etc/nginx/sites-enabled/$PUBLIC_HOST")
+          if ! sudo grep -q 'nginx drops EVERY inherited' "$SITE_FILE"; then
+            echo 'Patching site config: repeat forwarded headers inside proxying locations...'
+            sudo cp "$SITE_FILE" "$SITE_FILE.bak-forwarded-headers"
+            sudo awk '{ print } /proxy_set_header Connection "";/ {
+              print "        # Repeated from the server block on purpose: nginx drops EVERY inherited"
+              print "        # proxy_set_header once a location sets one of its own."
+              print "        proxy_set_header Host $host;"
+              print "        proxy_set_header X-Real-IP $remote_addr;"
+              print "        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;"
+              print "        proxy_set_header X-Forwarded-Proto $scheme;"
+              print "        proxy_set_header X-Forwarded-Host $host;"
+            }' "$SITE_FILE.bak-forwarded-headers" | sudo tee "$SITE_FILE" >/dev/null
+            if ! sudo grep -q 'nginx drops EVERY inherited' "$SITE_FILE"; then
+              echo 'WARN: no proxying location matched; forwarded headers NOT added. Check the live site config by hand.'
+              sudo cp "$SITE_FILE.bak-forwarded-headers" "$SITE_FILE"
+            elif sudo nginx -t; then
+              NGINX_NEEDS_RELOAD=1
+            else
+              echo 'WARN: nginx -t rejected the forwarded-header patch. Restoring the previous site config.'
+              sudo cp "$SITE_FILE.bak-forwarded-headers" "$SITE_FILE"
+            fi
+          fi
+          # B2c. HTTP/2 on the API's TLS listeners (one connection for a page's
+          # many reads instead of a browser's 6). Same in-place rule as B2b; the
+          # script is idempotent, and a failed `nginx -t` puts the old file back.
+          # Returns 0 when the file changed and passed `nginx -t`. Run again after
+          # certbot (section D), which adds the TLS listeners on a fresh box.
+          # Called as an `if` condition, so errexit is off inside: every step
+          # checks its own result. No backup -> change nothing. A restore that
+          # fails would leave a rejected file live, so it stops the deploy.
+          enable_http2() {
+            [ -x infra/scripts/nginx-enable-http2.sh ] || return 1
+            if ! sudo cp "$SITE_FILE" "$SITE_FILE.bak-http2"; then
+              echo 'WARN: could not back up the site config; HTTP/2 left off.'
+              return 1
+            fi
+            local rc=0
+            sudo infra/scripts/nginx-enable-http2.sh "$SITE_FILE" || rc=$?
+            [ "$rc" = "3" ] && return 1
+            if [ "$rc" = "0" ] && sudo nginx -t; then
+              echo 'HTTP/2 enabled on the API TLS listeners.'
+              return 0
+            fi
+            echo "WARN: HTTP/2 change not applied (script exit $rc or nginx -t refused). Restoring the previous site config."
+            if ! sudo cp "$SITE_FILE.bak-http2" "$SITE_FILE"; then
+              echo 'FAIL: could not restore the site config after a refused HTTP/2 change.'
+              echo "FAIL" > "$DONE_FILE"
+              exit 1
+            fi
+            return 1
+          }
+          if enable_http2; then NGINX_NEEDS_RELOAD=1; fi
+          if [ "$NGINX_NEEDS_RELOAD" = "1" ]; then
+            if ! sudo nginx -t; then
+              echo 'FAIL: nginx -t rejected config. Reverting site patch and aborting.'
+              sudo sed -i 's|http://praxis_backend|http://127.0.0.1:'"$CONTAINER_PORT"'|g' \
+                "/etc/nginx/sites-enabled/$PUBLIC_HOST" || true
+              echo "FAIL" > "$DONE_FILE"
+              exit 1
+            fi
+            sudo systemctl reload nginx
+            echo 'nginx reloaded after section B.'
+          fi
+
+          # --- C. Build + SAFE atomic swap -------------------------------------
+          sudo systemctl start docker || true
+          export DOCKER_BUILDKIT=1
+          export COMPOSE_DOCKER_CLI_BUILD=1
+
+          # C0. Free disk before build. Dangling images pile up when deploys are
+          echo 'Freeing disk before build (reclaim UNUSED images + build cache, keep recent for rollback)...'
+          df -h / | tail -1 || true
+          docker container prune -f || true
+          docker image prune -af || true
+          docker builder prune -af || true
+          docker system df || true
+          df -h / | tail -1 || true
+
+          # C1. Snapshot the currently-running image as :rollback so C5 can
+          docker tag praxis-backend:latest praxis-backend:rollback 2>/dev/null || true
+
+          # C2. PULL pre-built backend image from GHCR (built on the CI runner —
+          echo "Pulling $IMAGE_BACKEND (old container still serving traffic on :$CONTAINER_PORT)..."
+          if ! docker pull "$IMAGE_BACKEND"; then
+            echo "FAIL: docker pull $IMAGE_BACKEND failed — old container untouched."
+            echo "FAIL" > "$DONE_FILE"
+            exit 1
+          fi
+          docker tag "$IMAGE_BACKEND" praxis-backend:latest
+
+          echo "Pulling $IMAGE_VOICE..."
+          if [ "$START_VOICE" != "1" ]; then
+            echo 'voice sidecar: not on this host (worker)'
+          elif docker pull "$IMAGE_VOICE"; then
+            docker tag "$IMAGE_VOICE" praxis-voice-pipeline:latest
+          else
+            echo 'voice image pull failed (non-fatal — backend deploy continues)'
+          fi
+
+          # C3. Start new container on TEMP_PORT (not in nginx upstream).
+          echo "Starting praxis-backend-new on temp port $TEMP_PORT for pre-swap health probe..."
+          docker rm -f praxis-backend-new 2>/dev/null || true
+          docker run -d \
+            --name praxis-backend-new \
+            --restart no \
+            --add-host host.docker.internal:host-gateway \
+            -p "127.0.0.1:${TEMP_PORT}:4000" \
+            -e NODE_ENV=production \
+            -e PORT=4000 \
+            -e AWS_REGION=us-west-1 \
+            -e PRAXIS_SECRETS_SECRET_ID=praxis-envprod-1 \
+            -e PRAXIS_CONTAINER_ROLE=probe \
+            $PROBE_ROLE \
+            praxis-backend:latest
+
+          PRE_HEALTHY=0
+          echo "Probing http://127.0.0.1:${TEMP_PORT}/health (up to 90s, 45 x 2s)..."
+          # Wall-clock bound + per-probe deadline (data-resilience PR 1): a hung
+          # /health counts as one failed probe, never a hung deploy.
+          DEADLINE=$((SECONDS+90)); i=0
+          while [ $SECONDS -lt $DEADLINE ]; do
+            i=$((i+1))
+            if curl -fsS --max-time 5 -o /dev/null "http://127.0.0.1:${TEMP_PORT}/health"; then
+              PRE_HEALTHY=1
+              echo "  <- new image healthy on temp port after ${i} probes"
+              break
+            fi
+            sleep 2
+          done
+
+          if [ "$PRE_HEALTHY" != "1" ]; then
+            echo "FAIL: new image never came healthy on temp port — aborting swap. Old container untouched."
+            docker logs praxis-backend-new --tail 80 || true
+            docker rm -f praxis-backend-new 2>/dev/null || true
+            echo "FAIL" > "$DONE_FILE"
+            exit 1
+          fi
+
+          # C3.5. DEPLOY-GUARD (2026-06-08; QUIESCE + longer cap 2026-06-09). The swap
+          echo 'Deploy-guard: quiescing old container (stop admitting new agent runs)...'
+          curl -fsS --max-time 3 -X POST "http://127.0.0.1:${CONTAINER_PORT}/internal/quiesce" \
+            || echo '  <- quiesce endpoint unavailable (old image predates it) — proceeding without admission control.'
+          echo 'Deploy-guard: checking for in-flight agent runs before swap...'
+          GUARD_MAX=450   # 450 x 2s = ~900s bounded defer (see cap sizing note in C3.5)
+          GUARD_I=0
+          GUARD_SKIPPED=0
+          if [ "${SKIP_INFLIGHT_GUARD:-false}" = "true" ]; then
+            GUARD_JSON=$(curl -fsS --max-time 3 "http://127.0.0.1:${CONTAINER_PORT}/internal/inflight-runs" 2>/dev/null || echo 'unreachable')
+            echo "WARNING: skip_inflight_guard=true — NOT waiting for in-flight runs; swapping NOW. Runs still in flight may be ORPHANED. Guard said: ${GUARD_JSON}"
+            GUARD_SKIPPED=1
+            GUARD_MAX=0
+          fi
+          while [ "$GUARD_I" -lt "$GUARD_MAX" ]; do
+            GUARD_JSON=$(curl -fsS --max-time 3 "http://127.0.0.1:${CONTAINER_PORT}/internal/inflight-runs" 2>/dev/null || echo '')
+            if command -v jq >/dev/null 2>&1; then
+              SAFE=$(printf '%s' "$GUARD_JSON" | jq -r '.safe_to_swap // empty' 2>/dev/null || echo '')
+              GCOUNT=$(printf '%s' "$GUARD_JSON" | jq -r '.count // empty' 2>/dev/null || echo '?')
+            else
+              case "$GUARD_JSON" in *'"safe_to_swap":true'*) SAFE=true ;; *'"safe_to_swap":false'*) SAFE=false ;; *) SAFE='' ;; esac
+              GCOUNT='?'
+            fi
+            if [ "$SAFE" = "true" ]; then
+              echo "  <- deploy-guard clear (no in-flight runs) after ${GUARD_I}x2s — swapping."
+              break
+            fi
+            if [ -z "$GUARD_JSON" ] && [ "$GUARD_I" -ge 3 ]; then
+              echo "  <- deploy-guard endpoint unreachable for 3 cycles (old image predates this change?) — proceeding."
+              break
+            fi
+            GSTALE=$(printf '%s' "$GUARD_JSON" | jq -r '.stale_ignored // 0' 2>/dev/null || echo '?')
+            echo "  poll #$((GUARD_I+1)): in-flight=${GCOUNT} (stale ignored=${GSTALE}), deferring swap 2s..."
+            GUARD_I=$((GUARD_I+1))
+            sleep 2
+          done
+          if [ "$GUARD_SKIPPED" != "1" ] && [ "$GUARD_I" -ge "$GUARD_MAX" ]; then
+            echo "FAIL: deploy-guard cap (${GUARD_MAX}x2s) reached with agent runs still in-flight — ABORTING deploy instead of killing them."
+            echo "      Old container is untouched and still serving. Re-run deploy.yml once runs finish."
+            curl -fsS --max-time 3 -X POST "http://127.0.0.1:${CONTAINER_PORT}/internal/unquiesce" \
+              || echo '  <- unquiesce endpoint unavailable (old image predates it) — new runs stay deferred to the watchdog until the next deploy.'
+            docker rm -f praxis-backend-new 2>/dev/null || true
+            echo "FAIL" > "$DONE_FILE"
+            exit 1
+          fi
+
+          # C4. New image is healthy. Tear down temp container, gracefully stop the
+          echo 'Pre-swap probe passed. Swapping to canonical :'"$CONTAINER_PORT"'...'
+          docker rm -f praxis-backend-new 2>/dev/null || true
+          docker stop -t 120 praxis-backend 2>/dev/null || true
+          for c in praxis-backend praxis-backend-blue praxis-backend-green; do
+            docker rm -f "$c" 2>/dev/null || true
+          done
+          ( cd apps/backend && docker compose -f "./$COMPOSE" \
+              up -d --no-deps --force-recreate praxis-backend ) || true
+
+          # C5. Final health check on canonical port. On failure, roll back to
+          POST_HEALTHY=0
+          echo "Probing http://127.0.0.1:${CONTAINER_PORT}/health after swap (up to 60s)..."
+          DEADLINE=$((SECONDS+60)); i=0
+          while [ $SECONDS -lt $DEADLINE ]; do
+            i=$((i+1))
+            if curl -fsS --max-time 5 -o /dev/null "http://127.0.0.1:${CONTAINER_PORT}/health"; then
+              POST_HEALTHY=1
+              echo "  <- canonical praxis-backend healthy on :${CONTAINER_PORT} after ${i} probes"
+              break
+            fi
+            sleep 2
+          done
+
+          if [ "$POST_HEALTHY" != "1" ]; then
+            echo "FAIL: canonical container failed health check after swap — ROLLING BACK."
+            docker logs praxis-backend --tail 80 || true
+            if docker image inspect praxis-backend:rollback >/dev/null 2>&1; then
+              docker rm -f praxis-backend 2>/dev/null || true
+              docker tag praxis-backend:rollback praxis-backend:latest || true
+              if [ -f "$ROLLBACK_COMPOSE" ]; then
+                ( cd apps/backend && docker compose -p main -f "$ROLLBACK_COMPOSE" \
+                    up -d --no-deps --force-recreate praxis-backend ) || true
+              else
+                ( cd apps/backend && docker compose -f "./$COMPOSE" \
+                    up -d --no-deps --force-recreate praxis-backend ) || true
+              fi
+              echo 'Rolled back to previous image. Prod should be serving again.'
+            else
+              echo 'WARNING: no :rollback image available — prod may be down. Check manually.'
+            fi
+            echo "FAIL" > "$DONE_FILE"
+            exit 1
+          fi
+
+          # C6. Voice sidecar — non-fatal, never rolls back the backend deploy.
+          [ "$START_VOICE" = "1" ] && ( cd apps/backend && docker compose -f "./$COMPOSE" \
+              up -d --no-deps --force-recreate praxis-voice-pipeline ) || true
+
+          # --- D. Idempotent certbot -------------------------------------------
+          if [ ! -d "/etc/letsencrypt/live/$PUBLIC_HOST" ]; then
+            echo 'Issuing TLS cert via LetsEncrypt...'
+            sudo certbot --nginx -d "$PUBLIC_HOST" --redirect --agree-tos \
+              -m "$CERTBOT_EMAIL" --non-interactive || \
+              echo 'certbot failed (DNS may not have propagated yet — re-run on next push)'
+            # certbot just added the TLS listeners: turn HTTP/2 on for them too.
+            if enable_http2; then sudo systemctl reload nginx; fi
+          else
+            echo 'TLS cert already issued.'
+          fi
+
+          # --- E. Smoke --------------------------------------------------------
+          sleep 8
+          if curl -fsS "http://localhost:${CONTAINER_PORT}/health"; then echo '  <- localhost OK'; fi
+          if curl -fsS --max-time 15 "https://${PUBLIC_HOST}/health"; then
+            echo '  <- HTTPS OK'
+          else
+            echo 'FAIL: HTTPS smoke failed (check nginx/certbot output above)'
+            echo "FAIL" > "$DONE_FILE"
+            exit 1
+          fi
+          # Say which protocol the API really answers on. If the file already has
+          # http2 but nginx is still on its old config (an earlier reload failed),
+          # reload once. Never fails the deploy: HTTP/2 is speed, not availability.
+          api_protocol() { curl -sS -o /dev/null -w '%{http_version}' --http2 --max-time 15 "https://${PUBLIC_HOST}/health" || true; }
+          H2_SEEN=$(api_protocol)
+          if [ "$H2_SEEN" != "2" ] && sudo grep -Eq '^[[:space:]]*listen[^;]*443[^;]*http2' "$SITE_FILE" && sudo nginx -t; then
+            sudo systemctl reload nginx || true
+            sleep 2
+            H2_SEEN=$(api_protocol)
+          fi
+          if [ "$H2_SEEN" = "2" ]; then echo 'API answers over HTTP/2.'; else echo "WARN: API answers over HTTP/$H2_SEEN, not HTTP/2."; fi
+
+          echo "=== praxis-deploy.sh SUCCESS $(date -u +%Y-%m-%dT%H:%M:%SZ) ==="
+          echo "OK" > "$DONE_FILE"
+          DEPLOY_SCRIPT_EOF
+
+          ssh ${{ env.SSH_OPTS }} ${{ env.SSH_USERNAME }}@${{ env.SSH_SERVER }} \
+            "chmod +x /tmp/praxis-deploy.sh"
+
+      - name: Launch detached deploy on EC2 and poll for completion
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          DEPLOY_DIR='${{ env.DEPLOY_DIR }}'
+          PUBLIC_HOST='${{ env.PUBLIC_HOST }}'
+          CERTBOT_EMAIL='${{ env.CERTBOT_EMAIL }}'
+          CONTAINER_PORT='${{ env.CONTAINER_PORT }}'
+          GHCR_OWNER="$(printf '%s' "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')"
+          IMAGE_BACKEND="ghcr.io/${GHCR_OWNER}/praxis-backend:${{ github.sha }}"
+          IMAGE_VOICE="ghcr.io/${GHCR_OWNER}/praxis-voice-pipeline:${{ github.sha }}"
+          DEPLOY_SHA='${{ github.sha }}'
+          SKIP_INFLIGHT_GUARD='${{ inputs.skip_inflight_guard && 'true' || 'false' }}'
+
+          echo "$GHCR_TOKEN" | ssh ${{ env.SSH_OPTS }} ${{ env.SSH_USERNAME }}@${{ env.SSH_SERVER }} \
+            "docker login ghcr.io -u '${{ github.actor }}' --password-stdin"
+
+          ssh ${{ env.SSH_OPTS }} ${{ env.SSH_USERNAME }}@${{ env.SSH_SERVER }} \
+            "rm -f /tmp/praxis-deploy-done /tmp/praxis-deploy.log; \
+             DEPLOY_DIR='$DEPLOY_DIR' PUBLIC_HOST='$PUBLIC_HOST' \
+             CERTBOT_EMAIL='$CERTBOT_EMAIL' CONTAINER_PORT='$CONTAINER_PORT' \
+             IMAGE_BACKEND='$IMAGE_BACKEND' IMAGE_VOICE='$IMAGE_VOICE' DEPLOY_SHA='$DEPLOY_SHA' \
+             SKIP_INFLIGHT_GUARD='$SKIP_INFLIGHT_GUARD' DEPLOY_TARGET='${{ env.DEPLOY_TARGET }}' \
+             nohup /tmp/praxis-deploy.sh >> /tmp/praxis-deploy.log 2>&1 &
+             echo \"Deploy launched (PID: \$!)\""
+
+          echo "Polling for deploy completion every 30s (max 25 min = 50 polls)..."
+          DONE=0
+          for i in $(seq 1 50); do
+            sleep 30
+            STATUS=$(ssh ${{ env.SSH_OPTS }} ${{ env.SSH_USERNAME }}@${{ env.SSH_SERVER }} \
+              "cat /tmp/praxis-deploy-done 2>/dev/null || true") || true
+
+            if [ "$STATUS" = "OK" ]; then
+              echo "Deploy completed successfully (poll #$i)."
+              DONE=1
+              break
+            elif [ "$STATUS" = "FAIL" ]; then
+              echo "::error::Deploy FAILED on EC2 (poll #$i). Last 100 lines of deploy log:"
+              ssh ${{ env.SSH_OPTS }} ${{ env.SSH_USERNAME }}@${{ env.SSH_SERVER }} \
+                "tail -100 /tmp/praxis-deploy.log 2>/dev/null || true" || true
+              exit 1
+            else
+              echo "  poll #$i — still running ($(date -u +%H:%M:%SZ))..."
+            fi
+          done
+
+          if [ "$DONE" != "1" ]; then
+            echo "::error::Deploy did not complete within 25 min. Last 100 lines of deploy log:"
+            ssh ${{ env.SSH_OPTS }} ${{ env.SSH_USERNAME }}@${{ env.SSH_SERVER }} \
+              "tail -100 /tmp/praxis-deploy.log 2>/dev/null || true" || true
+            exit 1
+          fi
+        continue-on-error: false
+
+      - name: Sync Inngest functions
+        id: inngest_sync
+        run: |
+          if [ "${{ env.DEPLOY_TARGET }}" = "api" ]; then
+            echo "api host serves no Inngest functions; nothing to sync"
+            exit 0
+          fi
+          SYNC_URL="https://${{ env.PUBLIC_HOST }}/api/inngest"
+          sleep 15
+          curl -fsS -X PUT "$SYNC_URL" || true
+          sleep 5
+          ok=0
+          for attempt in 1 2 3; do
+            body=$(curl -fsS -m 30 -X PUT "$SYNC_URL" || true)
+            if printf '%s' "$body" | grep -q 'Successfully registered'; then ok=1; break; fi
+            echo "sync attempt $attempt did not register: ${body:-no response}"
+            sleep $((attempt * 10))
+          done
+          if [ "$ok" != "1" ]; then
+            echo "failed=1" >> "$GITHUB_OUTPUT"
+            echo "::error title=Inngest NOT registered::$SYNC_URL did not register. Jobs may not run. Check the Inngest dashboard (Apps -> praxis): the app URL must be $SYNC_URL."
+            exit 1
+          fi
+          echo "  <- Inngest sync OK (${{ env.PUBLIC_HOST }})"
+          code=$(curl -s -o /dev/null -m 15 -w '%{http_code}' "$SYNC_URL" || true)
+          if [ "$code" != "401" ] && [ "$code" != "200" ]; then
+            echo "failed=1" >> "$GITHUB_OUTPUT"
+            echo "::error title=Inngest endpoint not served::GET $SYNC_URL returned $code after a successful sync."
+            exit 1
+          fi
+        continue-on-error: false
+
+      - name: Post-deploy live-replay canary (non-blocking verdict · RED if the canary itself can't run)
+        if: ${{ inputs.target != 'worker' }}
+        env:
+          GIT_SHA: ${{ github.sha }}
+        run: |
+          ssh ${{ env.SSH_OPTS }} ${{ env.SSH_USERNAME }}@${{ env.SSH_SERVER }} \
+            "docker exec -e GIT_SHA='${GIT_SHA}' praxis-backend \
+               node /app/apps/backend/eval/live-replay/deploy-canary.mjs \
+               --backend http://localhost:4000 --pool all"
+        continue-on-error: true
+        timeout-minutes: 20
+
+      - name: Prune stale Docker resources
+        if: always()
+        run: |
+          ssh ${{ env.SSH_OPTS }} ${{ env.SSH_USERNAME }}@${{ env.SSH_SERVER }} '
+            docker system df || true
+            docker container prune -f || true
+            docker image prune -f || true
+            docker builder prune -f || true
+          '
+        continue-on-error: false
+
+  deploy-verdict:
+    if: ${{ always() && github.event_name == 'workflow_dispatch' }}
+    needs: [dedupe, check, validate, prod-db, rls-matrix, site-isolation, migrate, build-image, deploy-site-workers, build-and-deploy]
+    runs-on: ubuntu-latest
+    steps:
+      - name: State plainly whether this deploy shipped
+        env:
+          DEDUPE: ${{ needs.dedupe.result }}
+          DEDUPE_PROCEED: ${{ needs.dedupe.outputs.proceed }}
+          CHECK: ${{ needs.check.result }}
+          VALIDATE: ${{ needs.validate.result }}
+          PROD_DB: ${{ needs.prod-db.result }}
+          RLS: ${{ needs.rls-matrix.result }}
+          SITE_ISO: ${{ needs.site-isolation.result }}
+          MIGRATE: ${{ needs.migrate.result }}
+          BUILD_IMAGE: ${{ needs.build-image.result }}
+          SITE_WORKERS: ${{ needs.deploy-site-workers.result }}
+          DEPLOYED: ${{ needs.build-and-deploy.result }}
+          INNGEST_SYNC_FAILED: ${{ needs.build-and-deploy.outputs.inngest_sync_failed }}
+        run: |
+          set -uo pipefail
+          say() { echo "$1"; echo "$1" >> "$GITHUB_STEP_SUMMARY"; }
+
+          if [ "$DEDUPE_PROCEED" = "false" ]; then
+            say "## Nothing shipped, and that is correct"
+            say ""
+            say "The dedupe gate skipped this run because this commit already deployed successfully."
+            exit 0
+          fi
+
+          if [ "$DEPLOYED" = "success" ]; then
+            say "## Deployed"
+            say ""
+            say "\`build-and-deploy\` succeeded, so the new image is live on the box."
+            exit 0
+          fi
+
+          if [ "${INNGEST_SYNC_FAILED:-}" = "1" ]; then
+            say "## NEW IMAGE IS LIVE, BUT INNGEST DID NOT REGISTER"
+            say ""
+            say "The container swapped, but its /api/inngest did not register with Inngest Cloud, so crons and agent runs may not fire. Check the Inngest dashboard (Apps -> praxis) app URL now. See the 'Sync Inngest functions' step log."
+            exit 1
+          fi
+
+          say "## BACKEND NOT SHIPPED"
+          say ""
+          say "\`build-and-deploy\` did not succeed (result: \`$DEPLOYED\`), so prod is still running the PREVIOUS backend image."
+          if [ "$MIGRATE" = "success" ] || [ "$SITE_WORKERS" = "success" ] || [ "$SITE_WORKERS" = "failure" ]; then
+            say ""
+            say "**Not everything is unchanged:** migrations \`$MIGRATE\`, site Workers \`$SITE_WORKERS\`. Unless this run used skip_site_workers, a successful site-Worker job means new Workers are live against the previous backend, and a failed one may have deployed some of them before failing (see its log). They must be compatible with the previous backend (additive changes only)."
+          fi
+          say ""
+          say "| gate | result |"
+          say "|---|---|"
+          say "| dedupe | \`$DEDUPE\` |"
+          say "| check | \`$CHECK\` |"
+          say "| validate | \`$VALIDATE\` |"
+          say "| prod-db | \`$PROD_DB\` |"
+          say "| rls-matrix | \`$RLS\` |"
+          say "| site-isolation | \`$SITE_ISO\` |"
+          say "| migrate | \`$MIGRATE\` |"
+          say "| build-image | \`$BUILD_IMAGE\` |"
+          say "| deploy-site-workers | \`$SITE_WORKERS\` |"
+          say "| build-and-deploy | \`$DEPLOYED\` |"
+          say ""
+
+          for pair in "check:$CHECK" "validate:$VALIDATE" "rls-matrix:$RLS" "site-isolation:$SITE_ISO" "prod-db:$PROD_DB" "migrate:$MIGRATE" "build-image:$BUILD_IMAGE" "deploy-site-workers:$SITE_WORKERS"; do
+            name="${pair%%:*}"; result="${pair#*:}"
+            if [ "$result" = "failure" ] || [ "$result" = "cancelled" ]; then
+              say "**Stopped at \`$name\` ($result).** Fix that, then re-run \`gh workflow run deploy.yml --ref main\`."
+              break
+            fi
+          done
+
+          say ""
+          say "_This checks job outcomes only. It cannot confirm which commit prod is serving — /health carries no SHA._"
+          exit 1

@@ -1,0 +1,172 @@
+{
+  "about": "The 20 site ideas for the pooled-document kill test. Read 2026-10-01 from prod, read-only (~/bin/zavi-prod-sql): conductor_runs.kind='build_app', latest run per tenant, tenants.kind<>'test', dogfood slugs upcar-ai/upcar-private/apna-tutor-dogfood excluded, deleted tenants excluded. Only left(objective,400) excerpts were read. Business names, people and cities are replaced by placeholders. source_ref = first 10 hex of sha256(conductor_runs.id), so a run can be traced by someone with prod access without the id being in the repo.",
+  "selection_rule": "Walk the 45 most recent tenants' latest build_app run, newest first. Keep a run when it names a concrete site (an organisation type or a described product). Skip: refine runs with no site idea in them (e.g. 'add forgot password link'), automatic deploy fixes, ideas with no function ('No idea has been articulated', 'suggest me one every day', 'a launch-ready landing page', 'an ai marketing app', 'ai support team app', 'web app for tinnitus', 'SEO new created app', 'An iOS app'), a chat that never stated an idea ('What llm model are you?'), and Zavi's own QA ship-gate builds ('QA SHIP GATE', dated 'Northstar QA Studio 20260929'). A near-duplicate of an idea already kept (same business type, same scope) is skipped and the most specific wording kept: 2 cake-shop one-liners and a neighbourhood-bakery landing page fold into #05; 2 more P2P car-rental marketplaces fold into #07; duplicate barbershop and invoice-tracker runs fold into #20 and #18.",
+  "counts": {
+    "real": 20,
+    "synthetic": 0,
+    "candidates_read": 45,
+    "skipped": 25
+  },
+  "ideas": [
+    {
+      "n": "01",
+      "real": true,
+      "source_ref": "21627a5bfb",
+      "date": "2026-10-01",
+      "kind": "refine",
+      "idea": "Group puzzle game (<BUSINESS>). Add a 'same device' mode for groups: \"when i make a team there should be an option whether this is an online or offline, if offline, then the main member should be able to add their friends who's gonna play so that all of them can play on one device\". When creating a group the organizer chooses online or offline."
+    },
+    {
+      "n": "02",
+      "real": true,
+      "source_ref": "10370e75e3",
+      "date": "2026-10-01",
+      "kind": "build",
+      "idea": "A booking website for my dog grooming salon. Show services with prices, let customers pick a time slot and book, and an admin page where I see bookings."
+    },
+    {
+      "n": "03",
+      "real": true,
+      "source_ref": "e6a89e6418",
+      "date": "2026-10-01",
+      "kind": "refine",
+      "idea": "Equestrian matching community (<BUSINESS>): an early-access form where people choose what they are looking for ('a riding partner', 'romance', ...) as option tiles; make the site presentable at phone width."
+    },
+    {
+      "n": "04",
+      "real": true,
+      "source_ref": "dfcb6961d7",
+      "date": "2026-09-30",
+      "kind": "build",
+      "idea": "<BUSINESS> is building <COUNTRY>'s trusted healthcare professional network: a verified platform that connects medical students, doctors, hospitals, universities, researchers and healthcare organisations throughout their professional journey. Today they rely on fragmented channels such as WhatsApp groups, LinkedIn, college groups..."
+    },
+    {
+      "n": "05",
+      "real": true,
+      "source_ref": "bc658b4852",
+      "date": "2026-09-30",
+      "kind": "build",
+      "idea": "A simple website for <BUSINESS> bakery in <CITY>: menu with prices, opening hours, location map, and a form to order custom cakes."
+    },
+    {
+      "n": "06",
+      "real": true,
+      "source_ref": "295ab8d24d",
+      "date": "2026-09-29",
+      "kind": "build",
+      "idea": "Create a wedding website, premium."
+    },
+    {
+      "n": "07",
+      "real": true,
+      "source_ref": "dbcdb4c304",
+      "date": "2026-09-29",
+      "kind": "build",
+      "idea": "<BUSINESS> is a P2P car rental marketplace focused exclusively on <CITY>. The conversation identified that the visitor hasn't yet pinpointed a customer pain point that the incumbent P2P marketplace (which already dominates <CITY> with thousands of listings) doesn't solve: price, availability, booking speed, insurance terms, car quality..."
+    },
+    {
+      "n": "08",
+      "real": true,
+      "source_ref": "fb72b8e5ed",
+      "date": "2026-09-29",
+      "kind": "build",
+      "idea": "Build a photo studio website, premium. (A later refine: hero, services (portraits, events, commercial), portfolio grid, about, contact/booking call to action.)"
+    },
+    {
+      "n": "09",
+      "real": true,
+      "source_ref": "12b0efa7d0",
+      "date": "2026-09-29",
+      "kind": "build",
+      "idea": "I want a page that contains all the posters of new movies with details like name and rating; on click it shows the movie details with a cool UI and the option to watch or stream the movie."
+    },
+    {
+      "n": "10",
+      "real": true,
+      "source_ref": "3e62173558",
+      "date": "2026-09-28",
+      "kind": "build",
+      "idea": "I want to make a house rental website."
+    },
+    {
+      "n": "11",
+      "real": true,
+      "source_ref": "5607662500",
+      "date": "2026-09-28",
+      "kind": "build",
+      "idea": "I want to make a shoe rental website for my business."
+    },
+    {
+      "n": "12",
+      "real": true,
+      "source_ref": "e59687d912",
+      "date": "2026-09-28",
+      "kind": "build",
+      "idea": "A members club for local runners where people sign up, log in, see upcoming group runs, and admins can add and edit runs."
+    },
+    {
+      "n": "13",
+      "real": true,
+      "source_ref": "beafb08d9a",
+      "date": "2026-09-27",
+      "kind": "refine",
+      "idea": "Blood donation app (<BUSINESS>): add slot timings so a donor can select the time to donate."
+    },
+    {
+      "n": "14",
+      "real": true,
+      "source_ref": "d4357bb42a",
+      "date": "2026-09-27",
+      "kind": "build",
+      "idea": "A members-only recipe club where people sign up, log in and save their favourite recipes."
+    },
+    {
+      "n": "15",
+      "real": true,
+      "source_ref": "61ea243504",
+      "date": "2026-09-22",
+      "kind": "build",
+      "idea": "An AI growth agent that autonomously runs marketing and growth work for businesses across channels including SEO, paid ads (Meta and Google), social media, UGC and AI-search visibility (GEO)."
+    },
+    {
+      "n": "16",
+      "real": true,
+      "source_ref": "5b5d5661cc",
+      "date": "2026-09-22",
+      "kind": "build",
+      "idea": "Build me a website for a mosque."
+    },
+    {
+      "n": "17",
+      "real": true,
+      "source_ref": "8ced4c9344",
+      "date": "2026-09-22",
+      "kind": "build",
+      "idea": "Build a marketplace for mobile phone selling."
+    },
+    {
+      "n": "18",
+      "real": true,
+      "source_ref": "d9dd87ca89",
+      "date": "2026-09-22",
+      "kind": "build",
+      "idea": "An invoice tracker for a freelance designer. Add clients, log an invoice against a client with amount, issue date and due date, and mark it paid. A dashboard shows total outstanding, total paid this month, and which invoices are overdue today, sorted by how late they are."
+    },
+    {
+      "n": "19",
+      "real": true,
+      "source_ref": "a08c6d08e6",
+      "date": "2026-09-22",
+      "kind": "build",
+      "idea": "A marketplace where local home bakers list custom cakes. Each listing has photos, flavour, size options, price and the baker's city. Buyers filter by occasion (birthday, wedding, baby shower) and city, open a cake, and send an order request with the date they need it. Bakers see the requests they received and can accept or decline."
+    },
+    {
+      "n": "20",
+      "real": true,
+      "source_ref": "628617763f",
+      "date": "2026-09-22",
+      "kind": "build",
+      "idea": "A booking site for a two-chair barbershop called <BUSINESS> in <CITY>. Customers pick a barber, a service (cut, beard trim, cut+beard) and a time slot, and leave their name and phone. The owner needs a page showing today's appointments in order, and can mark one as done or no-show. Show prices and opening hours."
+    }
+  ]
+}

@@ -1,0 +1,1508 @@
+/* Side panel styles. Plain CSS — no Tailwind build in this workspace. */
+
+/* ── the brand face, SHIPPED, not fetched ───────────────────────────────────
+   Zavi is Plus Jakarta Sans everywhere (apps/web/tailwind.config.ts), where the
+   web gets it from next/font/google. The panel cannot: a published extension
+   must not reach out to fonts.gstatic.com at paint time (the store treats a
+   remote font as remotely-hosted content, the panel's CSP blocks it, and an
+   offline first run would silently fall back). So the two faces the panel
+   actually uses ride along in the package.
+
+   public/fonts/*.woff2 are 400 and 600 subset to Latin-1 plus the handful of
+   punctuation this UI types, ~9KB each, cut from the OFL-licensed upstream TTFs
+   vendored at node_modules/@expo-google-fonts/plus-jakarta-sans with:
+
+     python3 -m fontTools.subset PlusJakartaSans_400Regular.ttf \
+       --unicodes="U+0000-00FF,U+2013-2014,U+2018-201F,U+2026,U+2022,U+2192,U+00A0" \
+       --layout-features="kern,liga,calt" --flavor=woff2 \
+       --output-file=public/fonts/plus-jakarta-sans-400.woff2
+
+   The licence travels with them (public/fonts/OFL.txt). `font-display: swap`
+   because the fallback stack below is metrically close enough that a swap reads
+   as a settle, and a blocked paint in a 400px panel reads as a broken panel.
+   The url()s resolve against panel.css at the package root, so they are copied
+   verbatim by scripts/build.mjs and left alone by esbuild (external: *.woff2). */
+
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  src: url("fonts/plus-jakarta-sans-400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  src: url("fonts/plus-jakarta-sans-600.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: light dark;
+  /* TWO FACES, ONE RULE EACH (2026-09-18). Plus Jakarta Sans is the brand face
+     and it stays the brand face — but a 13px body line in a 400px panel is the
+     size at which the system UI stack wins, because it is the face the OS hints
+     for exactly that job. So: the display face carries the things you look AT
+     (the wordmark, titles, headings, buttons), and the UI stack carries the
+     things you READ (chat messages, inputs, labels, small print).
+
+     These are the only two font-family values in the file. Nothing sets a
+     family directly; the display face is applied by ONE rule at the bottom. */
+  --zv-font-display: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", system-ui, sans-serif;
+  --zv-font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui,
+    sans-serif;
+  /* A third, narrower job: `code` inside an agent reply. Not part of the
+     display/UI split — a monospace run is its own signal. */
+  --zv-font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --zv-bg: #ffffff;
+  --zv-fg: #16181d;
+  --zv-muted: #6b7280;
+  --zv-line: #e5e7eb;
+  /* Zavi's product colour is BLACK, not blue. This is the web app's `bg-ink`
+     (--c-ink: 25 25 25 in apps/web/src/app/globals.css), which is what every
+     primary button on zaviagent.com is painted with. --zv-on-accent is the
+     colour that must sit ON it; the two always flip together, or a dark-mode
+     primary button ends up white text on a white slab. */
+  --zv-accent: #191919;
+  --zv-on-accent: #ffffff;
+  --zv-user-bg: #f1f2f4;
+  --zv-agent-bg: #f6f7f9;
+  --zv-danger: #b42318;
+  --zv-banner-bg: #fff8e6;
+  --zv-banner-line: #f0d08a;
+  /* The consent rows. --zv-card is the grey slab the three rows sit on; the
+     warn pair is the third row, which is a warning and has to look like one
+     without turning the screen into an alert. #8a2f14 on #fdf1ed is ~7.5:1. */
+  --zv-card: #f4f5f7;
+  --zv-warn-bg: #fdf1ed;
+  --zv-warn-fg: #8a2f14;
+  /* The header chip's fill, and the two stops of the loading shimmer. The
+     shimmer pair has to be a barely-there step: the skeleton says "an answer is
+     coming", and a high-contrast sweep competes with the answer when it does. */
+  --zv-chip-bg: #fafbfc;
+  --zv-skel-a: #eceef1;
+  --zv-skel-b: #f6f7f9;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --zv-bg: #14161a;
+    --zv-fg: #e8eaed;
+    --zv-muted: #9aa1ad;
+    --zv-line: #2a2e36;
+    /* The mark is black on white, so on dark it is near-white on black. #f2f2f2
+       on --zv-bg #14161a is ~16:1, and #14161a on #f2f2f2 is the same ratio the
+       other way, so the primary button reads in both directions. */
+    --zv-accent: #f2f2f2;
+    --zv-on-accent: #14161a;
+    --zv-user-bg: #22262e;
+    --zv-agent-bg: #1b1e24;
+    --zv-danger: #ff9b8f;
+    --zv-banner-bg: #2a2413;
+    --zv-banner-line: #5c4c1d;
+    --zv-card: #1e2128;
+    --zv-warn-bg: #2b1a15;
+    --zv-warn-fg: #ffb2a0;
+    --zv-chip-bg: #1b1e24;
+    --zv-skel-a: #20242b;
+    --zv-skel-b: #272c34;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--zv-bg);
+  color: var(--zv-fg);
+  /* The panel's default is the UI stack. Everything inherits it; the display
+     face is opted IN to, at the bottom of this file. */
+  font: 13px/1.45 var(--zv-font-ui);
+  /* Chrome on macOS renders subpixel-antialiased text noticeably heavier than
+     the same stack in a native window, and at 11-13px — which is most of this
+     panel — that reads as slightly smeared rather than bold. Greyscale
+     antialiasing is what every dense UI at this size uses, and it is what makes
+     the bundled 400 weight look like 400 instead of 500. No-op off macOS. */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.zv-root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 0;
+}
+
+.zv-center {
+  margin: auto;
+}
+
+.zv-muted {
+  color: var(--zv-muted);
+}
+
+/* ── header ─────────────────────────────────────────────────────────────── */
+
+.zv-header {
+  border-bottom: 1px solid var(--zv-line);
+  padding: 10px 12px 8px;
+  flex: 0 0 auto;
+}
+
+.zv-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.zv-wordmark {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--zv-fg);
+  min-width: 0;
+}
+
+.zv-brand {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.zv-header-actions {
+  display: flex;
+  gap: 2px;
+}
+
+/* The two controls are 28px hit targets holding a 16px path. They are muted at
+   rest so the toolbar does not compete with the thread, and they take the ink
+   colour on hover, which is the only state change a quiet toolbar needs. */
+.zv-icon-btn {
+  background: none;
+  border: 0;
+  color: var(--zv-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  line-height: 0;
+  padding: 0;
+  border-radius: 7px;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.zv-icon-btn:hover {
+  background: var(--zv-card);
+  color: var(--zv-fg);
+}
+
+/* Quieter than the toolbar above it: this is a status line, not a headline. It
+   still says what the next Send will show, which is the whole reason it exists,
+   so it is muted rather than smaller to the point of unreadable. */
+.zv-reading {
+  margin: 6px 0 0;
+  min-width: 0;
+  color: var(--zv-muted);
+  font-size: 11.5px;
+}
+
+/* v4: the same promise as a chip. The title is the part that changes and the
+   part the operator checks, so it gets the room; "Screenshot" stays on the
+   surface because it is the thing being agreed to, not a decoration. */
+.zv-reading-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  max-width: 100%;
+  padding: 3px 9px 3px 6px;
+  border: 1px solid var(--zv-line);
+  border-radius: 999px;
+  background: var(--zv-chip-bg);
+}
+.zv-reading-chip svg {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 auto;
+  opacity: 0.75;
+}
+.zv-reading-kind {
+  flex: 0 0 auto;
+  font-weight: 550;
+  color: var(--zv-fg);
+}
+.zv-reading-what {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Accent is now ink, which is near enough to --zv-fg that colour alone no
+   longer says "this is a control". The underline carries the affordance the
+   blue used to. Same for .zv-banner-btn and .zv-settings-back below. */
+.zv-reread {
+  background: none;
+  border: 0;
+  color: var(--zv-accent);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.zv-reread:disabled {
+  color: var(--zv-muted);
+  cursor: default;
+  text-decoration: none;
+}
+
+/* ── banner + notes ─────────────────────────────────────────────────────── */
+
+.zv-banner {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--zv-banner-bg);
+  border-bottom: 1px solid var(--zv-banner-line);
+  font-size: 12px;
+  padding: 7px 12px;
+  flex: 0 0 auto;
+}
+
+.zv-banner strong {
+  font-weight: 600;
+}
+
+.zv-banner-btn {
+  background: none;
+  border: 0;
+  color: var(--zv-accent);
+  cursor: pointer;
+  flex: 0 0 auto;
+  font-size: 12px;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.zv-note {
+  color: var(--zv-muted);
+  font-size: 12px;
+  margin: 0;
+  padding: 6px 12px 0;
+}
+
+.zv-error {
+  color: var(--zv-danger);
+  font-size: 12px;
+  margin: 0;
+  padding: 6px 12px;
+}
+
+/* ── thread ─────────────────────────────────────────────────────────────── */
+
+.zv-thread {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* A new thread. The mark, one line, and a lot of nothing: the composer is the
+   only thing to do here and it is already pinned at the bottom. */
+.zv-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin: auto 0;
+  padding: 0 8px;
+  text-align: center;
+}
+
+.zv-empty-mark {
+  /* Same reason as .zv-consent-mark: an SVG in a scrolling flex column. */
+  flex: 0 0 auto;
+  color: var(--zv-fg);
+  opacity: 0.85;
+}
+
+.zv-empty-line {
+  color: var(--zv-muted);
+  font-size: 13px;
+  margin: 0;
+}
+
+.zv-msg {
+  border-radius: 10px;
+  padding: 8px 10px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  /* The one surface in the panel that is READ rather than scanned, so it gets
+     its own size and leading instead of the 13px/1.45 chrome default. Half a
+     pixel and a tenth of leading is not much on paper; across a twelve-line
+     reply in a 400px column it is the difference between a wall and a
+     paragraph. */
+  font-size: 13.5px;
+  line-height: 1.55;
+  /* Chrome-only surface, so this is safe to rely on: it balances the last two
+     lines instead of leaving one word alone on its own line, which at this
+     width happens constantly. */
+  text-wrap: pretty;
+}
+
+/*
+ * The two speakers are told apart by SHAPE, not by two greys a hair apart.
+ * Rendering both as cards in near-identical fills meant the card did no work:
+ * the eye had to fall back on the "You"/"Zavi" label to know who was talking.
+ * The question the operator asked is a short tinted card; the answer is plain
+ * text on the panel, which is also what gives a long reply room to breathe.
+ */
+.zv-msg-user {
+  background: var(--zv-user-bg);
+}
+
+.zv-msg-agent {
+  background: none;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.zv-msg-copy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 4px;
+  margin-left: -4px;
+  padding: 4px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--zv-muted);
+  cursor: pointer;
+}
+.zv-msg-copy:hover {
+  background: var(--zv-user-bg);
+  color: var(--zv-fg);
+}
+.zv-msg-copy:focus-visible {
+  outline: 2px solid var(--zv-accent);
+  outline-offset: 1px;
+}
+
+.zv-msg-who {
+  display: block;
+  color: var(--zv-muted);
+  font-size: 11px;
+  margin-bottom: 2px;
+}
+
+/* ── the wait ───────────────────────────────────────────────────────────────
+   Replaces a single static line with: what the run actually did, an animated
+   line saying it is still going, and a skeleton where the answer will land.
+   The void under the old line was the thing that read as "hung". */
+.zv-wait {
+  margin: 2px 0 4px;
+}
+
+.zv-steps {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+  font-size: 12.5px;
+}
+.zv-step {
+  display: flex;
+  gap: 7px;
+  align-items: flex-start;
+  padding: 2px 0;
+  color: var(--zv-muted);
+}
+.zv-step-tick {
+  width: 12px;
+  flex: 0 0 auto;
+  text-align: center;
+  line-height: 1.5;
+}
+/* Done is the resting state and stays quiet — a list of green ticks in a 400px
+   column shouts louder than the answer. Colour is reserved for the failure. */
+.zv-step-done .zv-step-tick {
+  color: var(--zv-fg);
+}
+.zv-step-running {
+  color: var(--zv-fg);
+  font-weight: 550;
+}
+.zv-step-failed .zv-step-tick,
+.zv-step-failed .zv-step-note {
+  color: #b42318;
+}
+.zv-step-label {
+  min-width: 0;
+}
+.zv-step-note {
+  font-size: 11.5px;
+}
+/* The agent's own sentence (2026-09-19). Full-strength text at reading size:
+   this is the line the eye should land on; the ticked work under it is quieter. */
+.zv-thought {
+  list-style: none;
+  padding: 5px 0 2px;
+  color: var(--zv-fg);
+  line-height: 1.5;
+}
+/* The plan summary standing in for a sentence the model never said: an
+   instruction it wrote to itself, so it is quiet context, not speech. */
+.zv-thought-plan {
+  color: var(--zv-muted);
+  font-size: 12px;
+}
+
+.zv-thinking {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--zv-muted);
+  font-size: 12px;
+  margin: 0 0 8px;
+}
+
+/* Three dots, because a spinner at this size is a smudge and the panel already
+   has no other motion. Reduced-motion turns the travel off but keeps the fade,
+   so the line still reads as live rather than frozen. */
+.zv-dots {
+  display: inline-flex;
+  gap: 3px;
+  flex: 0 0 auto;
+}
+.zv-dots i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: currentColor;
+  display: block;
+  opacity: 0.3;
+  animation: zv-bounce 1.2s infinite ease-in-out;
+}
+.zv-dots i:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.zv-dots i:nth-child(3) {
+  animation-delay: 0.3s;
+}
+@keyframes zv-bounce {
+  0%,
+  60%,
+  100% {
+    opacity: 0.25;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+}
+
+.zv-skel {
+  height: 10px;
+  border-radius: 5px;
+  margin: 0 0 7px;
+  background: linear-gradient(
+    90deg,
+    var(--zv-skel-a) 25%,
+    var(--zv-skel-b) 37%,
+    var(--zv-skel-a) 63%
+  );
+  background-size: 400% 100%;
+  animation: zv-shimmer 1.4s infinite linear;
+}
+@keyframes zv-shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: 0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zv-dots i,
+  .zv-skel {
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+  }
+  .zv-dots i {
+    opacity: 0.55;
+  }
+}
+
+/* ── composer ───────────────────────────────────────────────────────────── */
+
+/* One rounded frame holding the field and the send button, so the composer
+   reads as a single control instead of a box next to a button. The frame owns
+   the border and the focus ring; the textarea inside it is naked. */
+
+.zv-composer {
+  /* The thread above scrolls. Without this edge a scrolled message runs
+     straight into the composer's padding with nothing between them. */
+  border-top: 1px solid var(--zv-line);
+  display: flex;
+  padding: 8px 12px 12px;
+  flex: 0 0 auto;
+}
+
+.zv-field {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  flex: 1 1 auto;
+  min-width: 0;
+  border: 1px solid var(--zv-line);
+  border-radius: 16px;
+  background: var(--zv-bg);
+  padding: 6px 6px 6px 4px;
+  transition: border-color 120ms ease;
+}
+
+.zv-field:focus-within {
+  border-color: var(--zv-accent);
+}
+
+.zv-input {
+  flex: 1 1 auto;
+  resize: none;
+  border: 0;
+  background: none;
+  color: var(--zv-fg);
+  font: inherit;
+  padding: 6px 4px 6px 9px;
+  min-width: 0;
+}
+
+.zv-input::placeholder {
+  color: var(--zv-muted);
+}
+
+/* The frame carries focus, so a second ring on the textarea would draw a box
+   inside a box. This is the one place the shared :focus-visible rule is opted
+   out of, deliberately.
+
+   `.zv-composer` is on the selector for a reason: the shared rule below is
+   `.zv-composer :focus-visible`, which is the SAME specificity (0,2,0) and
+   comes later, so it would win the tie and paint the inner ring anyway. The
+   extra class makes this (0,3,0) and the opt-out real. */
+.zv-composer .zv-input:focus-visible {
+  outline: none;
+}
+
+.zv-send {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--zv-accent);
+  color: var(--zv-on-accent);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+/* Visibly off until there is something to send. Not hidden: a control that
+   disappears makes the person wonder whether they broke it. */
+.zv-send:disabled {
+  background: var(--zv-line);
+  color: var(--zv-muted);
+  cursor: default;
+}
+
+/* ── the two full-screen states: sign in, and first run ─────────────────────
+   One frame for both, because they are the first two things a new person sees
+   and they should read as one product: a scrolling body with the brand mark,
+   a title and the argument, over a pinned action bar. Pinning the actions is
+   not decoration — it is what keeps the primary button in the same place while
+   the body above it changes between asking, waiting and refused. */
+
+.zv-screen {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.zv-screen-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 18px 20px 20px;
+}
+
+/* A screen's mark. It used to be a 12px muted "Zavi" in text; it is the drawn
+   mark now, on every surface, so the rule is about size and position and no
+   longer about type.
+
+   TWO POSITIONS, ONE OBJECT. Sign-in keeps its title and lead left aligned, so
+   the mark sits on the title's own margin: centred above a left-aligned stack it
+   reads as a stray element rather than the top of one (measured before the fix:
+   mark at x=186, title at x=20). The consent screen centres its title, so there
+   the mark centres with it. Same size, same gap, both places. */
+.zv-screen-mark,
+.zv-consent-mark {
+  /* An SVG flex item has a min-content height of 0, so without this the mark
+     squashes toward nothing as soon as the body scrolls (three rows plus an
+     opened disclosure is the ordinary case, not an edge one). The v4 slot was
+     a text span, which had min-content protection this does not. */
+  flex: 0 0 auto;
+  color: var(--zv-fg);
+  margin-bottom: 12px;
+}
+
+.zv-screen-mark {
+  align-self: flex-start;
+}
+
+.zv-screen-title {
+  color: var(--zv-fg);
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.012em;
+  line-height: 1.25;
+  margin: 0 0 8px;
+  max-width: 22ch;
+}
+
+.zv-screen-lead {
+  color: var(--zv-fg);
+  font-size: 13.5px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.zv-screen-label {
+  color: var(--zv-fg);
+  font-size: 12px;
+  font-weight: 600;
+  margin: 18px 0 6px;
+}
+
+.zv-screen-copy {
+  color: var(--zv-muted);
+  font-size: 12.5px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.zv-screen-foot {
+  border-top: 1px solid var(--zv-line);
+  color: var(--zv-muted);
+  font-size: 11.5px;
+  line-height: 1.5;
+  margin: 18px 0 0;
+  padding-top: 12px;
+}
+
+/* What gets sent: three things, each with the qualifier that makes it true.
+   The rules are the information — they say "these are three separate items",
+   which six identical bullets never managed to. */
+
+.zv-ledger {
+  border: 1px solid var(--zv-line);
+  border-radius: 9px;
+  margin: 0;
+  overflow: hidden;
+}
+
+.zv-ledger-row {
+  display: grid;
+  grid-template-columns: 74px 1fr;
+  gap: 2px 10px;
+  padding: 9px 11px;
+}
+
+.zv-ledger-row + .zv-ledger-row {
+  border-top: 1px solid var(--zv-line);
+}
+
+.zv-ledger dt {
+  color: var(--zv-fg);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.zv-ledger dd {
+  color: var(--zv-muted);
+  font-size: 12.5px;
+  line-height: 1.45;
+  margin: 0;
+}
+
+/* Three rows, one idea each, each on its own slab. v4's tick list put all three
+   ideas in one column of running text at one weight; a person scanning it had
+   to read every word to find out which line was the one that mattered. A slab
+   per idea plus an icon to sort them by means the warning is findable before
+   it is read. */
+
+.zv-rows {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.zv-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: var(--zv-card);
+  border-radius: 12px;
+  padding: 11px 12px;
+}
+
+.zv-row-icon {
+  flex: 0 0 auto;
+  color: var(--zv-muted);
+  margin-top: 1px;
+}
+
+.zv-row-text {
+  color: var(--zv-fg);
+  font-size: 12.5px;
+  line-height: 1.45;
+  margin: 0;
+  min-width: 0;
+}
+
+/* The third row. Warm, not loud: it is a thing to know, not an error state, and
+   an alarm-coloured block on a first-run screen teaches people to click past
+   warnings. The icon takes the same ink as the text so the row reads as one. */
+.zv-row-warn {
+  background: var(--zv-warn-bg);
+}
+
+.zv-row-warn .zv-row-text,
+.zv-row-warn .zv-row-icon {
+  color: var(--zv-warn-fg);
+}
+
+/* The full disclosure, closed. v3 put all of this on the surface at the same
+   weight as the decision, which is how a product screen turns into a form. It
+   is all still here, and the summary says what is inside so opening it is a
+   choice rather than a hunt. */
+
+.zv-disclose {
+  border-top: 1px solid var(--zv-line);
+  margin-top: 14px;
+}
+
+.zv-disclose > summary {
+  color: var(--zv-fg);
+  cursor: pointer;
+  font-size: 12.5px;
+  font-weight: 600;
+  list-style: none;
+  padding: 10px 18px 10px 0;
+  position: relative;
+}
+
+.zv-disclose > summary::-webkit-details-marker {
+  display: none;
+}
+
+/* A chevron, rotated when open. Cheaper than an icon file and it inherits. */
+.zv-disclose > summary::after {
+  content: "";
+  position: absolute;
+  right: 4px;
+  top: 14px;
+  width: 6px;
+  height: 6px;
+  border-right: 1.5px solid var(--zv-muted);
+  border-bottom: 1.5px solid var(--zv-muted);
+  transform: rotate(45deg);
+  transition: transform 120ms ease;
+}
+
+.zv-disclose[open] > summary::after {
+  transform: rotate(-135deg);
+  top: 16px;
+}
+
+.zv-disclose-body {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding-bottom: 12px;
+}
+
+/* Chrome's own words, quoted so the dialog holds no surprise. */
+.zv-chrome-quote {
+  background: var(--zv-agent-bg);
+  border-radius: 8px;
+  color: var(--zv-fg);
+  font-size: 12.5px;
+  line-height: 1.45;
+  margin: 0;
+  padding: 9px 11px;
+}
+
+/* ── action bar (shared by both screens) ────────────────────────────────── */
+
+.zv-screen-actions {
+  background: var(--zv-bg);
+  border-top: 1px solid var(--zv-line);
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
+  gap: 2px;
+  padding: 12px 20px 14px;
+}
+
+.zv-primary {
+  background: var(--zv-accent);
+  border: 0;
+  border-radius: 8px;
+  color: var(--zv-on-accent);
+  cursor: pointer;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  padding: 11px 12px;
+  transition: opacity 120ms ease;
+  width: 100%;
+}
+
+.zv-primary:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+/* One decision, so the button is sized like a decision and not like a bar.
+   A full-bleed slab reads as "the screen ends here"; this reads as "press
+   this". min-width keeps "Waiting for Chrome..." from making it jump. */
+.zv-primary-pill {
+  border-radius: 999px;
+  min-width: 156px;
+  max-width: 100%;
+  padding-left: 28px;
+  padding-right: 28px;
+  width: auto;
+}
+
+.zv-screen-actions-centered {
+  align-items: center;
+}
+
+.zv-screen-actions-centered .zv-quiet,
+.zv-screen-actions-centered .zv-screen-status,
+.zv-screen-actions-centered .zv-legal {
+  align-self: stretch;
+}
+
+.zv-quiet {
+  background: none;
+  border: 0;
+  border-radius: 8px;
+  color: var(--zv-muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 12.5px;
+  padding: 8px;
+  width: 100%;
+}
+
+.zv-quiet:hover:not(:disabled) {
+  color: var(--zv-fg);
+}
+
+.zv-quiet:disabled {
+  cursor: default;
+  opacity: 0.65;
+}
+
+/* Always occupied, so the buttons above never move when the state changes. */
+.zv-screen-status {
+  min-height: 1.5em;
+}
+
+/* Small and quiet, under the buttons, where a footnote belongs. It is not part
+   of the decision, it is the thing the decision is subject to. */
+.zv-legal {
+  color: var(--zv-muted);
+  font-size: 11px;
+  line-height: 1.45;
+  margin: 6px 0 0;
+  text-align: center;
+}
+
+.zv-legal a {
+  color: var(--zv-muted);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.zv-legal a:hover {
+  color: var(--zv-fg);
+}
+
+.zv-hint {
+  color: var(--zv-muted);
+  font-size: 11.5px;
+  line-height: 1.45;
+  margin: 0;
+  text-align: center;
+}
+
+.zv-denied {
+  animation: zv-fade-in 140ms ease-out;
+  color: var(--zv-fg);
+  font-size: 12px;
+  line-height: 1.45;
+  margin: 0;
+  padding-top: 2px;
+}
+
+@keyframes zv-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.zv-screen :focus-visible,
+.zv-composer :focus-visible {
+  outline: 2px solid var(--zv-accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zv-denied {
+    animation: none;
+  }
+  .zv-primary,
+  .zv-icon-btn,
+  .zv-field,
+  .zv-send,
+  .zv-disclose > summary::after {
+    transition: none;
+  }
+}
+
+/* Chrome lets the panel go narrower than its default. Stack the ledger rather
+   than squeeze a 74px column against a 3-word line. */
+@media (max-width: 340px) {
+  .zv-screen-body,
+  .zv-screen-actions {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+  .zv-ledger-row {
+    grid-template-columns: 1fr;
+  }
+  /* Narrower gutters, but the pill keeps its auto width: even the longest
+     label ("Waiting for Chrome...") is well inside 320px, and a full-bleed
+     slab down here would read as the end of the screen rather than a button. */
+  .zv-primary-pill {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+}
+
+.zv-signin-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* A side panel is tall and this screen is short, so top-aligning it leaves a
+   void between the last summary and the pinned actions. Auto margins centre it
+   instead, and unlike justify-content: center they collapse to 0 the moment a
+   <details> is opened, so the overflowing top stays scrollable. */
+.zv-consent-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.zv-consent-body > :first-child {
+  margin-top: auto;
+}
+
+.zv-consent-body > :last-child {
+  margin-bottom: auto;
+}
+
+/* ── first-run / consent screen ─────────────────────────────────────────────
+   Its own screen, not a modal: chrome.permissions.request() needs a live user
+   gesture, and a gesture does not survive a modal that renders and then awaits
+   an answer. It uses the .zv-screen frame above; only these two hooks are its
+   own, and they exist because the tests and App.tsx address them by name. */
+
+.zv-consent-accept,
+.zv-consent-decline {
+  /* Appearance comes from .zv-primary / .zv-quiet. */
+  margin: 0;
+}
+
+/* The mark and the title are the only centred things on the screen. The rows
+   below are left-aligned because they are sentences to read, not a heading.
+   Colour and gap come from the shared .zv-screen-mark rule above. */
+.zv-consent-mark {
+  align-self: center;
+}
+
+.zv-consent-title {
+  align-self: center;
+  max-width: 100%;
+  text-align: center;
+}
+
+/* Inside the disclosure, Chrome's explainer needs a name of its own. v4 gave it
+   a second <summary>, which meant two closed toggles competing for one glance
+   under three rows that were already doing the explaining. */
+.zv-disclose-heading {
+  color: var(--zv-fg);
+  font-size: 12.5px;
+  font-weight: 600;
+  margin: 4px 0 0;
+}
+
+/* A normal outcome, not a fault. The daily page-read cap lands here. Styling a
+   budget you were given as an error teaches people to distrust the panel. */
+.zv-notice {
+  padding-bottom: 6px;
+}
+
+/* ── settings screen ────────────────────────────────────────────────────────
+   Its own screen in place of the thread, like the consent screen, so the one
+   destructive control in the product is never a stray click away from the
+   composer. See components/SettingsScreen.tsx. */
+
+.zv-settings {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 14px 12px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.zv-settings-title {
+  color: var(--zv-fg);
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.zv-settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.zv-settings-heading {
+  color: var(--zv-fg);
+  font-size: 12.5px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.zv-settings-copy {
+  color: var(--zv-muted);
+  font-size: 12.5px;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.zv-settings-done {
+  color: var(--zv-fg);
+  font-size: 12.5px;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.zv-settings-danger {
+  align-self: flex-start;
+  background: none;
+  border: 1px solid var(--zv-line);
+  border-radius: 7px;
+  color: var(--zv-danger);
+  cursor: pointer;
+  font-size: 12.5px;
+  padding: 7px 10px;
+}
+
+.zv-settings-danger:disabled {
+  cursor: default;
+  opacity: 0.65;
+}
+
+.zv-settings-confirm-box {
+  border: 1px solid var(--zv-line);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+}
+
+.zv-settings-confirm-ask {
+  color: var(--zv-fg);
+  font-size: 12.5px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.zv-settings-confirm {
+  background: var(--zv-danger);
+  border: 0;
+  border-radius: 7px;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 8px 10px;
+}
+
+.zv-settings-confirm:disabled {
+  cursor: default;
+  opacity: 0.65;
+}
+
+.zv-settings-cancel,
+.zv-settings-signout,
+.zv-settings-back {
+  align-self: flex-start;
+  background: none;
+  border: 0;
+  color: var(--zv-muted);
+  cursor: pointer;
+  font-size: 12.5px;
+  padding: 2px;
+}
+
+.zv-settings-back {
+  color: var(--zv-accent);
+  margin-top: auto;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.zv-settings-cancel:disabled,
+.zv-settings-signout:disabled,
+.zv-settings-back:disabled {
+  cursor: default;
+  opacity: 0.65;
+}
+
+/* ── approval cards (v2) ────────────────────────────────────────────────── */
+
+.zv-approval {
+  border: 1px solid var(--zv-banner-line);
+  background: var(--zv-banner-bg);
+  border-radius: 10px;
+  padding: 10px;
+  margin: 8px 0;
+  font-size: 12.5px;
+}
+
+.zv-approval p {
+  margin: 0 0 6px;
+}
+
+.zv-approval-kicker {
+  font-size: 10.5px;
+  /* 600 not 700: only the 400 and 600 subsets ship, and a 700 request with a
+     family match resolves down rather than synthesising bold. */
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--zv-muted);
+}
+
+.zv-approval-title {
+  font-weight: 600;
+}
+
+.zv-approval-summary {
+  white-space: pre-wrap;
+}
+
+.zv-approval-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.zv-approval-actions button {
+  flex: 1;
+  border: 1px solid var(--zv-line);
+  border-radius: 7px;
+  background: var(--zv-bg);
+  color: var(--zv-fg);
+  cursor: pointer;
+  font-size: 12.5px;
+  padding: 6px 8px;
+}
+
+.zv-approval-actions .zv-approval-approve,
+.zv-approval-actions .zv-approval-shipanyway {
+  background: var(--zv-accent);
+  border-color: var(--zv-accent);
+  color: var(--zv-on-accent);
+}
+
+.zv-approval-actions button:disabled {
+  cursor: default;
+  opacity: 0.65;
+}
+
+.zv-approval-warn p {
+  color: var(--zv-danger);
+}
+
+.zv-approval-note {
+  color: var(--zv-muted);
+}
+
+/* ── the agent reply's markdown subset ──────────────────────────────────────
+   components/Markup.tsx maps panel/markup.ts's structure to nodes. These rules
+   exist because the browser's defaults for <p>/<ul>/<ol> are a 1em margin and a
+   40px indent, which in a 400px panel turns a three-bullet answer into a page.
+
+   The container turns pre-wrap OFF and each leaf turns it back on. The model's
+   own line breaks inside a paragraph or a bullet still survive; the whitespace
+   BETWEEN blocks is the stylesheet's to own, not the model's. */
+
+.zv-md {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  white-space: normal;
+}
+
+.zv-md-p {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.zv-md-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 0;
+  /* Enough to hang the marker outside the text without a gutter. */
+  padding-left: 18px;
+}
+
+.zv-md-list li {
+  white-space: pre-wrap;
+}
+
+.zv-md-list li::marker {
+  color: var(--zv-muted);
+}
+
+/* 600, not 700. The bold in these replies is a label ("Role:", a name), so it
+   has to separate from the line without shouting over it. */
+.zv-md-strong {
+  font-weight: 600;
+}
+
+/* A tight chip. The padding is deliberately small: a code run is often followed
+   immediately by a full stop, and 4px of background either side reads as a
+   stray space before the punctuation. */
+.zv-md-code {
+  background: var(--zv-card);
+  border-radius: 4px;
+  font-family: var(--zv-font-mono);
+  font-size: 0.9em;
+  padding: 1px 3px;
+}
+
+/* Ink, not a link blue: the panel has no blue. The underline is the affordance,
+   the same call the header's controls make. Only ever http/https — markup.ts
+   emits no other kind of link. */
+.zv-md-link {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  word-break: break-word;
+}
+
+.zv-md-link:hover {
+  color: var(--zv-accent);
+}
+
+/* ── type: which face goes where ────────────────────────────────────────────
+   LAST in the file on purpose. Several controls set `font: inherit` to pick up
+   the panel's size and family, and this rule has to land after them or the
+   shorthand resets the family back to the UI stack.
+
+   The display face is for the things you LOOK AT — the wordmark, titles,
+   section headings, the summary that opens the disclosure, and the buttons.
+   Everything else — chat messages, inputs, labels, hints, legal, the thinking
+   line — stays on the UI stack, which is the face the OS hints for 12-13px.
+
+   The bold face only ships at 400 and 600, so nothing here may ask for 700. */
+
+.zv-brand,
+.zv-screen-title,
+.zv-screen-label,
+.zv-settings-title,
+.zv-settings-heading,
+.zv-disclose > summary,
+.zv-disclose-heading,
+.zv-ledger dt,
+.zv-approval-kicker,
+.zv-approval-title,
+.zv-primary,
+.zv-quiet,
+.zv-settings-danger,
+.zv-settings-confirm,
+.zv-approval-actions button {
+  font-family: var(--zv-font-display);
+}
+
+/* ── Crash screen ──────────────────────────────────────────────────────────
+   Shown when the panel cannot render itself (ErrorBoundary, or the window-level
+   handlers in index.tsx). Uses the same tokens as everything else so it is not
+   a second, unstyled product — but stays flat and unadorned: a crash screen
+   that looks designed reads as though the crash was expected.
+
+   The detail block scrolls in BOTH directions and wraps, because a minified
+   stack has no short lines and a panel is ~400px wide. It must never be the
+   thing that clips the one piece of text worth reporting. */
+.zv-crash {
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+  box-sizing: border-box;
+  overflow: auto;
+}
+.zv-crash-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  color: var(--zv-fg);
+}
+.zv-crash-lead {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--zv-muted);
+}
+.zv-crash-detail {
+  margin: 0;
+  flex: 1 1 auto;
+  min-height: 80px;
+  padding: 10px;
+  border: 1px solid var(--zv-line);
+  border-radius: 8px;
+  background: var(--zv-bg);
+  color: var(--zv-fg);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow: auto;
+  user-select: text;
+}
+.zv-crash-actions {
+  display: flex;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+.zv-crash-primary {
+  flex: 1 1 auto;
+  padding: 9px 14px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--zv-accent);
+  color: var(--zv-on-accent);
+  /* Longhand, NOT `font: inherit`. The shorthand resets font-family, and
+     styles.test.ts pins that the display-face rule must come after every
+     `font: inherit` in the file — a rule added at the END of the stylesheet
+     cannot satisfy that, and weakening the guard to let it would give up the
+     ordering discipline that keeps controls off the display face. */
+  font-family: var(--zv-font-ui);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.zv-crash-quiet {
+  flex: 0 0 auto;
+  padding: 9px 14px;
+  border: 1px solid var(--zv-line);
+  border-radius: 999px;
+  background: none;
+  color: var(--zv-fg);
+  font-family: var(--zv-font-ui);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+/* ── Zavi working in this tab (PLAN-extension-browser-control S2) ───────────
+   Sits under the header while Zavi holds the debugger on this tab. One line and
+   one button: what is happening, and how to make it stop. */
+.zv-workbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--zv-line);
+  font-size: 12.5px;
+  color: var(--zv-fg);
+}
+.zv-workbar-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-weight: 550;
+}
+.zv-workbar-stop {
+  flex: 0 0 auto;
+  background: none;
+  border: 1px solid var(--zv-line);
+  border-radius: 6px;
+  color: var(--zv-fg);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 3px 10px;
+}
+.zv-workbar-stop:hover {
+  border-color: var(--zv-fg);
+}
+.zv-tabsteps {
+  margin: 2px 0 6px;
+}
+.zv-tabsteps-note {
+  color: var(--zv-fg);
+  font-size: 12.5px;
+  margin: 0 0 4px;
+}

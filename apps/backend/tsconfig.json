@@ -1,0 +1,37 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "declaration": false,
+    "sourceMap": true,
+    "outDir": "./dist",
+    // NOTE: no `rootDir` here. This config is typecheck-only (`tsc --noEmit`),
+    // and it resolves `@zavi/shared` to package SOURCE via the `paths` below so
+    // typecheck/vitest/tsx need no prebuild. A `rootDir` would trip TS6059 the
+    // moment that shared source is pulled in (Gap 4 slice 0). Emit-layout rootDir
+    // lives in tsconfig.build.json, which resolves @zavi/shared via the built
+    // package (dist) instead so it stays under rootDir.
+    "incremental": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@zavi/shared": ["../../packages/shared/src/index.ts"],
+      "@zavi/shared/*": ["../../packages/shared/src/*"]
+    }
+  },
+  "include": ["server.ts", "src/**/*", "workers/**/*", "scripts/**/*"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "src/services/provisioning/templates/*/files/**",
+    "src/services/provisioning/templates/*/__tests__/**"
+  ]
+}

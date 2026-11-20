@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 2,
+  "roles": [],
+  "capabilities": [],
+  "actions": {},
+  "aggregates": {
+    "signups": {
+      "collection": "early_access",
+      "fn": "count",
+      "principals": [
+        "admin"
+      ]
+    }
+  },
+  "collections": {
+    "early_access": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "admin"
+        ],
+        "get": [
+          "admin"
+        ],
+        "create": [
+          "anyone"
+        ],
+        "update": [
+          "admin"
+        ],
+        "delete": [
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "email": {
+            "type": "string",
+            "maxLength": 320,
+            "format": "email"
+          },
+          "city": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "looking_for": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 14,
+              "enum": [
+                "riding_partner",
+                "romance",
+                "friendship",
+                "horse_share",
+                "trainer"
+              ]
+            },
+            "maxItems": 5
+          },
+          "horses": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 50
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "name",
+          "email",
+          "looking_for"
+        ]
+      },
+      "fields": {},
+      "indexes": {
+        "email": {
+          "type": "text",
+          "ops": [
+            "eq"
+          ],
+          "sort": false
+        }
+      },
+      "unique": [],
+      "references": {}
+    }
+  }
+}

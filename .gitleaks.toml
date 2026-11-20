@@ -1,0 +1,75 @@
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Audited non-secrets: test fixtures, redactor patterns, sandbox dummies, secret names"
+
+commits = [
+  "20cd713495f5b0fa90d034eb5240f0b5fb4f5ddc",
+  "62e5f867d607ea78dd19d45a015c09098a9a1bfe",
+  "80f00959d15eddad3d50dd11b08b15e0c61ad8f2",
+]
+
+paths = [
+  '''(^|/)__tests__/''',
+  '''\.test\.ts$''',
+  '''\.test\.tsx$''',
+
+  '''(^|/)tests/.*\.py$''',
+
+  '''^apps/backend/scripts/''',
+
+  '''^infra/site-shard/migrations/frozen\.json$''',
+  '''^scripts/ci/site-isolation-deps\.sh$''',
+  '''^apps/backend/src/services/site-shards/migration-protocol\.ts$''',
+
+  '''engineer/helper-detection\.ts$''',
+
+  '''^docs/design/09-api-contracts\.md$''',
+  '''^docs/superpowers/plans/''',
+  '''^docs/rebrand-zavi/''',
+
+  '''^apps/mobile/google-services\.json$''',
+  '''^infra/site-shard/migrations/0005_contracts_archive_reindex\.sql$''',
+  '''^infra/site-shard/auth/test/run\.sh$''',
+]
+
+regexes = [
+  '''figd_0123456789abcdef''',
+
+  '''sk_test_zaviPreviewSanitizedDisabled\w*''',
+  '''xoxb-zavi-preview-sanitized-disabled''',
+  '''postgres://preview:disabled@127\.0\.0\.1:1/preview_disabled''',
+
+  '''praxis-envprod-1''',
+
+  '''ConnectorOAuth''',
+
+  '''UseCaseChannel''',
+
+  '''linkedinTables''',
+
+  '''linkedinJudgedOn''',
+
+  '''sb_publishable_[A-Za-z0-9_-]+''',
+
+  '''MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A[A-Za-z0-9+/=]+''',
+
+  '''^0009_recipient_cap_quota$''',
+]
+
+[[allowlists]]
+description = "sha256 digest lines (tarball pins, frozen migration ledger)"
+regexTarget = "line"
+regexes = [
+  '''^\s*(pg|rest|auth)_art="(embedded-postgres-binaries|postgrest|auth)-[A-Za-z0-9.${}_-]+"; (pg|rest|auth)_sha=[0-9a-f]{64}\s*$''',
+  '''^\s*"[0-9]{4}_[a-z0-9_]+": "[0-9a-f]{64}",?\s*$''',
+]
+
+[[allowlists]]
+description = "LinkedIn Ads list_campaigns dynamic import line: linkedinCampaign is a function name, not a client secret"
+regexTarget = "line"
+regexes = [
+  '''^\s*const \{ goneLinkedinCampaignIds, linkedinCampaign \} = await import\("@/services/ads-wallet/adapters/linkedin"\);\s*$''',
+]

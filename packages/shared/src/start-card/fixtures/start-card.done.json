@@ -1,0 +1,260 @@
+{
+  "public_id": "fx7Kq2mZr9TbLw4N",
+  "domain": "brightloaf.example",
+  "locale": "US",
+  "search_term": "sourdough bakery portland",
+  "status": "done",
+  "parts": {
+    "profile": {
+      "state": "done",
+      "evidence": {
+        "company_name": "Brightloaf Bakery",
+        "category": "artisan bakery",
+        "search_term": "sourdough bakery portland",
+        "country": "US",
+        "country_from": "address",
+        "rivals": [
+          {
+            "name": "Crumbhouse",
+            "domain": "crumbhouse.example",
+            "no_site": false,
+            "source_url": "https://news.example/best-bakeries-portland"
+          },
+          {
+            "name": "Rolling Pin Co",
+            "domain": "rollingpin.example",
+            "no_site": false,
+            "source_url": "https://news.example/best-bakeries-portland"
+          },
+          {
+            "name": "Oven & Ash",
+            "domain": null,
+            "no_site": true,
+            "source_url": "https://blog.example/portland-bread-guide"
+          }
+        ],
+        "country_label": "United States",
+        "city": "Portland"
+      },
+      "fetched_at": "2026-09-27T17:00:28.000Z"
+    },
+    "google": {
+      "state": "done",
+      "evidence": {
+        "search_term": "sourdough bakery portland",
+        "locale": "US",
+        "results_checked": 100,
+        "position": 6,
+        "rivals": [
+          {
+            "domain": "crumbhouse.example",
+            "position": 2
+          },
+          {
+            "domain": "rollingpin.example",
+            "position": null
+          }
+        ],
+        "top_domains": [
+          "crumbhouse.example",
+          "news.example",
+          "bakerymap.example"
+        ],
+        "note": "#6 on Google for “sourdough bakery portland”."
+      },
+      "points": 15,
+      "max_points": 20,
+      "fetched_at": "2026-09-27T17:00:51.000Z"
+    },
+    "ai": {
+      "state": "done",
+      "evidence": {
+        "prompt": "What are the best artisan bakeries in Portland?",
+        "engines": [
+          {
+            "engine": "chatgpt",
+            "answered": true,
+            "mentioned": true,
+            "rivals_mentioned": [
+              "crumbhouse.example",
+              "rollingpin.example"
+            ]
+          },
+          {
+            "engine": "gemini",
+            "answered": true,
+            "mentioned": false,
+            "rivals_mentioned": [
+              "crumbhouse.example"
+            ]
+          },
+          {
+            "engine": "perplexity",
+            "answered": true,
+            "mentioned": true,
+            "rivals_mentioned": [
+              "rollingpin.example"
+            ]
+          },
+          {
+            "engine": "claude",
+            "answered": true,
+            "mentioned": false,
+            "rivals_mentioned": [
+              "crumbhouse.example"
+            ]
+          }
+        ],
+        "note": "Named by 2 of 4 AI assistants (ChatGPT and Perplexity)."
+      },
+      "points": 10,
+      "max_points": 20,
+      "fetched_at": "2026-09-27T17:01:12.000Z"
+    },
+    "seo": {
+      "state": "done",
+      "evidence": {
+        "pages_checked": [
+          "https://brightloaf.example/",
+          "https://brightloaf.example/menu",
+          "https://brightloaf.example/about",
+          "https://brightloaf.example/contact"
+        ],
+        "title": "Brightloaf Bakery | Sourdough in Portland",
+        "meta_description": null,
+        "h1_count": 1,
+        "schema_types": [
+          "Bakery",
+          "LocalBusiness"
+        ],
+        "robots_allows_root": true,
+        "sitemap_found": true,
+        "broken_links": [
+          {
+            "url": "https://brightloaf.example/catering",
+            "status": 404
+          }
+        ],
+        "rivals": [
+          {
+            "domain": "crumbhouse.example",
+            "points": 16
+          },
+          {
+            "domain": "rollingpin.example",
+            "points": 17
+          }
+        ],
+        "note": "No meta description and 1 broken link (homepage read, 4 pages checked for broken links)."
+      },
+      "points": 13,
+      "max_points": 20,
+      "fetched_at": "2026-09-27T17:00:44.000Z"
+    },
+    "design": {
+      "state": "done",
+      "evidence": {
+        "pagespeed": {
+          "performance": 72,
+          "accessibility": 88
+        },
+        "render": {
+          "cta_above_fold": true,
+          "body_text_px": 16,
+          "overlapping_boxes": false,
+          "horizontal_scroll": false
+        },
+        "rivals": [
+          {
+            "domain": "crumbhouse.example",
+            "render": {
+              "cta_above_fold": true,
+              "body_text_px": 15,
+              "overlapping_boxes": false,
+              "horizontal_scroll": false
+            },
+            "points": 20
+          },
+          {
+            "domain": "rollingpin.example",
+            "render": {
+              "cta_above_fold": false,
+              "body_text_px": 12,
+              "overlapping_boxes": true,
+              "horizontal_scroll": false
+            },
+            "points": 4
+          }
+        ],
+        "note": "Mobile speed 72/100, accessibility 88/100; phone screen passes all four checks."
+      },
+      "points": 15,
+      "max_points": 20,
+      "fetched_at": "2026-09-27T17:02:03.000Z"
+    },
+    "compare": {
+      "state": "done",
+      "evidence": {
+        "ranking": [
+          {
+            "domain": "crumbhouse.example",
+            "is_business": false,
+            "checks_total": 71,
+            "rank": 1
+          },
+          {
+            "domain": "brightloaf.example",
+            "is_business": true,
+            "checks_total": 53,
+            "rank": 2
+          },
+          {
+            "domain": "rollingpin.example",
+            "is_business": false,
+            "checks_total": 31,
+            "rank": 3
+          }
+        ],
+        "checks_used": [
+          "google",
+          "ai",
+          "seo",
+          "design"
+        ],
+        "note": "#2 of 3 against your competitors on Google, AI answers, SEO & basics and Design & UX."
+      },
+      "points": 10,
+      "max_points": 20,
+      "fetched_at": "2026-09-27T17:02:04.000Z"
+    },
+    "diagnosis": {
+      "state": "done",
+      "evidence": {
+        "constraint": {
+          "check_key": "ai",
+          "title": "Half the AI assistants don't name you",
+          "why": "Asked for the best artisan bakeries in Portland, Gemini and Claude listed Crumbhouse but not Brightloaf."
+        },
+        "action_this_week": {
+          "title": "Add a meta description and an FAQ with your neighbourhood and bakes",
+          "why": "Your homepage has no meta description, and AI answers lean on short, quotable descriptions of who you are and where."
+        }
+      },
+      "fetched_at": "2026-09-27T17:02:11.000Z"
+    }
+  },
+  "score": {
+    "total": 63,
+    "out_of": 100,
+    "by_check": {
+      "google": 15,
+      "ai": 10,
+      "seo": 13,
+      "design": 15,
+      "compare": 10
+    }
+  },
+  "scorer_version": "1",
+  "created_at": "2026-09-27T17:00:00.000Z",
+  "expires_at": "2026-12-26T17:00:00.000Z"
+}

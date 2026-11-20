@@ -1,0 +1,25 @@
+name = "${ZAVI_FN_DISPATCHER_WORKER_NAME}"
+main = "src/dispatcher.ts"
+compatibility_date = "2026-09-01"
+workers_dev = false
+
+routes = [{ pattern = "${ZAVI_FN_DISPATCH_HOST}/v1/invoke", zone_id = "${CLOUDFLARE_ZONE_ID}" }]
+
+[[dispatch_namespaces]]
+binding = "DISPATCH"
+namespace = "${ZAVI_FN_NAMESPACE}"
+outbound = { service = "${ZAVI_FN_OUTBOUND_WORKER_NAME}", parameters = ["zfn"] }
+
+[[kv_namespaces]]
+binding = "HOSTS"
+id = "${ZAVI_STATIC_KV_NAMESPACE_ID}"
+
+[[ratelimits]]
+name = "RL_FN_SITE"
+namespace_id = "${ZAVI_FN_RL_SITE_NS}"
+simple = { limit = 1200, period = 60 }
+
+[[analytics_engine_datasets]]
+binding = "FN_METRICS"
+dataset = "zavi_site_functions"
+

@@ -1,0 +1,89 @@
+{
+  "product": {
+    "name": "Upcar",
+    "oneLiner": "There's a car parked near you.",
+    "url": "https://upcar.ai"
+  },
+  "brand": {
+    "primaryColor": "#5B6CFF",
+    "accentColor": "#22D3EE",
+    "bgColor": "#0B0E14"
+  },
+  "audience": "people who need a car, makers and early adopters on Product Hunt",
+  "tone": "bold",
+  "cta": {
+    "text": "Find a car near you",
+    "url": "https://upcar.ai"
+  },
+  "aspect": "16:9",
+  "beats": [
+    {
+      "kind": "hook",
+      "durationFrames": 135,
+      "headline": "There's a car parked near you.",
+      "sub": "Meet Upcar.",
+      "vo": { "srtText": "There's probably a car parked near you right now. We built Upcar so you can rent it from the neighbor who owns it." }
+    },
+    {
+      "kind": "problem",
+      "durationFrames": 150,
+      "headline": "Car rental still works like it's 2005.",
+      "sub": "We wanted it to feel as easy as booking a place to stay, so we built it.",
+      "vo": { "srtText": "Renting a car still means a counter, a line, and fine print. We wanted it to feel as easy as booking a place to stay." }
+    },
+    {
+      "kind": "productui",
+      "durationFrames": 180,
+      "eyebrow": "Upcar",
+      "headline": "A car a few blocks away.",
+      "domain": "upcar.ai",
+      "header": { "title": "Cars near you", "searchPlaceholder": "Search cars in Austin, TX" },
+      "items": [
+        { "glyph": "car", "title": "Tesla Model 3", "chips": ["$61/day", "4.9 stars", "Austin TX"] },
+        { "glyph": "car", "title": "Jeep Wrangler", "chips": ["$74/day", "4.8 stars", "Phoenix AZ"] },
+        { "glyph": "car", "title": "Toyota Camry", "chips": ["$43/day", "5.0 stars", "Tampa FL"] }
+      ],
+      "vo": { "srtText": "Open Upcar, find a car from a local host a few blocks away, and book it in about two minutes." }
+    },
+    {
+      "kind": "cardwall",
+      "durationFrames": 168,
+      "eyebrow": "The idea",
+      "headline": "Closer. Local. Covered.",
+      "cards": [
+        { "label": "01", "accent": "#5B5BF5", "headline": "A car a few blocks away", "body": "Cars parked in your own neighborhood, not at an airport counter across town.", "footer": "600+ hosts" },
+        { "label": "02", "accent": "#2FB573", "headline": "From real local hosts", "body": "Every car is owned by a real person in your city who lists it themselves.", "footer": "5 states" },
+        { "label": "03", "accent": "#E0991F", "headline": "Insured every trip", "body": "Coverage is included on every booking, start to finish.", "footer": "every trip" }
+      ],
+      "vo": { "srtText": "Cars in your neighborhood, from real local hosts, with insurance included on every trip. That's the whole idea." }
+    },
+    {
+      "kind": "coverage",
+      "durationFrames": 150,
+      "eyebrow": "Upcar",
+      "headline": "Live in 5 states.",
+      "regions": ["California", "Nevada", "Texas", "Arizona", "Florida"],
+      "vo": { "srtText": "We're live in five states today, and we're opening new cities every month." }
+    },
+    {
+      "kind": "metric",
+      "durationFrames": 186,
+      "eyebrow": "Traction",
+      "headline": "One year in.",
+      "metrics": [
+        { "stat": "600+", "label": "local hosts listing their cars" },
+        { "stat": "$1.2M", "label": "booked in trips by renters" },
+        { "stat": "1yr", "label": "live and growing" }
+      ],
+      "vo": { "srtText": "One year in, six hundred local hosts have listed their cars, and renters have booked over a million dollars in trips." }
+    },
+    {
+      "kind": "cta",
+      "durationFrames": 140,
+      "headline": "Upcar is live.",
+      "sub": "upcar.ai",
+      "chips": ["5 STATES", "600+ HOSTS", "$1.2M BOOKED"],
+      "vo": { "srtText": "Upcar is live. Find a car near you at upcar dot a-i. And if you're seeing us on Product Hunt today, we'd love your support." }
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+export const CARDS_PER_IP_PER_DAY = 5;
+export const QUEUE_REQUESTS_PER_IP_PER_DAY = 3;
+export const QUEUE_REQUESTS_PER_ACCOUNT_PER_DAY = 3;
+export const REPORTS_PER_IP_PER_DAY = 5;
+export const START_CARD_RATE_WINDOW_SECONDS = 24 * 60 * 60;

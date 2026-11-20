@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<!--
+  Fixture: Meta Ads Manager, Ad sets tab, EUR account, "Last 30 days".
+
+  The locale twin of the US fixture, and the reason the number parser cannot just
+  strip commas: every value here is EU-formatted ("1.234,56 €", "12.345"), which
+  a naive `replace(/,/g,'')` would turn into 123456 and 12345 respectively — one
+  of them wrong by 100x, silently. Also carries an abbreviated cell ("1,2 Mio.")
+  that must come back null rather than a lossy approximation, and a currency that
+  is only discoverable from the cell symbol because the header omits it.
+-->
+<html lang="de">
+<head><title>Werbeanzeigenmanager</title></head>
+<body>
+  <div id="mount_0_0">
+    <div role="banner">
+      <div data-testid="ad-account-switcher">
+        <span dir="auto">Upcar Europe GmbH (act_5647382910)</span>
+      </div>
+      <div role="button" aria-label="Date range"><span dir="auto">Last 30 days</span></div>
+    </div>
+
+    <div role="tablist">
+      <div role="tab" aria-selected="false" tabindex="-1"><span dir="auto">Campaigns</span></div>
+      <div role="tab" aria-selected="true" tabindex="0"><span dir="auto">Ad sets</span></div>
+      <div role="tab" aria-selected="false" tabindex="-1"><span dir="auto">Ads</span></div>
+    </div>
+
+    <div class="_shell">
+      <div role="grid" aria-label="Ad sets table" class="_grid">
+        <div role="rowgroup">
+          <div role="row" aria-rowindex="1">
+            <div class="_w"><div role="columnheader"><span dir="auto">Ad set name</span></div></div>
+            <div class="_w"><div role="columnheader"><span dir="auto">Delivery</span></div></div>
+            <div class="_w"><div role="columnheader"><span dir="auto">Amount spent</span></div></div>
+            <div class="_w"><div role="columnheader"><span dir="auto">Impressions</span></div></div>
+            <div class="_w"><div role="columnheader"><span dir="auto">Clicks (all)</span></div></div>
+            <div class="_w"><div role="columnheader"><span dir="auto">Cost per result</span></div></div>
+            <div class="_w"><div role="columnheader"><span dir="auto">ROAS</span></div></div>
+          </div>
+        </div>
+
+        <div role="rowgroup">
+          <div role="row" aria-rowindex="2">
+            <div class="_w"><div role="gridcell"><div><span dir="auto">DE &ndash; Städte &ndash; Breit</span></div></div></div>
+            <div class="_w"><div role="gridcell"><span dir="auto">Aktiv</span></div></div>
+            <div class="_w"><div role="gridcell"><span dir="auto">1.234,56&nbsp;&euro;</span></div></div>
+            <div class="_w"><div role="gridcell"><span dir="auto">12.345</span></div></div>
+            <div class="_w"><div role="gridcell"><span dir="auto">1.024</span></div></div>
+            <div class="_w"><div role="gridcell"><span dir="auto">18,42&nbsp;&euro;</span></div></div>
+            <div class="_w"><div role="gridcell"><span dir="auto">2,13</span></div></div>
+          </div>
+
+          <div role="row" aria-rowindex="3">
+            <div class="_w"><div role="gridcell"><div><span dir="auto">AT &ndash; Retargeting 14T</span></div></div></div>
+            <div class="_w"><div role="gridcell"><span dir="auto">Inaktiv</span></div></div>
+            <div class="_w"><div role="gridcell"><span dir="auto">987,00&nbsp;&euro;</span></div></div>
+            <div class="_w"><div role="gridcell"><span dir="auto">1,2 Mio.</span></div></div>
+            <div class="_w"><div role="gridcell"><span dir="auto">512</span></div></div>
+            <div class="_w"><div role="gridcell"><span dir="auto">&mdash;</span></div></div>
+            <div class="_w"><div role="gridcell"><span dir="auto">0,00</span></div></div>
+          </div>
+        </div>
+
+        <div role="rowgroup">
+          <div role="row" aria-rowindex="4" class="_summary">
+            <div class="_w"><div role="gridcell"><span dir="auto">Results from 2 ad sets</span></div></div>
+            <div class="_w"><div role="gridcell"><span dir="auto">&mdash;</span></div></div>
+            <div class="_w"><div role="gridcell"><span dir="auto">2.221,56&nbsp;&euro;</span></div></div>
+            <div class="_w"><div role="gridcell"><span dir="auto">1.212.345</span></div></div>
+            <div class="_w"><div role="gridcell"><span dir="auto">1.536</span></div></div>
+            <div class="_w"><div role="gridcell"><span dir="auto">21,70&nbsp;&euro;</span></div></div>
+            <div class="_w"><div role="gridcell"><span dir="auto">1,42</span></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

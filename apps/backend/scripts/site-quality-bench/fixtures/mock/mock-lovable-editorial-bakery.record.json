@@ -1,0 +1,63 @@
+{
+  "run_id": "mock-lovable-editorial-bakery",
+  "brief_id": "editorial-bakery",
+  "system": "lovable",
+  "provenance": "mocked",
+  "captured_at": "2026-10-07T00:01:00.000Z",
+  "urls": {
+    "site": null
+  },
+  "screenshots": {
+    "desktop": "shots/mock-lovable-editorial-bakery-desktop.png",
+    "mobile": "shots/mock-lovable-editorial-bakery-mobile.png"
+  },
+  "timings": {
+    "to_first_preview_s": 9,
+    "to_usable_complete_s": 150
+  },
+  "cost": {
+    "usd": null,
+    "source": "mocked: competitor cost unknown"
+  },
+  "repairs": null,
+  "failures": [],
+  "journeys": [
+    {
+      "name": "order_for_pickup",
+      "passed": true
+    }
+  ],
+  "requirement_coverage": [
+    {
+      "requirement": "Bakery name Crumb & Column is visible",
+      "met": true,
+      "evidence": "mocked: not checked"
+    },
+    {
+      "requirement": "Weekly menu with items and prices",
+      "met": true,
+      "evidence": "mocked: not checked"
+    },
+    {
+      "requirement": "Story about the baker",
+      "met": false,
+      "evidence": "mocked: not checked"
+    },
+    {
+      "requirement": "Address and hours",
+      "met": true,
+      "evidence": "mocked: not checked"
+    },
+    {
+      "requirement": "Editorial look with serif headlines and photography",
+      "met": true,
+      "evidence": "mocked: not checked"
+    },
+    {
+      "requirement": "Order for pickup flow",
+      "met": true,
+      "evidence": "mocked: not checked"
+    }
+  ],
+  "scores": null
+}

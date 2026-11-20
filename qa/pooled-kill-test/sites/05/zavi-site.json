@@ -1,0 +1,236 @@
+{
+  "schemaVersion": 2,
+  "roles": [],
+  "capabilities": [],
+  "actions": {},
+  "aggregates": {
+    "orders_by_status": {
+      "collection": "cake_orders",
+      "fn": "count",
+      "filters": [
+        "status"
+      ],
+      "principals": [
+        "admin"
+      ]
+    }
+  },
+  "collections": {
+    "menu_items": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "anyone"
+        ],
+        "get": [
+          "anyone"
+        ],
+        "create": [
+          "admin"
+        ],
+        "update": [
+          "admin"
+        ],
+        "delete": [
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "category": {
+            "type": "string",
+            "maxLength": 8,
+            "enum": [
+              "cakes",
+              "pastries",
+              "bread",
+              "cookies",
+              "drinks"
+            ]
+          },
+          "price_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 400
+          },
+          "available": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "category",
+          "price_cents"
+        ]
+      },
+      "fields": {},
+      "indexes": {
+        "category": {
+          "type": "text",
+          "ops": [
+            "eq"
+          ],
+          "sort": false
+        },
+        "available": {
+          "type": "text",
+          "ops": [
+            "eq"
+          ],
+          "sort": false
+        }
+      },
+      "unique": [],
+      "references": {}
+    },
+    "cake_orders": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "admin"
+        ],
+        "get": [
+          "admin"
+        ],
+        "create": [
+          "anyone"
+        ],
+        "update": [
+          "admin"
+        ],
+        "delete": [
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "customer_name": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "phone": {
+            "type": "string",
+            "maxLength": 30
+          },
+          "email": {
+            "type": "string",
+            "maxLength": 320,
+            "format": "email"
+          },
+          "pickup_date": {
+            "type": "string",
+            "maxLength": 10,
+            "format": "date"
+          },
+          "servings": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 500
+          },
+          "flavour": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "message_on_cake": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 1000
+          },
+          "status": {
+            "type": "string",
+            "maxLength": 9,
+            "enum": [
+              "new",
+              "confirmed",
+              "ready",
+              "collected",
+              "cancelled"
+            ]
+          }
+        },
+        "required": [
+          "customer_name",
+          "phone",
+          "pickup_date",
+          "servings",
+          "flavour",
+          "status"
+        ]
+      },
+      "fields": {},
+      "indexes": {
+        "pickup_date": {
+          "type": "timestamp",
+          "ops": [
+            "eq",
+            "range"
+          ],
+          "sort": true
+        }
+      },
+      "unique": [],
+      "references": {},
+      "states": {
+        "field": "status",
+        "values": [
+          "new",
+          "confirmed",
+          "ready",
+          "collected",
+          "cancelled"
+        ],
+        "initial": "new",
+        "transitions": [
+          {
+            "from": "new",
+            "to": "confirmed",
+            "principals": [
+              "admin"
+            ]
+          },
+          {
+            "from": "new",
+            "to": "cancelled",
+            "principals": [
+              "admin"
+            ]
+          },
+          {
+            "from": "confirmed",
+            "to": "ready",
+            "principals": [
+              "admin"
+            ]
+          },
+          {
+            "from": "confirmed",
+            "to": "cancelled",
+            "principals": [
+              "admin"
+            ]
+          },
+          {
+            "from": "ready",
+            "to": "collected",
+            "principals": [
+              "admin"
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

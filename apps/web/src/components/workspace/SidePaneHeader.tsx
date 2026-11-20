@@ -1,0 +1,42 @@
+"use client";
+
+import type { ReactNode, RefObject } from "react";
+
+export const SIDE_PANE_ICON_BUTTON =
+  "inline-flex size-8 shrink-0 items-center justify-center rounded-cta border border-[#f0f0f0] bg-white text-[#1f1f1f] transition-colors duration-150 hover:bg-[#f9f9f9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/20";
+
+export function SidePaneHeader({
+  title,
+  headingRef,
+  closeLabel,
+  onClose,
+  actions,
+}: {
+  title: string;
+  headingRef: RefObject<HTMLHeadingElement | null>;
+  closeLabel: string;
+  onClose: () => void;
+  actions?: ReactNode;
+}) {
+  return (
+    <header className="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-[#f0f0f0] px-4">
+      <h2
+        ref={headingRef}
+        tabIndex={-1}
+        className="min-w-0 truncate text-[16px] font-semibold leading-[21px] tracking-[-0.1504px] text-ink focus:outline-none"
+        title={title}
+      >
+        {title}
+      </h2>
+      <div className="flex shrink-0 items-center gap-2">
+        {actions}
+        <button type="button" onClick={onClose} aria-label={closeLabel} className={SIDE_PANE_ICON_BUTTON}>
+          {}
+          <svg aria-hidden viewBox="0 0 12.9167 12.9166" className="size-[13px]" fill="currentColor">
+            <path d="M11.8498 0.182802C12.0938 -0.0609898 12.4895 -0.0608784 12.7336 0.182802C12.9777 0.42688 12.9777 0.82349 12.7336 1.06757L7.34199 6.45819L12.7336 11.8498C12.9777 12.0939 12.9777 12.4895 12.7336 12.7336C12.4895 12.9776 12.0939 12.9776 11.8498 12.7336L6.4582 7.34198L1.06758 12.7336C0.8235 12.9777 0.42689 12.9777 0.182813 12.7336C-0.060875 12.4895 -0.061 12.0938 0.182813 11.8498L5.57441 6.45819L0.183789 1.06757C-0.0602886 0.82349 -0.0602886 0.42688 0.183789 0.182802C0.42786 -0.0608402 0.823623 -0.0610275 1.06758 0.182802L6.4582 5.57343L11.8498 0.182802Z" />
+          </svg>
+        </button>
+      </div>
+    </header>
+  );
+}

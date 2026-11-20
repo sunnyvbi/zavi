@@ -1,0 +1,27 @@
+{
+  "name": "@zavi/connector",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Zavi Connector: runs on the customer's server, holds their database password, and answers Zavi's reads under local rules. Outbound HTTPS only.",
+  "scripts": {
+    "typecheck": "tsc -p . --noEmit",
+    "test": "vitest run",
+    "build": "node scripts/build.mjs"
+  },
+  "dependencies": {
+    "bson": "7.2.0",
+    "mongodb": "7.2.0",
+    "mysql2": "3.22.3",
+    "pg": "8.20.0",
+    "yaml": "2.8.4",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "20.14.10",
+    "@types/pg": "8.15.6",
+    "@zavi/shared": "*",
+    "esbuild": "0.27.7",
+    "typescript": "5.5.4",
+    "vitest": "1.6.0"
+  }
+}

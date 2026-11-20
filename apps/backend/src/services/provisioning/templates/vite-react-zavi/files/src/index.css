@@ -1,0 +1,90 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* The design tokens come from src/theme.css (written by Zavi from the chosen design
+   direction). To adjust one for this site, set it here; this block wins over theme.css.
+   Colours are space-separated RGB ("190 18 60"), as in theme.css. */
+:root {
+}
+
+@layer base {
+  html,
+  body {
+    overflow-x: clip;
+  }
+  body {
+    @apply bg-background font-body text-foreground antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: var(--heading-weight);
+    letter-spacing: var(--heading-tracking);
+    text-transform: var(--heading-case);
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+  img,
+  video {
+    max-width: 100%;
+  }
+  fieldset {
+    min-width: 0;
+  }
+  /* A bare <select> still gets room for its arrow (ui/Select draws its own). */
+  select:not([multiple]):not([size]) {
+    appearance: none;
+    padding-right: 2.5rem !important; /* wins over a px-* utility, which would put the arrow on the text */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1rem;
+  }
+  [id] {
+    scroll-margin-top: 5rem; /* clear the sticky header when jumping to #section */
+  }
+  :focus-visible {
+    outline: 2px solid rgb(var(--ring));
+    outline-offset: 2px;
+  }
+  .surface-inverse {
+    @apply bg-background text-foreground;
+  }
+  .surface-overlay {
+    color: rgb(var(--foreground));
+  }
+}
+
+/* Scroll reveal (<Reveal>): content is only hidden once JS has armed it, so nothing is
+   ever invisible without JavaScript, for screen readers or with reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  [data-reveal="armed"] {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  [data-reveal="shown"] {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

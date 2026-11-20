@@ -1,0 +1,48 @@
+{
+  "run_id": "mock-zavi-creative-portfolio",
+  "brief_id": "creative-portfolio",
+  "system": "zavi",
+  "provenance": "mocked",
+  "captured_at": "2026-10-07T00:05:00.000Z",
+  "urls": {
+    "site": null
+  },
+  "screenshots": {
+    "desktop": "shots/mock-zavi-creative-portfolio-desktop.png",
+    "mobile": "shots/mock-zavi-creative-portfolio-mobile.png"
+  },
+  "timings": {
+    "to_first_preview_s": 110,
+    "to_usable_complete_s": 650
+  },
+  "cost": {
+    "usd": 2.2,
+    "source": "mocked: invented number"
+  },
+  "repairs": 1,
+  "failures": [],
+  "journeys": [
+    {
+      "name": "contact_illustrator",
+      "passed": true
+    }
+  ],
+  "requirement_coverage": [
+    {
+      "requirement": "Gallery of work",
+      "met": true,
+      "evidence": "mocked: not checked"
+    },
+    {
+      "requirement": "About the illustrator",
+      "met": true,
+      "evidence": "mocked: not checked"
+    },
+    {
+      "requirement": "Contact path for clients",
+      "met": true,
+      "evidence": "mocked: not checked"
+    }
+  ],
+  "scores": null
+}

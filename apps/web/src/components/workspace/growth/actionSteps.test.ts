@@ -1,0 +1,157 @@
+import { describe, expect, it } from "vitest";
+import { actionSteps, splitSentences } from "./actionSteps";
+
+const GOOGLE_ADS =
+  'In Google Ads: Tools > Conversions > "Upcar (web) sign_up_complete" > Settings > Include in Conversions > Yes. ' +
+  "Verify firing in Tag Assistant within 24 hours by completing a test signup while Tag Assistant is active. " +
+  "Do not make bid or budget changes until recording is confirmed. " +
+  "The tag is already firing (4 events in the all_conversions window). " +
+  "This is a goal-inclusion setting, not a missing tag installation.";
+
+const SEO_BECOME_HOST =
+  "The page currently has approximately 250 words, no FAQ section, no H2 structure, and no structured data. Web results for 'rent out your car' and 'list your car for rent' return Turo's equivalent, a multi-section page with earnings breakdown, FAQ, testimonials, and FAQPage schema. No Upcar page appeared without 'upcar' in the query.\n\n" +
+  "Before adding content: resolve the delivery model inconsistency. /host/become-host says 'Our inhouse delivery team will deliver the car to the renter.' The /turo-alternative page says 'Hosts can bring the car to your home, hotel, or office.' These describe different models. Confirm which is accurate and fill the delivery section accordingly.\n\n" +
+  "This page compounds over months, not weeks. Connect Search Console to track when it begins appearing for 'rent out your car' queries.";
+
+const EMAIL_SIGNUP =
+  "No email input exists anywhere on the site, confirmed with plain fetch and JS-rendered crawl. The homepage sends visitors to browse or post but captures no address. Add an embeddable form from your email tool; place it near the bottom of the homepage above the footer. The consent line in the deliverable defines what you may send. Before the first send: configure one-click unsubscribe (RFC 8058, honoured within two days) and a working opt-out in your email tool. CAN-SPAM requires opt-out honoured within 10 business days; meet the stricter two-day clock.";
+
+const SEO_TERMS_NO_STEP =
+  "Week across all steps: about 30 minutes for you (this step) + 4 to 6 developer hours for steps 2 to 5.\n" +
+  "The terms page currently uses the homepage's exact title and meta description verbatim. A search engine seeing two pages with identical titles must pick one to rank, usually the homepage.";
+
+describe("actionSteps", () => {
+  it("sorts the Google Ads fix into Do (a 6-chip menu path), Check, Don't and Why", () => {
+    const s = actionSteps(GOOGLE_ADS);
+    expect(s.kind).toBe("structured");
+    if (s.kind !== "structured") return;
+    expect(s.do).toEqual([
+      {
+        prefix: "In Google Ads:",
+        path: ["Tools", "Conversions", "Upcar (web) sign_up_complete", "Settings", "Include in Conversions", "Yes"],
+      },
+    ]);
+    expect(s.check).toEqual([
+      "Verify firing in Tag Assistant within 24 hours by completing a test signup while Tag Assistant is active.",
+    ]);
+    expect(s.dont).toEqual(["Make bid or budget changes until recording is confirmed."]);
+    expect(s.why).toEqual([
+      "The tag is already firing (4 events in the all_conversions window).",
+      "This is a goal-inclusion setting, not a missing tag installation.",
+    ]);
+  });
+
+  it("finds steps in a real email action, including one led by 'Before the first send:'", () => {
+    const s = actionSteps(EMAIL_SIGNUP);
+    if (s.kind !== "structured") throw new Error("expected structured");
+    expect(s.do).toEqual([
+      { text: "Add an embeddable form from your email tool; place it near the bottom of the homepage above the footer." },
+      {
+        text: "Before the first send: configure one-click unsubscribe (RFC 8058, honoured within two days) and a working opt-out in your email tool.",
+      },
+    ]);
+    expect(s.check).toEqual([]);
+    expect(s.dont).toEqual([]);
+    expect(s.why[0]).toBe("No email input exists anywhere on the site, confirmed with plain fetch and JS-rendered crawl.");
+  });
+
+  it("sorts a real SEO action across paragraphs", () => {
+    const s = actionSteps(SEO_BECOME_HOST);
+    if (s.kind !== "structured") throw new Error("expected structured");
+    expect(s.do.map((d) => ("text" in d ? d.text : ""))).toEqual([
+      "Before adding content: resolve the delivery model inconsistency.",
+      "Connect Search Console to track when it begins appearing for 'rent out your car' queries.",
+    ]);
+    expect(s.check).toEqual(["Confirm which is accurate and fill the delivery section accordingly."]);
+  });
+
+  it("does not guess: with nothing to do, the text shows as plain lines, no labels", () => {
+    const s = actionSteps(SEO_TERMS_NO_STEP);
+    expect(s.kind).toBe("plain");
+    if (s.kind !== "plain") return;
+    expect(s.lines).toEqual([
+      "Week across all steps: about 30 minutes for you (this step) + 4 to 6 developer hours for steps 2 to 5.",
+      "The terms page currently uses the homepage's exact title and meta description verbatim.",
+      "A search engine seeing two pages with identical titles must pick one to rank, usually the homepage.",
+    ]);
+  });
+});
+
+describe("splitSentences", () => {
+  it("does not split on a URL, a decimal, a file name, e.g. or a quoted path", () => {
+    expect(
+      splitSentences(
+        'Open https://example.com/pricing.html and set the price to 12.50 a month, e.g. the Pro plan. Then pick "Settings. Advanced" in the menu. Done.',
+      ),
+    ).toEqual([
+      "Open https://example.com/pricing.html and set the price to 12.50 a month, e.g. the Pro plan.",
+      'Then pick "Settings. Advanced" in the menu.',
+      "Done.",
+    ]);
+  });
+
+  it("ends a sentence at a quote that closes it", () => {
+    expect(splitSentences("It says 'Deliver the car.' The other page says 'Bring it.' These differ.")).toEqual([
+      "It says 'Deliver the car.'",
+      "The other page says 'Bring it.'",
+      "These differ.",
+    ]);
+  });
+
+  it("splits on line breaks and drops empty lines", () => {
+    expect(splitSentences("One line\n\nTwo line.")).toEqual(["One line", "Two line."]);
+  });
+});
+
+describe("a consequence is never folded away", () => {
+  it("shows 'This pauses every campaign.' under Do, not in Why", () => {
+    const s = actionSteps("Open Ads Manager. This pauses every campaign.");
+    if (s.kind !== "structured") throw new Error("expected structured");
+    expect(s.do).toEqual([{ text: "Open Ads Manager." }]);
+    expect(s.notes).toEqual(["This pauses every campaign."]);
+    expect(s.why).toEqual([]);
+  });
+
+  it("keeps a negated consequence in Don't", () => {
+    const s = actionSteps("Open Ads Manager. Do not delete the old campaign.");
+    if (s.kind !== "structured") throw new Error("expected structured");
+    expect(s.dont).toEqual(["Delete the old campaign."]);
+    expect(s.notes).toEqual([]);
+  });
+
+  it("catches 'cannot be undone' and spend", () => {
+    const s = actionSteps("Publish the post. Once live it cannot be undone. The budget will spend $20 a day.");
+    if (s.kind !== "structured") throw new Error("expected structured");
+    expect(s.notes).toEqual(["Once live it cannot be undone.", "The budget will spend $20 a day."]);
+  });
+});
+
+describe("consequence words, as the review asked", () => {
+  it("'Deleting the campaign is permanent.' stays in view", () => {
+    const s = actionSteps("Open Google Ads. Deleting the campaign is permanent.");
+    if (s.kind !== "structured") throw new Error("expected structured");
+    expect(s.notes).toEqual(["Deleting the campaign is permanent."]);
+    expect(s.why).toEqual([]);
+  });
+
+  it("'This change costs $500 and is permanent.' stays in view", () => {
+    const s = actionSteps("Open Ads Manager. This change costs $500 and is permanent.");
+    if (s.kind !== "structured") throw new Error("expected structured");
+    expect(s.notes).toEqual(["This change costs $500 and is permanent."]);
+  });
+
+  it("matches can't / can not / cannot be undone or reversed, in any case", () => {
+    for (const line of ["It can't be undone.", "It CAN NOT be undone.", "This cannot be reversed."]) {
+      const s = actionSteps(`Open Ads Manager. ${line}`);
+      if (s.kind !== "structured") throw new Error("expected structured");
+      expect(s.notes, line).toEqual([line]);
+    }
+  });
+
+  it("does not fire inside other words", () => {
+    const s = actionSteps("Open Ads Manager. The costume page is popular.");
+    if (s.kind !== "structured") throw new Error("expected structured");
+    expect(s.notes).toEqual([]);
+    expect(s.why).toEqual(["The costume page is popular."]);
+  });
+});

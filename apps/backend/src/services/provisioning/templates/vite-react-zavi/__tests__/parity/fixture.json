@@ -1,0 +1,2027 @@
+{
+ "generated_from": {
+  "migrations": [
+   "0001_core.sql",
+   "0002_api.sql",
+   "0003_storage.sql",
+   "0004_membership_slots_perf.sql",
+   "0005_contracts_archive_reindex.sql",
+   "0006_contract_v2.sql",
+   "0007_relational_slots_rls.sql",
+   "0008_relational_api.sql"
+  ],
+  "sha256": "36372f25557c899f92118589e74a24a05f559511bbe30fed1ccec8d4abbb52ac"
+ },
+ "steps": [
+  {
+   "ok": true,
+   "value": {
+    "ref": "#0",
+    "replayed": false
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#1",
+    "replayed": false
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#2",
+    "replayed": false
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#3",
+    "replayed": false
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [
+     {
+      "ref": "#1",
+      "data": {
+       "name": "Desk",
+       "price": 20,
+       "since": "2025-12-01",
+       "category": "office"
+      },
+      "mine": false
+     },
+     {
+      "ref": "#0",
+      "data": {
+       "name": "Lamp",
+       "price": 10,
+       "since": "2026-01-10",
+       "category": "home"
+      },
+      "mine": false
+     }
+    ],
+    "has_next": false
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [
+     {
+      "ref": "#1",
+      "data": {
+       "name": "Desk",
+       "price": 20,
+       "since": "2025-12-01",
+       "category": "office"
+      },
+      "mine": false
+     },
+     {
+      "ref": "#0",
+      "data": {
+       "name": "Lamp",
+       "price": 10,
+       "since": "2026-01-10",
+       "category": "home"
+      },
+      "mine": false
+     }
+    ],
+    "has_next": false
+   }
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "filter_not_allowed"
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "invalid_filter"
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [
+     {
+      "ref": "#0",
+      "data": {
+       "name": "Lamp",
+       "price": 10,
+       "since": "2026-01-10",
+       "category": "home"
+      },
+      "mine": false
+     }
+    ],
+    "has_next": false
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [
+     {
+      "ref": "#3",
+      "data": {
+       "name": "Rug",
+       "since": "2026-03-01",
+       "category": "home"
+      },
+      "mine": false
+     },
+     {
+      "ref": "#2",
+      "data": {
+       "name": "Chair",
+       "price": 5,
+       "category": "office"
+      },
+      "mine": false
+     },
+     {
+      "ref": "#1",
+      "data": {
+       "name": "Desk",
+       "price": 20,
+       "since": "2025-12-01",
+       "category": "office"
+      },
+      "mine": false
+     },
+     {
+      "ref": "#0",
+      "data": {
+       "name": "Lamp",
+       "price": 10,
+       "since": "2026-01-10",
+       "category": "home"
+      },
+      "mine": false
+     }
+    ],
+    "has_next": false
+   }
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "invalid_filter"
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [
+     {
+      "ref": "#2",
+      "data": {
+       "name": "Chair",
+       "price": 5,
+       "category": "office"
+      },
+      "mine": false
+     },
+     {
+      "ref": "#1",
+      "data": {
+       "name": "Desk",
+       "price": 20,
+       "since": "2025-12-01",
+       "category": "office"
+      },
+      "mine": false
+     }
+    ],
+    "has_next": false
+   }
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "invalid_filter"
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "filter_not_allowed"
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [],
+    "has_next": false
+   }
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "filter_not_allowed"
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [
+     {
+      "ref": "#3",
+      "data": {
+       "name": "Rug",
+       "since": "2026-03-01",
+       "category": "home"
+      },
+      "mine": false
+     },
+     {
+      "ref": "#2",
+      "data": {
+       "name": "Chair",
+       "price": 5,
+       "category": "office"
+      },
+      "mine": false
+     },
+     {
+      "ref": "#1",
+      "data": {
+       "name": "Desk",
+       "price": 20,
+       "since": "2025-12-01",
+       "category": "office"
+      },
+      "mine": false
+     },
+     {
+      "ref": "#0",
+      "data": {
+       "name": "Lamp",
+       "price": 10,
+       "since": "2026-01-10",
+       "category": "home"
+      },
+      "mine": false
+     }
+    ],
+    "has_next": false
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [
+     {
+      "ref": "#3",
+      "data": {
+       "name": "Rug",
+       "since": "2026-03-01",
+       "category": "home"
+      },
+      "mine": false
+     },
+     {
+      "ref": "#0",
+      "data": {
+       "name": "Lamp",
+       "price": 10,
+       "since": "2026-01-10",
+       "category": "home"
+      },
+      "mine": false
+     }
+    ],
+    "has_next": false
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [
+     {
+      "ref": "#0",
+      "data": {
+       "name": "Lamp",
+       "price": 10,
+       "since": "2026-01-10",
+       "category": "home"
+      },
+      "mine": false
+     }
+    ],
+    "has_next": false
+   }
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "invalid_filter"
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "filter_not_allowed"
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [
+     {
+      "ref": "#2",
+      "data": {
+       "name": "Chair",
+       "price": 5,
+       "category": "office"
+      },
+      "mine": false
+     },
+     {
+      "ref": "#0",
+      "data": {
+       "name": "Lamp",
+       "price": 10,
+       "since": "2026-01-10",
+       "category": "home"
+      },
+      "mine": false
+     },
+     {
+      "ref": "#1",
+      "data": {
+       "name": "Desk",
+       "price": 20,
+       "since": "2025-12-01",
+       "category": "office"
+      },
+      "mine": false
+     }
+    ],
+    "has_next": false
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [
+     {
+      "ref": "#1",
+      "data": {
+       "name": "Desk",
+       "price": 20,
+       "since": "2025-12-01",
+       "category": "office"
+      },
+      "mine": false
+     },
+     {
+      "ref": "#0",
+      "data": {
+       "name": "Lamp",
+       "price": 10,
+       "since": "2026-01-10",
+       "category": "home"
+      },
+      "mine": false
+     },
+     {
+      "ref": "#2",
+      "data": {
+       "name": "Chair",
+       "price": 5,
+       "category": "office"
+      },
+      "mine": false
+     }
+    ],
+    "has_next": false
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [
+     {
+      "ref": "#3",
+      "data": {
+       "name": "Rug",
+       "since": "2026-03-01",
+       "category": "home"
+      },
+      "mine": false
+     },
+     {
+      "ref": "#0",
+      "data": {
+       "name": "Lamp",
+       "price": 10,
+       "since": "2026-01-10",
+       "category": "home"
+      },
+      "mine": false
+     },
+     {
+      "ref": "#2",
+      "data": {
+       "name": "Chair",
+       "price": 5,
+       "category": "office"
+      },
+      "mine": false
+     },
+     {
+      "ref": "#1",
+      "data": {
+       "name": "Desk",
+       "price": 20,
+       "since": "2025-12-01",
+       "category": "office"
+      },
+      "mine": false
+     }
+    ],
+    "has_next": false
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [
+     {
+      "ref": "#3",
+      "data": {
+       "name": "Rug",
+       "since": "2026-03-01",
+       "category": "home"
+      },
+      "mine": false
+     },
+     {
+      "ref": "#0",
+      "data": {
+       "name": "Lamp",
+       "price": 10,
+       "since": "2026-01-10",
+       "category": "home"
+      },
+      "mine": false
+     },
+     {
+      "ref": "#1",
+      "data": {
+       "name": "Desk",
+       "price": 20,
+       "since": "2025-12-01",
+       "category": "office"
+      },
+      "mine": false
+     }
+    ],
+    "has_next": false
+   }
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "sort_not_allowed"
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "sort_not_allowed"
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [
+     {
+      "ref": "#2",
+      "data": {
+       "name": "Chair",
+       "price": 5,
+       "category": "office"
+      },
+      "mine": false
+     },
+     {
+      "ref": "#1",
+      "data": {
+       "name": "Desk",
+       "price": 20,
+       "since": "2025-12-01",
+       "category": "office"
+      },
+      "mine": false
+     }
+    ],
+    "has_next": false
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [
+     {
+      "ref": "#2",
+      "data": {
+       "name": "Chair",
+       "price": 5,
+       "category": "office"
+      },
+      "mine": false
+     }
+    ],
+    "has_next": true
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [
+     {
+      "ref": "#0",
+      "data": {
+       "name": "Lamp",
+       "price": 10,
+       "since": "2026-01-10",
+       "category": "home"
+      },
+      "mine": false
+     }
+    ],
+    "has_next": true
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [
+     {
+      "ref": "#1",
+      "data": {
+       "name": "Desk",
+       "price": 20,
+       "since": "2025-12-01",
+       "category": "office"
+      },
+      "mine": false
+     }
+    ],
+    "has_next": false
+   }
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "invalid_cursor"
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [
+     {
+      "ref": "#3",
+      "data": {
+       "name": "Rug",
+       "since": "2026-03-01",
+       "category": "home"
+      },
+      "mine": false
+     }
+    ],
+    "has_next": true
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [
+     {
+      "ref": "#0",
+      "data": {
+       "name": "Lamp",
+       "price": 10,
+       "since": "2026-01-10",
+       "category": "home"
+      },
+      "mine": false
+     }
+    ],
+    "has_next": true
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [
+     {
+      "ref": "#3",
+      "data": {
+       "name": "Rug",
+       "since": "2026-03-01",
+       "category": "home"
+      },
+      "mine": false
+     },
+     {
+      "ref": "#0",
+      "data": {
+       "name": "Lamp",
+       "price": 10,
+       "since": "2026-01-10",
+       "category": "home"
+      },
+      "mine": false
+     }
+    ],
+    "has_next": true
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [
+     {
+      "ref": "#2",
+      "data": {
+       "name": "Chair",
+       "price": 5,
+       "category": "office"
+      },
+      "mine": false
+     },
+     {
+      "ref": "#1",
+      "data": {
+       "name": "Desk",
+       "price": 20,
+       "since": "2025-12-01",
+       "category": "office"
+      },
+      "mine": false
+     }
+    ],
+    "has_next": false
+   }
+  },
+  {
+   "ok": false,
+   "code": "not_allowed",
+   "reason": "rls"
+  },
+  {
+   "ok": false,
+   "code": "not_allowed",
+   "reason": "rls"
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "idempotency_key_required"
+  },
+  {
+   "ok": false,
+   "code": "not_allowed",
+   "reason": "rls"
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [
+     {
+      "ref": "#3",
+      "data": {
+       "name": "Rug",
+       "since": "2026-03-01",
+       "category": "home"
+      },
+      "mine": false
+     },
+     {
+      "ref": "#2",
+      "data": {
+       "name": "Chair",
+       "price": 5,
+       "category": "office"
+      },
+      "mine": false
+     },
+     {
+      "ref": "#1",
+      "data": {
+       "name": "Desk",
+       "price": 20,
+       "since": "2025-12-01",
+       "category": "office"
+      },
+      "mine": false
+     },
+     {
+      "ref": "#0",
+      "data": {
+       "name": "Lamp",
+       "price": 10,
+       "since": "2026-01-10",
+       "category": "home"
+      },
+      "mine": false
+     }
+    ],
+    "has_next": false
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [
+     {
+      "ref": "#2",
+      "data": {
+       "name": "Chair",
+       "price": 5,
+       "category": "office"
+      },
+      "mine": false
+     },
+     {
+      "ref": "#1",
+      "data": {
+       "name": "Desk",
+       "price": 20,
+       "since": "2025-12-01",
+       "category": "office"
+      },
+      "mine": false
+     }
+    ],
+    "has_next": false
+   }
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "filter_not_allowed"
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "invalid_filter"
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "invalid_filter"
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "invalid_filter"
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [
+     {
+      "ref": "#3",
+      "data": {
+       "name": "Rug",
+       "since": "2026-03-01",
+       "category": "home"
+      },
+      "mine": false
+     },
+     {
+      "ref": "#2",
+      "data": {
+       "name": "Chair",
+       "price": 5,
+       "category": "office"
+      },
+      "mine": false
+     }
+    ],
+    "has_next": true
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [
+     {
+      "ref": "#1",
+      "data": {
+       "name": "Desk",
+       "price": 20,
+       "since": "2025-12-01",
+       "category": "office"
+      },
+      "mine": false
+     },
+     {
+      "ref": "#0",
+      "data": {
+       "name": "Lamp",
+       "price": 10,
+       "since": "2026-01-10",
+       "category": "home"
+      },
+      "mine": false
+     }
+    ],
+    "has_next": false
+   }
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "invalid_cursor"
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [
+     {
+      "ref": "#3",
+      "data": {
+       "name": "Rug",
+       "since": "2026-03-01",
+       "category": "home"
+      },
+      "mine": false
+     }
+    ],
+    "has_next": true
+   }
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "invalid_cursor"
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "invalid_cursor"
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#0",
+    "data": {
+     "name": "Lamp",
+     "price": 10,
+     "since": "2026-01-10",
+     "category": "home"
+    },
+    "mine": false
+   }
+  },
+  {
+   "ok": true,
+   "value": null
+  },
+  {
+   "ok": false,
+   "code": "not_allowed",
+   "reason": "anonymous_write_forbidden"
+  },
+  {
+   "ok": false,
+   "code": "not_found",
+   "reason": "not_found"
+  },
+  {
+   "ok": false,
+   "code": "not_found",
+   "reason": "not_found"
+  },
+  {
+   "ok": true,
+   "value": {
+    "updated": true
+   }
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "schema_violation: price is below the minimum"
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "schema_violation: name is required"
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "schema_violation: unknown field bogus"
+  },
+  {
+   "ok": true,
+   "value": {
+    "updated": true
+   }
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "invalid_patch"
+  },
+  {
+   "ok": false,
+   "code": "not_found",
+   "reason": "not_found"
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#0",
+    "data": {
+     "name": "Lamp",
+     "price": 12,
+     "since": "2026-01-10"
+    },
+    "mine": false
+   }
+  },
+  {
+   "ok": false,
+   "code": "not_allowed",
+   "reason": "anonymous_write_forbidden"
+  },
+  {
+   "ok": false,
+   "code": "not_found",
+   "reason": "not_found"
+  },
+  {
+   "ok": true,
+   "value": {
+    "deleted": true
+   }
+  },
+  {
+   "ok": false,
+   "code": "not_found",
+   "reason": "not_found"
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [
+     {
+      "ref": "#3",
+      "data": {
+       "name": "Rug",
+       "since": "2026-03-01",
+       "category": "home"
+      },
+      "mine": false
+     },
+     {
+      "ref": "#2",
+      "data": {
+       "name": "Chair",
+       "price": 5,
+       "category": "office"
+      },
+      "mine": false
+     },
+     {
+      "ref": "#0",
+      "data": {
+       "name": "Lamp",
+       "price": 12,
+       "since": "2026-01-10"
+      },
+      "mine": false
+     }
+    ],
+    "has_next": false
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#70",
+    "replayed": false
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#70",
+    "replayed": true
+   }
+  },
+  {
+   "ok": false,
+   "code": "conflict",
+   "reason": "idempotency_conflict"
+  },
+  {
+   "ok": false,
+   "code": "conflict",
+   "reason": "idempotency_conflict"
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "idempotency_key_required"
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "idempotency_key_invalid"
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "idempotency_key_invalid"
+  },
+  {
+   "ok": true,
+   "value": null
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [],
+    "has_next": false
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#79",
+    "replayed": false
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [
+     {
+      "ref": "#79",
+      "data": {
+       "body": "from u1",
+       "name": "Uma"
+      },
+      "mine": true
+     }
+    ],
+    "has_next": false
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [],
+    "has_next": false
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [
+     {
+      "ref": "#79",
+      "data": {
+       "body": "from u1",
+       "name": "Uma"
+      },
+      "mine": false
+     },
+     {
+      "ref": "#70",
+      "data": {
+       "body": "hi",
+       "name": "Pat"
+      },
+      "mine": false
+     }
+    ],
+    "has_next": false
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#79",
+    "data": {
+     "body": "from u1",
+     "name": "Uma"
+    },
+    "mine": true
+   }
+  },
+  {
+   "ok": true,
+   "value": null
+  },
+  {
+   "ok": false,
+   "code": "not_allowed",
+   "reason": "field_not_writable: status"
+  },
+  {
+   "ok": false,
+   "code": "not_allowed",
+   "reason": "field_not_writable: status"
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#87",
+    "replayed": false
+   }
+  },
+  {
+   "ok": false,
+   "code": "not_found",
+   "reason": "not_found"
+  },
+  {
+   "ok": true,
+   "value": {
+    "updated": true
+   }
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "idempotency_key_required"
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#91",
+    "replayed": false
+   }
+  },
+  {
+   "ok": true,
+   "value": null
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "schema_violation: email is not an email"
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#94",
+    "replayed": false
+   }
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "schema_violation: name is shorter than 1"
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "schema_violation: unknown field extra"
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "schema_violation: body is required"
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "schema_violation: document must be an object"
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "schema_violation: body must be a string"
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#100",
+    "replayed": false
+   }
+  },
+  {
+   "ok": false,
+   "code": "not_allowed",
+   "reason": "field_not_writable: featured"
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#102",
+    "replayed": false
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#103",
+    "replayed": false
+   }
+  },
+  {
+   "ok": false,
+   "code": "not_allowed",
+   "reason": "rls"
+  },
+  {
+   "ok": false,
+   "code": "not_allowed",
+   "reason": "rls"
+  },
+  {
+   "ok": false,
+   "code": "not_allowed",
+   "reason": "rls"
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [
+     {
+      "ref": "#103",
+      "data": {
+       "title": "D",
+       "status": "draft"
+      },
+      "mine": false
+     },
+     {
+      "ref": "#102",
+      "data": {
+       "title": "C",
+       "featured": true
+      },
+      "mine": false
+     },
+     {
+      "ref": "#100",
+      "data": {
+       "title": "A",
+       "status": "live"
+      },
+      "mine": false
+     }
+    ],
+    "has_next": false
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [
+     {
+      "ref": "#103",
+      "data": {
+       "title": "D",
+       "secret": "s4",
+       "status": "draft"
+      },
+      "mine": false
+     },
+     {
+      "ref": "#102",
+      "data": {
+       "title": "C",
+       "secret": "s3",
+       "featured": true
+      },
+      "mine": true
+     },
+     {
+      "ref": "#100",
+      "data": {
+       "title": "A",
+       "status": "live"
+      },
+      "mine": false
+     }
+    ],
+    "has_next": false
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [
+     {
+      "ref": "#103",
+      "data": {
+       "title": "D",
+       "status": "draft"
+      },
+      "mine": true
+     },
+     {
+      "ref": "#102",
+      "data": {
+       "title": "C",
+       "featured": true
+      },
+      "mine": false
+     },
+     {
+      "ref": "#100",
+      "data": {
+       "title": "A",
+       "status": "live"
+      },
+      "mine": false
+     }
+    ],
+    "has_next": false
+   }
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "filter_not_allowed"
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "filter_not_allowed"
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [
+     {
+      "ref": "#102",
+      "data": {
+       "title": "C",
+       "secret": "s3",
+       "featured": true
+      },
+      "mine": true
+     }
+    ],
+    "has_next": false
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [
+     {
+      "ref": "#100",
+      "data": {
+       "title": "A",
+       "status": "live"
+      },
+      "mine": false
+     }
+    ],
+    "has_next": false
+   }
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "filter_not_allowed"
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [
+     {
+      "ref": "#103",
+      "data": {
+       "title": "D",
+       "secret": "s4",
+       "status": "draft"
+      },
+      "mine": false
+     }
+    ],
+    "has_next": false
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#103",
+    "data": {
+     "title": "D",
+     "status": "draft"
+    },
+    "mine": true
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#103",
+    "data": {
+     "title": "D",
+     "status": "draft"
+    },
+    "mine": false
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#103",
+    "data": {
+     "title": "D",
+     "secret": "s4",
+     "status": "draft"
+    },
+    "mine": false
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "updated": true
+   }
+  },
+  {
+   "ok": false,
+   "code": "not_found",
+   "reason": "not_found"
+  },
+  {
+   "ok": false,
+   "code": "not_found",
+   "reason": "not_found"
+  },
+  {
+   "ok": false,
+   "code": "not_allowed",
+   "reason": "field_not_writable: featured"
+  },
+  {
+   "ok": true,
+   "value": {
+    "updated": true
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "updated": true
+   }
+  },
+  {
+   "ok": false,
+   "code": "not_allowed",
+   "reason": "field_not_writable: featured"
+  },
+  {
+   "ok": false,
+   "code": "not_found",
+   "reason": "not_found"
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#100",
+    "data": {
+     "title": "A3",
+     "status": "live",
+     "featured": true
+    },
+    "mine": true
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "deleted": true
+   }
+  },
+  {
+   "ok": false,
+   "code": "not_found",
+   "reason": "not_found"
+  },
+  {
+   "ok": true,
+   "value": {
+    "deleted": true
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [
+     {
+      "ref": "#103",
+      "data": {
+       "title": "D",
+       "status": "draft"
+      },
+      "mine": false
+     }
+    ],
+    "has_next": false
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#132",
+    "replayed": false
+   }
+  },
+  {
+   "ok": false,
+   "code": "not_allowed",
+   "reason": "rls"
+  },
+  {
+   "ok": false,
+   "code": "not_allowed",
+   "reason": "rls"
+  },
+  {
+   "ok": false,
+   "code": "not_allowed",
+   "reason": "rls"
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [
+     {
+      "ref": "#132",
+      "data": {
+       "note": "n1"
+      },
+      "mine": false
+     }
+    ],
+    "has_next": false
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [],
+    "has_next": false
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [],
+    "has_next": false
+   }
+  },
+  {
+   "ok": true,
+   "value": null
+  },
+  {
+   "ok": true,
+   "value": {
+    "updated": true
+   }
+  },
+  {
+   "ok": false,
+   "code": "not_found",
+   "reason": "not_found"
+  },
+  {
+   "ok": false,
+   "code": "not_found",
+   "reason": "not_found"
+  },
+  {
+   "ok": false,
+   "code": "not_found",
+   "reason": "not_found"
+  },
+  {
+   "ok": true,
+   "value": {
+    "deleted": true
+   }
+  },
+  {
+   "ok": false,
+   "code": "not_allowed",
+   "reason": "rls"
+  },
+  {
+   "ok": false,
+   "code": "not_allowed",
+   "reason": "rls"
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [],
+    "has_next": false
+   }
+  },
+  {
+   "ok": false,
+   "code": "not_allowed",
+   "reason": "unknown_collection"
+  },
+  {
+   "ok": false,
+   "code": "not_allowed",
+   "reason": "unknown_collection"
+  },
+  {
+   "ok": true,
+   "value": null
+  },
+  {
+   "ok": false,
+   "code": "not_found",
+   "reason": "not_found"
+  },
+  {
+   "ok": false,
+   "code": "not_found",
+   "reason": "not_found"
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#153",
+    "replayed": false
+   }
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "schema_violation: n is below the minimum"
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "schema_violation: n is above the maximum"
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "schema_violation: n must be an integer"
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "schema_violation: n must be a number"
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#158",
+    "replayed": false
+   }
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "schema_violation: f must be a number"
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#160",
+    "replayed": false
+   }
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "schema_violation: d is not a date"
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "schema_violation: d is not a date"
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "schema_violation: d is not a date"
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "schema_violation: d is not a date"
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "schema_violation: d is not a date"
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#166",
+    "replayed": false
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#167",
+    "replayed": false
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#168",
+    "replayed": false
+   }
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "schema_violation: dt is not a date-time"
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "schema_violation: dt is not a date-time"
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "schema_violation: dt is not a date-time"
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "schema_violation: dt is not a date-time"
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#173",
+    "replayed": false
+   }
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "schema_violation: u is not a uuid"
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#175",
+    "replayed": false
+   }
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "schema_violation: e is not an email"
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "schema_violation: e is not an email"
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "schema_violation: e is not an email"
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#179",
+    "replayed": false
+   }
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "schema_violation: s2 is longer than 2"
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#181",
+    "replayed": false
+   }
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "schema_violation: s2 is longer than 2"
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#183",
+    "replayed": false
+   }
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "schema_violation: tags has too many items"
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "schema_violation: tags[] is longer than 3"
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "schema_violation: tags[] must be a string"
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "schema_violation: tags must be an array"
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#188",
+    "replayed": false
+   }
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "schema_violation: flag must be a boolean"
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "schema_violation: flag must be a boolean"
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#191",
+    "replayed": false
+   }
+  }
+ ],
+ "validator": [
+  {
+   "name": "ok_basic",
+   "sql_accepts": true
+  },
+  {
+   "name": "ok_all_ops",
+   "sql_accepts": true
+  },
+  {
+   "name": "ok_masks",
+   "sql_accepts": true
+  },
+  {
+   "name": "ok_files",
+   "sql_accepts": true
+  },
+  {
+   "name": "anyone_update",
+   "sql_accepts": false
+  },
+  {
+   "name": "anyone_delete",
+   "sql_accepts": false
+  },
+  {
+   "name": "unknown_principal",
+   "sql_accepts": false
+  },
+  {
+   "name": "role_upper",
+   "sql_accepts": false
+  },
+  {
+   "name": "role_sql",
+   "sql_accepts": false
+  },
+  {
+   "name": "nine_principals",
+   "sql_accepts": false
+  },
+  {
+   "name": "unknown_op",
+   "sql_accepts": false
+  },
+  {
+   "name": "rules_null_op",
+   "sql_accepts": false
+  },
+  {
+   "name": "principal_number",
+   "sql_accepts": false
+  },
+  {
+   "name": "nested_object",
+   "sql_accepts": false
+  },
+  {
+   "name": "array_of_arrays",
+   "sql_accepts": false
+  },
+  {
+   "name": "pattern_keyword",
+   "sql_accepts": false
+  },
+  {
+   "name": "schema_extra_key",
+   "sql_accepts": false
+  },
+  {
+   "name": "schema_no_props",
+   "sql_accepts": false
+  },
+  {
+   "name": "reserved_id",
+   "sql_accepts": false
+  },
+  {
+   "name": "reserved_mine",
+   "sql_accepts": false
+  },
+  {
+   "name": "upper_field",
+   "sql_accepts": false
+  },
+  {
+   "name": "required_undeclared",
+   "sql_accepts": false
+  },
+  {
+   "name": "maxlength_huge",
+   "sql_accepts": false
+  },
+  {
+   "name": "format_url",
+   "sql_accepts": false
+  },
+  {
+   "name": "enum_numbers",
+   "sql_accepts": false
+  },
+  {
+   "name": "int_with_maxlength",
+   "sql_accepts": false
+  },
+  {
+   "name": "bool_extra",
+   "sql_accepts": false
+  },
+  {
+   "name": "mask_undeclared",
+   "sql_accepts": false
+  },
+  {
+   "name": "mask_bad_key",
+   "sql_accepts": false
+  },
+  {
+   "name": "mask_bad_principal",
+   "sql_accepts": false
+  },
+  {
+   "name": "files_with_schema",
+   "sql_accepts": false
+  },
+  {
+   "name": "files_list_ne_get",
+   "sql_accepts": false
+  },
+  {
+   "name": "string_no_maxlength",
+   "sql_accepts": false
+  },
+  {
+   "name": "string_fractional_maxlength",
+   "sql_accepts": false
+  },
+  {
+   "name": "array_no_maxitems",
+   "sql_accepts": false
+  },
+  {
+   "name": "format_null",
+   "sql_accepts": false
+  },
+  {
+   "name": "min_above_max",
+   "sql_accepts": false
+  }
+ ]
+}

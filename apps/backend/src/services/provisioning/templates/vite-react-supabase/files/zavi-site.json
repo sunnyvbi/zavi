@@ -1,0 +1,8 @@
+{
+  "smoke": {
+    "journeys": [
+      { "name": "home", "path": "/" },
+      { "name": "login", "path": "/login", "expect": "[data-zavi=login-email]" }
+    ]
+  }
+}

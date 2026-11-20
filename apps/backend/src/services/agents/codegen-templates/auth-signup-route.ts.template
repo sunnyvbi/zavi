@@ -1,0 +1,56 @@
+// BLESSED TEMPLATE — app/api/signup/route.ts (POST). Copy verbatim; uses lib/auth.ts.
+// Duplicate email = Postgres unique violation 23505 on INSERT (no check-then-insert
+// race, no 500). Every other failure is a generic message, never a stack trace.
+// Inserts ONLY (email, password_hash): the role is the DB default 'user'. Admin comes
+// only from an invite link, redeemed after the account exists.
+import { NextResponse } from "next/server";
+import bcrypt from "bcryptjs";
+import { query } from "@/lib/db";
+import { createSession } from "@/lib/session";
+import {
+  BCRYPT_ROUNDS,
+  LIMITS,
+  SIGNUP_PAGE,
+  clientIp,
+  forbidden,
+  isCrossSiteRequest,
+  isValidEmail,
+  landingAfterAuth,
+  readCredentials,
+  redirectWithError,
+  redirectWithSession,
+  tooManyAttempts,
+} from "@/lib/auth";
+
+export async function POST(req: Request): Promise<NextResponse> {
+  if (isCrossSiteRequest(req)) return forbidden();
+  const { email, password, invite } = await readCredentials(req);
+  if (tooManyAttempts([{ key: `signup:ip:${clientIp(req)}`, limit: LIMITS.ip }])) {
+    return redirectWithError(SIGNUP_PAGE, "too_many", invite);
+  }
+  if (!isValidEmail(email) || password.length < 8) {
+    return redirectWithError(SIGNUP_PAGE, "bad_input", invite);
+  }
+  let id: number;
+  try {
+    const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
+    const inserted = await query<{ id: number }>(
+      "INSERT INTO users (email, password_hash) VALUES ($1, $2) RETURNING id",
+      [email, passwordHash],
+    );
+    id = inserted.rows[0].id; // a NUMBER
+  } catch (e) {
+    if ((e as { code?: string })?.code === "23505") return redirectWithError(SIGNUP_PAGE, "exists", invite);
+    console.error("[signup] failed", (e as { code?: string })?.code ?? "unknown");
+    return redirectWithError(SIGNUP_PAGE, "server", invite);
+  }
+  let session: string;
+  try {
+    session = createSession(id);
+  } catch {
+    console.error("[signup] session failed");
+    await query("DELETE FROM users WHERE id = $1", [id]).catch(() => undefined);
+    return redirectWithError(SIGNUP_PAGE, "server", invite);
+  }
+  return redirectWithSession(await landingAfterAuth(invite, id), session);
+}

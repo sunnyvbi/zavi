@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="bench-provenance" content="hand_written_demo">
+<title>Brightside Dental</title>
+<style>
+:root{--ink:#14302b;--muted:#5a6f6a;--accent:#0f766e;--paper:#f6faf9;--line:#d5e3e0}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.55 Georgia,serif;color:var(--ink);background:var(--paper)}
+header,section,footer{padding:32px 16px;max-width:1080px;margin:0 auto}
+nav{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+nav strong{font-size:22px}
+.hero h1{font-size:clamp(32px,6vw,56px);line-height:1.1;margin:24px 0 12px}
+.hero p{color:var(--muted);max-width:60ch}
+button,.cta{background:var(--accent);color:#fff;border:0;padding:12px 20px;border-radius:6px;font:inherit;cursor:pointer;text-decoration:none}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.card{background:#fff;border:1px solid var(--line);border-radius:8px;padding:16px}
+#booking[hidden]{display:none}
+form{display:grid;gap:12px;max-width:420px}
+input,select{font:inherit;padding:10px;border:1px solid var(--line);border-radius:6px}
+footer{color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+<header>
+<nav><strong>Brightside Dental</strong><button type="button" id="open-booking">Book an appointment</button></nav>
+<div class="hero">
+<h1>Family dentistry in Austin, without the wait.</h1>
+<p>Checkups and cleanings, teeth whitening, Invisalign and same-day emergency care, from three dentists who have looked after Austin families for over a decade.</p>
+</div>
+</header>
+<section id="booking" hidden>
+<h2>Book an appointment</h2>
+<form onsubmit="event.preventDefault();this.querySelector('p').hidden=false">
+<label>Service <select name="service"><option>Checkup and cleaning</option><option>Teeth whitening</option><option>Invisalign consultation</option><option>Emergency visit</option></select></label>
+<label>Time <input type="datetime-local" name="time" required></label>
+<label>Name <input name="name" required></label>
+<label>Phone <input type="tel" name="phone" required></label>
+<button type="submit">Confirm booking</button>
+<p hidden>Thanks, we will text you to confirm.</p>
+</form>
+</section>
+<section>
+<h2>Services</h2>
+<div class="grid">
+<div class="card"><h3>Checkups and cleanings</h3><p>Twice-yearly exams with gentle cleaning.</p></div>
+<div class="card"><h3>Teeth whitening</h3><p>In-chair whitening in one visit.</p></div>
+<div class="card"><h3>Invisalign</h3><p>Clear aligners planned by our orthodontic lead.</p></div>
+<div class="card"><h3>Emergency care</h3><p>Same-day appointments for pain or breaks.</p></div>
+</div>
+</section>
+<section>
+<h2>Our dentists</h2>
+<div class="grid">
+<div class="card"><h3>Dr. Maya Ortiz</h3><p>General dentist, 14 years in practice.</p></div>
+<div class="card"><h3>Dr. Sam Patel</h3><p>Invisalign and cosmetic work.</p></div>
+<div class="card"><h3>Dr. Lena Brooks</h3><p>Pediatric and family care.</p></div>
+</div>
+</section>
+<section>
+<h2>Hours and insurance</h2>
+<p>Mon to Fri 8am to 6pm, Sat 9am to 1pm. We accept Delta Dental, Cigna, Aetna and MetLife insurance.</p>
+</section>
+<section>
+<h2>What patients say</h2>
+<p>"Booked online at 7am, seen by 10am. Painless." (Review from Jordan R.)</p>
+</section>
+<footer>Hand-written demo page for the site-quality benchmark (provenance: hand_written_demo). Not an AI build.</footer>
+<script>
+document.getElementById("open-booking").addEventListener("click",function(){var s=document.getElementById("booking");s.hidden=false;s.scrollIntoView();});
+</script>
+</body>
+</html>

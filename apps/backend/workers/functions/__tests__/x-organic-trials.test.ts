@@ -1,0 +1,13 @@
+import { beforeEach, expect, it, vi } from "vitest";
+const m=vi.hoisted(()=>({halt:vi.fn(),stop:vi.fn(),read:vi.fn(),process:vi.fn(),defer:vi.fn(),from:vi.fn()}));
+vi.mock("../../client",()=>({inngest:{createFunction:vi.fn()}}));
+vi.mock("@/services/agents/fleet-halt",()=>({isFleetHalted:m.halt}));
+vi.mock("@/services/agents/cron-stopped",()=>({isWorkerCronStopped:m.stop}));
+vi.mock("@/services/channels/x-organic-trials",()=>({processXOrganicTrial:m.process,deferXOrganicTrial:m.defer}));
+vi.mock("@/services/tenant-client",()=>({fleetSweepClient:()=>({from:m.from})}));
+import { runXOrganicTrials } from "../x-organic-trials";
+beforeEach(()=>{vi.clearAllMocks();m.halt.mockResolvedValue(false);m.stop.mockReturnValue(false);const q={select:()=>q,not:()=>q,lte:()=>q,order:()=>q,limit:m.read};m.from.mockReturnValue(q);m.read.mockResolvedValue({data:[{action_id:"a",tenant_id:"tenant-a"},{action_id:"b",tenant_id:"tenant-b"}],error:null});m.process.mockResolvedValue(undefined);m.defer.mockResolvedValue(undefined);});
+it.each(["halt","stop"])("respects %s before any reads",async mode=>{if(mode==="halt")m.halt.mockResolvedValue(true);else m.stop.mockReturnValue(true);expect(await runXOrganicTrials()).toEqual({stopped:true});expect(m.from).not.toHaveBeenCalled();});
+it("advances bounded rows using database tenant identity",async()=>{expect(await runXOrganicTrials()).toEqual({completed:2,failed:0});expect(m.read).toHaveBeenCalledWith(20);expect(m.process).toHaveBeenNthCalledWith(1,{action_id:"a",tenant_id:"tenant-a"});expect(m.process).toHaveBeenNthCalledWith(2,{action_id:"b",tenant_id:"tenant-b"});});
+it("defers a failed read and continues the other workspace",async()=>{m.process.mockRejectedValueOnce(new Error("provider down"));expect(await runXOrganicTrials()).toEqual({completed:1,failed:1});expect(m.defer).toHaveBeenCalledWith({action_id:"a",tenant_id:"tenant-a"});});
+it("does not treat failed listing as no work",async()=>{m.read.mockResolvedValue({data:null,error:{message:"db down"}});await expect(runXOrganicTrials()).rejects.toThrow("Could not read");});

@@ -1,0 +1,40 @@
+
+version: 1
+applications:
+  - appRoot: apps/web
+    frontend:
+      buildPath: /
+      phases:
+        preBuild:
+          commands:
+            - 'while [ ! -f package-lock.json ] && [ "$(pwd)" != "/" ]; do cd ..; done; npm ci --legacy-peer-deps'
+        build:
+          commands:
+            - 'while [ ! -f package-lock.json ] && [ "$(pwd)" != "/" ]; do cd ..; done; export NODE_OPTIONS="--max-old-space-size=4096"; npm run build -w @zavi/web'
+            - 'while [ ! -f package-lock.json ] && [ "$(pwd)" != "/" ]; do cd ..; done; rm -rf apps/web/.next/cache'
+            - 'while [ ! -f package-lock.json ] && [ "$(pwd)" != "/" ]; do cd ..; done; rm -rf node_modules/sharp node_modules/@img'
+      artifacts:
+        baseDirectory: apps/web/.next
+        files:
+          - "**/*"
+      cache:
+        paths:
+          - node_modules/**/*
+  - appRoot: apps/admin
+    frontend:
+      buildPath: /
+      phases:
+        preBuild:
+          commands:
+            - 'while [ ! -f package-lock.json ] && [ "$(pwd)" != "/" ]; do cd ..; done; npm ci --legacy-peer-deps'
+        build:
+          commands:
+            - 'while [ ! -f package-lock.json ] && [ "$(pwd)" != "/" ]; do cd ..; done; export NODE_OPTIONS="--max-old-space-size=4096"; npm run build -w @zavi/admin'
+            - 'while [ ! -f package-lock.json ] && [ "$(pwd)" != "/" ]; do cd ..; done; rm -rf apps/admin/.next/cache'
+      artifacts:
+        baseDirectory: apps/admin/.next
+        files:
+          - "**/*"
+      cache:
+        paths:
+          - node_modules/**/*

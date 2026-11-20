@@ -1,0 +1,48 @@
+{
+  "run_id": "mock-lovable-saas-landing",
+  "brief_id": "saas-landing",
+  "system": "lovable",
+  "provenance": "mocked",
+  "captured_at": "2026-10-07T00:04:00.000Z",
+  "urls": {
+    "site": null
+  },
+  "screenshots": {
+    "desktop": "shots/mock-lovable-saas-landing-desktop.png",
+    "mobile": "shots/mock-lovable-saas-landing-mobile.png"
+  },
+  "timings": {
+    "to_first_preview_s": null,
+    "to_usable_complete_s": 160
+  },
+  "cost": {
+    "usd": null,
+    "source": "mocked: competitor cost unknown"
+  },
+  "repairs": null,
+  "failures": [],
+  "journeys": [
+    {
+      "name": "join_waitlist",
+      "passed": true
+    }
+  ],
+  "requirement_coverage": [
+    {
+      "requirement": "Explains what the product does",
+      "met": true,
+      "evidence": "mocked: not checked"
+    },
+    {
+      "requirement": "Shows a few features or benefits",
+      "met": true,
+      "evidence": "mocked: not checked"
+    },
+    {
+      "requirement": "Waitlist signup",
+      "met": true,
+      "evidence": "mocked: not checked"
+    }
+  ],
+  "scores": null
+}

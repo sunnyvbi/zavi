@@ -1,0 +1,321 @@
+{
+  "schemaVersion": 2,
+  "roles": [],
+  "capabilities": [],
+  "actions": {
+    "book_slot": {
+      "target": {
+        "collection": "slots",
+        "counter": "booked_count"
+      },
+      "delta": 1,
+      "initial": 0,
+      "bounds": {
+        "min": 0,
+        "maxField": "capacity"
+      },
+      "creates": {
+        "collection": "appointments",
+        "targetField": "slot_id"
+      },
+      "principals": [
+        "signed_in"
+      ],
+      "idempotency": "required",
+      "inverse": {
+        "name": "cancel_appointment",
+        "delta": -1,
+        "transition": {
+          "from": "booked",
+          "to": "cancelled"
+        },
+        "principals": [
+          "owner",
+          "admin"
+        ],
+        "idempotency": "required"
+      }
+    }
+  },
+  "aggregates": {
+    "appointments_by_status": {
+      "collection": "appointments",
+      "fn": "count",
+      "filters": [
+        "slot_id",
+        "status"
+      ],
+      "principals": [
+        "admin"
+      ]
+    }
+  },
+  "collections": {
+    "donors": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "owner",
+          "admin"
+        ],
+        "get": [
+          "owner",
+          "admin"
+        ],
+        "create": [
+          "signed_in"
+        ],
+        "update": [
+          "owner",
+          "admin"
+        ],
+        "delete": [
+          "owner",
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "full_name": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "blood_group": {
+            "type": "string",
+            "maxLength": 6,
+            "enum": [
+              "a_pos",
+              "a_neg",
+              "b_pos",
+              "b_neg",
+              "ab_pos",
+              "ab_neg",
+              "o_pos",
+              "o_neg"
+            ]
+          },
+          "phone": {
+            "type": "string",
+            "maxLength": 30
+          },
+          "city": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "last_donated": {
+            "type": "string",
+            "maxLength": 10,
+            "format": "date"
+          },
+          "available": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "full_name",
+          "blood_group",
+          "phone",
+          "city"
+        ]
+      },
+      "fields": {},
+      "indexes": {
+        "blood_group": {
+          "type": "text",
+          "ops": [
+            "eq"
+          ],
+          "sort": false
+        },
+        "city": {
+          "type": "text",
+          "ops": [
+            "eq"
+          ],
+          "sort": false
+        }
+      },
+      "unique": [],
+      "references": {}
+    },
+    "slots": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "anyone"
+        ],
+        "get": [
+          "anyone"
+        ],
+        "create": [
+          "admin"
+        ],
+        "update": [
+          "admin"
+        ],
+        "delete": [
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "centre": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "starts_at": {
+            "type": "string",
+            "maxLength": 40,
+            "format": "date-time"
+          },
+          "capacity": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "booked_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          }
+        },
+        "required": [
+          "centre",
+          "starts_at",
+          "capacity",
+          "booked_count"
+        ]
+      },
+      "fields": {},
+      "indexes": {
+        "starts_at": {
+          "type": "timestamp",
+          "ops": [
+            "range"
+          ],
+          "sort": true
+        }
+      },
+      "unique": [
+        {
+          "fields": [
+            "centre",
+            "starts_at"
+          ],
+          "nulls": "not_distinct"
+        }
+      ],
+      "references": {}
+    },
+    "appointments": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "owner",
+          "admin"
+        ],
+        "get": [
+          "owner",
+          "admin"
+        ],
+        "create": [],
+        "update": [],
+        "delete": [
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "slot_id": {
+            "type": "string",
+            "maxLength": 36,
+            "format": "uuid"
+          },
+          "blood_group": {
+            "type": "string",
+            "maxLength": 6,
+            "enum": [
+              "a_pos",
+              "a_neg",
+              "b_pos",
+              "b_neg",
+              "ab_pos",
+              "ab_neg",
+              "o_pos",
+              "o_neg"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "maxLength": 9,
+            "enum": [
+              "booked",
+              "donated",
+              "cancelled",
+              "no_show"
+            ]
+          }
+        },
+        "required": [
+          "slot_id",
+          "blood_group",
+          "status"
+        ]
+      },
+      "fields": {},
+      "indexes": {
+        "slot_id": {
+          "type": "text",
+          "ops": [
+            "eq"
+          ],
+          "sort": false
+        }
+      },
+      "unique": [],
+      "references": {
+        "slot_id": {
+          "collection": "slots",
+          "on_delete": "restrict"
+        }
+      },
+      "states": {
+        "field": "status",
+        "values": [
+          "booked",
+          "donated",
+          "cancelled",
+          "no_show"
+        ],
+        "initial": "booked",
+        "transitions": [
+          {
+            "from": "booked",
+            "to": "donated",
+            "principals": [
+              "admin"
+            ]
+          },
+          {
+            "from": "booked",
+            "to": "no_show",
+            "principals": [
+              "admin"
+            ]
+          },
+          {
+            "from": "booked",
+            "to": "cancelled",
+            "principals": [
+              "owner",
+              "admin"
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

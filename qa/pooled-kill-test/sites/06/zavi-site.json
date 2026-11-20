@@ -1,0 +1,221 @@
+{
+  "schemaVersion": 2,
+  "roles": [],
+  "capabilities": [],
+  "actions": {},
+  "aggregates": {
+    "guests_attending": {
+      "collection": "rsvps",
+      "fn": "sum",
+      "field": "party_size",
+      "filters": [
+        "attending"
+      ],
+      "principals": [
+        "admin"
+      ]
+    }
+  },
+  "collections": {
+    "rsvps": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "admin"
+        ],
+        "get": [
+          "admin"
+        ],
+        "create": [
+          "anyone"
+        ],
+        "update": [
+          "admin"
+        ],
+        "delete": [
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "guest_name": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "email": {
+            "type": "string",
+            "maxLength": 320,
+            "format": "email"
+          },
+          "attending": {
+            "type": "boolean"
+          },
+          "party_size": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10
+          },
+          "meal": {
+            "type": "string",
+            "maxLength": 10,
+            "enum": [
+              "chicken",
+              "fish",
+              "vegetarian",
+              "vegan",
+              "kids"
+            ]
+          },
+          "dietary": {
+            "type": "string",
+            "maxLength": 300
+          },
+          "song_request": {
+            "type": "string",
+            "maxLength": 120
+          }
+        },
+        "required": [
+          "guest_name",
+          "attending",
+          "party_size"
+        ]
+      },
+      "fields": {},
+      "indexes": {
+        "attending": {
+          "type": "text",
+          "ops": [
+            "eq"
+          ],
+          "sort": false
+        },
+        "party_size": {
+          "type": "number",
+          "ops": [
+            "eq",
+            "range"
+          ],
+          "sort": false
+        }
+      },
+      "unique": [],
+      "references": {}
+    },
+    "guestbook": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "anyone"
+        ],
+        "get": [
+          "anyone"
+        ],
+        "create": [
+          "anyone"
+        ],
+        "update": [
+          "admin"
+        ],
+        "delete": [
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 1000
+          },
+          "status": {
+            "type": "string",
+            "maxLength": 8,
+            "enum": [
+              "pending",
+              "approved",
+              "hidden"
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "message",
+          "status"
+        ]
+      },
+      "fields": {},
+      "indexes": {},
+      "unique": [],
+      "references": {},
+      "states": {
+        "field": "status",
+        "values": [
+          "pending",
+          "approved",
+          "hidden"
+        ],
+        "initial": "pending",
+        "read": {
+          "pending": [
+            "admin"
+          ],
+          "approved": [
+            "anyone"
+          ],
+          "hidden": [
+            "admin"
+          ]
+        },
+        "transitions": [
+          {
+            "from": "pending",
+            "to": "approved",
+            "principals": [
+              "admin"
+            ]
+          },
+          {
+            "from": "pending",
+            "to": "hidden",
+            "principals": [
+              "admin"
+            ]
+          },
+          {
+            "from": "approved",
+            "to": "hidden",
+            "principals": [
+              "admin"
+            ]
+          }
+        ]
+      }
+    },
+    "gallery": {
+      "kind": "files",
+      "rules": {
+        "list": [
+          "anyone"
+        ],
+        "get": [
+          "anyone"
+        ],
+        "create": [
+          "admin"
+        ],
+        "update": [
+          "admin"
+        ],
+        "delete": [
+          "admin"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,217 @@
+{
+  "_source": "Apna Tutor content for the journey film. Every string and number is taken from the intake and the text of apnatutor.live (home + pricing) as captured for the bake-off; nothing is invented. 'From $5 per 60-min session' is the site's hero line.",
+  "product_name": "Apna Tutor",
+  "one_liner": "Online 1-on-1 tutoring from India for NRI kids, TK to 10th grade.",
+  "problem": "US tutors charge $60–$80 an hour, making tutoring expensive for families.",
+  "features": [],
+  "cta_text": "Browse tutors",
+  "cta_url": "https://www.apnatutor.live/",
+  "theme": "journey",
+  "brand": { "accent": "#EE6A96", "ground": "#FAF7F2", "ink": "#1E1A1A" },
+  "journey": [
+    {
+      "kind": "title",
+      "slate": "Tutors from India",
+      "kicker": "1-on-1 online tutoring · TK to 10th grade",
+      "headline": "Tutors from India.",
+      "sub": "Real teachers, the same face every week, in your child's evening.",
+      "chips": ["Math", "Phonics", "Hindi", "Coding", "Chess", "Science", "Telugu", "Public Speaking", "English Reading", "Tamil", "Music", "Algebra"],
+      "notes": ["No card to browse", "No account for your child", "A short trial first, where the tutor offers one"]
+    },
+    {
+      "kind": "numeral",
+      "slate": "The going rate",
+      "label": "US tutors charge",
+      "value": "$60–$80",
+      "unit": "an hour",
+      "source": "US online tutoring marketplace rates, 2026",
+      "notes": ["Ours set their own rate and keep all of it"]
+    },
+    {
+      "kind": "versus",
+      "slate": "The same hour",
+      "title": "The same hour, at a price the tutor sets.",
+      "left": { "label": "Typical US tutor", "value": "$60–$80", "unit": "per hour", "notes": ["US online tutoring marketplace rates, 2026"] },
+      "right": { "label": "Apna tutor", "value": "From $5", "unit": "per 60-min session", "notes": ["Set by the tutor", "Shown on the profile before you book"] }
+    },
+    {
+      "kind": "ring",
+      "slate": "0% commission",
+      "title": "Apna takes no commission on the session fee.",
+      "big": "0%",
+      "ringLabel": "commission",
+      "gapLabel": "Apna takes nothing",
+      "rows": ["The tutor sets the rate", "The tutor keeps every dollar of it", "You pay the tutor directly"]
+    },
+    {
+      "kind": "wall",
+      "slate": "Subjects",
+      "title": "What does your child need help with?",
+      "countLabel": "subjects & languages",
+      "items": ["Math", "Algebra", "Geometry", "Vedic Math & Abacus", "English Reading", "English Writing", "English Grammar", "Spelling & Vocabulary", "Phonics", "Handwriting", "Science", "Physics", "Chemistry", "Biology", "Social Studies", "Coding", "Homework Help", "ESL", "Hindi", "Devanagari Writing", "Telugu", "Tamil", "Bengali", "Marathi", "Kannada", "Gujarati", "Malayalam", "Punjabi", "Urdu", "Sanskrit", "Art & Drawing", "Music", "Dance", "Chess", "Public Speaking"]
+    },
+    {
+      "kind": "burst",
+      "slate": "Heritage languages",
+      "title": "heritage languages",
+      "center": "Heritage languages",
+      "items": ["Hindi", "Telugu", "Tamil", "Bengali", "Marathi", "Kannada", "Gujarati", "Malayalam", "Punjabi", "Urdu", "Sanskrit"]
+    },
+    {
+      "kind": "ladder",
+      "slate": "Grades",
+      "title": "TK to 10th grade.",
+      "countLabel": "grades",
+      "rungs": ["TK", "K", "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th"]
+    },
+    {
+      "kind": "filter",
+      "slate": "Browse",
+      "title": "Browse by subject, grade and language.",
+      "button": "Browse tutors",
+      "fields": [
+        { "label": "Subject", "values": ["Math", "Phonics", "Hindi", "Coding", "Science", "Chess", "English Reading", "Telugu", "Public Speaking"] },
+        { "label": "Grade", "values": ["TK", "Kindergarten", "1st grade", "2nd grade", "3rd grade", "4th grade", "5th grade", "7th grade", "10th grade"] },
+        { "label": "Class language", "values": ["English", "Hindi", "English + Hindi mix"] }
+      ],
+      "notes": ["No card to browse", "Tutors describe what they teach in their own words"]
+    },
+    {
+      "kind": "steps",
+      "slate": "How it works",
+      "title": "From “we need a tutor” to booked, in a few minutes.",
+      "steps": [
+        { "title": "Browse", "detail": "By subject, grade and language." },
+        { "title": "Message", "detail": "Tell the tutor where your child is stuck." },
+        { "title": "Try a trial", "detail": "One session before you commit." },
+        { "title": "Book weekly", "detail": "Same tutor, same time, every week." }
+      ]
+    },
+    {
+      "kind": "chat",
+      "slate": "Message first",
+      "title": "Ask before you book.",
+      "from": "Parent",
+      "message": "My second grader is stuck on subtraction. Can you help?",
+      "checks": ["A perfectly good first message", "No card to browse or message", "No account for your child"]
+    },
+    {
+      "kind": "range",
+      "slate": "Try a trial",
+      "title": "Meet them before you commit.",
+      "min": "15",
+      "max": "60",
+      "unit": "min",
+      "caption": "A short trial, at a price the tutor sets.",
+      "notes": ["Many tutors offer one", "Sit in if you like"]
+    },
+    {
+      "kind": "repeat",
+      "slate": "Book weekly",
+      "title": "Same teacher every week.",
+      "slot": "Same tutor, same time",
+      "caption": "Your child builds a relationship with one person.",
+      "contrast": "No rotating pool"
+    },
+    {
+      "kind": "clock",
+      "slate": "Your evening, their morning",
+      "title": "Your evening, their morning",
+      "left": { "place": "India", "when": "Early mornings" },
+      "right": { "place": "US", "when": "After school" },
+      "caption": "Tutors teach early mornings in India, which is after school in the US."
+    },
+    {
+      "kind": "strike",
+      "slate": "No plans",
+      "title": "There are no Apna plans",
+      "items": ["Subscription", "Minimum", "Card to browse", "Account for your child"],
+      "stamp": "Nothing renews on you"
+    },
+    {
+      "kind": "redact",
+      "slate": "Kids' data",
+      "title": "No account for your child.",
+      "shown": [
+        { "label": "First name", "value": "Shown" },
+        { "label": "Grade", "value": "Shown" }
+      ],
+      "hiddenCount": 4,
+      "caption": "The parent holds the account. First name and grade is all a tutor sees."
+    },
+    {
+      "kind": "options",
+      "slate": "Live, one-on-one",
+      "title": "One-on-one, live, on the tutor's own video.",
+      "items": ["Zoom", "Google Meet", "WhatsApp"],
+      "caption": "Apna never sits in on the session."
+    },
+    {
+      "kind": "gate",
+      "slate": "Reviews",
+      "title": "Reviews from parents",
+      "pass": ["Booked", "Had the session", "Review"],
+      "block": "Did not book",
+      "empty": "A tutor with none shows none, never a filler rating.",
+      "caption": "Reviews come only from families who booked and had the session."
+    },
+    {
+      "kind": "flow",
+      "slate": "How paying works",
+      "title": "You pay the tutor, not us.",
+      "from": "Parent",
+      "to": "Tutor",
+      "via": ["Zelle", "Wise", "UPI"],
+      "zero": { "label": "Apna takes", "value": "0%" },
+      "caption": "After the session, pay the tutor directly. Apna does not hold your money."
+    },
+    {
+      "kind": "countdown",
+      "slate": "Plans change",
+      "title": "Plans change? Give 24 hours’ notice.",
+      "hours": "24 hours",
+      "inside": "Cancel from your dashboard with a day’s notice, at no cost.",
+      "outside": "Later than that, tutors on Apna ask for half the price."
+    },
+    {
+      "kind": "quad",
+      "slate": "Between sessions",
+      "title": "An AI tutor that teaches like a real one.",
+      "tag": "K–5 · Free for families",
+      "caption": "For the days there is no session booked.",
+      "items": [
+        { "title": "English", "detail": "Reading, phonics, writing." },
+        { "title": "Math", "detail": "Counting, place value, word problems." },
+        { "title": "Languages", "detail": "Hindi, Telugu and more." },
+        { "title": "Chess", "detail": "Pieces, moves, a first game." }
+      ]
+    },
+    {
+      "kind": "cycle",
+      "slate": "AI tutor",
+      "title": "Between sessions",
+      "center": "AI tutor",
+      "nodes": ["Reads to your kid", "Listens to them read back", "Sends you the recap"],
+      "caption": "Reading, math, languages and chess basics for K–5."
+    },
+    {
+      "kind": "terms",
+      "slate": "Teach on Apna",
+      "title": "Teach NRI kids. On your terms.",
+      "rows": [
+        { "label": "Your rate", "value": "Set your own rate" },
+        { "label": "Your hours", "value": "Keep your own hours" },
+        { "label": "Getting paid", "value": "In USD, straight from the parent" },
+        { "label": "Commission", "value": "Apna takes no cut" }
+      ]
+    },
+    {
+      "kind": "cta",
+      "slate": "Find a tutor",
+      "headline": "Find a tutor.",
+      "button": "Browse tutors",
+      "url": "apnatutor.live",
+      "notes": ["Many offer a free trial", "No card to browse", "No account for your child"]
+    }
+  ]
+}

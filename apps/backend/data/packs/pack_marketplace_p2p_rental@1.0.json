@@ -1,0 +1,77 @@
+{
+  "id": "pack_marketplace_p2p_rental@1.0",
+  "pack_slug": "pack_marketplace_p2p_rental",
+  "semver": "1.0.0",
+  "status": "preview",
+  "display_name": "Marketplace · P2P Rental",
+  "description": "P2P rental marketplace operating pack — host-listed inventory rented to guests on per-trip pricing. Extracted from 18mo of Upcar operating history. Entity types cover the host/listing/trip/dispute/payout core; outcome classes match Praxis §7.1 surfaces (KYC / email triage / support / fraud).",
+  "supersedes": null,
+
+  "entity_types": {
+    "host": {
+      "display": "Host",
+      "description": "Owner of one or more listings. Has KYC state, payout connection, reputation.",
+      "key_attributes": ["external_id", "email", "kyc_status", "joined_at", "payout_account_id", "is_suspended"],
+      "pii_fields": ["email"]
+    },
+    "guest": {
+      "display": "Guest",
+      "description": "Renter. Books trips against listings. Has KYC state, payment-on-file, trip history.",
+      "key_attributes": ["external_id", "email", "kyc_status", "joined_at", "is_banned"],
+      "pii_fields": ["email"]
+    },
+    "listing": {
+      "display": "Listing",
+      "description": "A rentable unit. Belongs to a host. Has price, availability, location, asset metadata.",
+      "key_attributes": ["external_id", "host_external_id", "title", "city", "state", "daily_rate", "is_active"],
+      "pii_fields": []
+    },
+    "trip": {
+      "display": "Trip",
+      "description": "A booked rental from a guest against a listing. Has lifecycle state, money, T&S signals.",
+      "key_attributes": ["external_id", "listing_external_id", "host_external_id", "guest_external_id", "starts_at", "ends_at", "status", "total_charged_cents"],
+      "pii_fields": []
+    },
+    "dispute": {
+      "display": "Dispute",
+      "description": "Chargeback or in-platform dispute on a trip. Has Stripe id, reason, evidence_due_by, outcome.",
+      "key_attributes": ["external_id", "trip_external_id", "stripe_dispute_id", "reason", "amount_cents", "outcome", "evidence_due_by"],
+      "pii_fields": []
+    },
+    "payout": {
+      "display": "Payout",
+      "description": "Money sent from platform to host bank. Has Stripe transfer id, amount, arrival, status.",
+      "key_attributes": ["external_id", "host_external_id", "stripe_transfer_id", "amount_cents", "arrival_at", "status"],
+      "pii_fields": []
+    }
+  },
+
+  "outcome_classes": {
+    "kyc": ["approved", "banned", "suspended", "escalated"],
+    "email_triage": ["ai_action_confirmed", "ai_action_overridden", "escalated", "no_action"],
+    "support_resolution": ["resolved", "refunded", "escalated", "no_action"],
+    "fraud_scoring": ["true_positive", "false_positive", "true_negative", "false_negative"]
+  },
+
+  "connector_map": {
+    "stripe": {
+      "charge.succeeded": { "entity_type": "trip", "field_map": { "external_id": "metadata.trip_id", "total_charged_cents": "amount" } },
+      "charge.dispute.created": { "entity_type": "dispute", "field_map": { "external_id": "id", "stripe_dispute_id": "id", "reason": "reason", "amount_cents": "amount", "evidence_due_by": "evidence_details.due_by" } },
+      "transfer.created": { "entity_type": "payout", "field_map": { "external_id": "id", "stripe_transfer_id": "id", "amount_cents": "amount" } }
+    },
+    "postgres_cdc": {
+      "trips.update": { "entity_type": "trip", "field_map": { "external_id": "_id", "status": "status", "starts_at": "startTime", "ends_at": "endTime" } },
+      "users.update": { "entity_type": "host", "field_map_when": "doc.userType == 'host'", "field_map": { "external_id": "_id", "email": "email", "kyc_status": "kycStatus", "is_suspended": "suspended" } },
+      "listings.update": { "entity_type": "listing", "field_map": { "external_id": "_id", "host_external_id": "userId", "title": "title", "city": "city", "state": "state", "daily_rate": "dailyRate", "is_active": "isActive" } }
+    },
+    "slack": {
+      "message": { "ingest_only": true, "comment": "Slack messages are not entities; they feed retrieval + extractor only." }
+    }
+  },
+
+  "seed_skills": [],
+
+  "seed_memory": {},
+
+  "seed_agent_drafts": []
+}

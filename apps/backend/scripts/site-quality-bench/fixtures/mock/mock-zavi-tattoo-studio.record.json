@@ -1,0 +1,48 @@
+{
+  "run_id": "mock-zavi-tattoo-studio",
+  "brief_id": "tattoo-studio",
+  "system": "zavi",
+  "provenance": "mocked",
+  "captured_at": "2026-10-07T00:02:00.000Z",
+  "urls": {
+    "site": null
+  },
+  "screenshots": {
+    "desktop": "shots/mock-zavi-tattoo-studio-desktop.png",
+    "mobile": "shots/mock-zavi-tattoo-studio-mobile.png"
+  },
+  "timings": {
+    "to_first_preview_s": null,
+    "to_usable_complete_s": 820
+  },
+  "cost": {
+    "usd": 3.1,
+    "source": "mocked: invented number"
+  },
+  "repairs": 2,
+  "failures": [],
+  "journeys": [
+    {
+      "name": "request_consultation",
+      "passed": true
+    }
+  ],
+  "requirement_coverage": [
+    {
+      "requirement": "Shows tattoo work",
+      "met": true,
+      "evidence": "mocked: not checked"
+    },
+    {
+      "requirement": "A way to get in touch or book a consult",
+      "met": true,
+      "evidence": "mocked: not checked"
+    },
+    {
+      "requirement": "Where the studio is",
+      "met": false,
+      "evidence": "mocked: not checked"
+    }
+  ],
+  "scores": null
+}

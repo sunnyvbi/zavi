@@ -1,0 +1,277 @@
+
+name: lint
+
+on:
+  workflow_call:
+    inputs:
+      runner:
+        type: string
+        required: false
+        default: ""
+      static_only:
+        type: boolean
+        required: false
+        default: false
+      skip_unit:
+        type: boolean
+        required: false
+        default: false
+      backend_deploy:
+        type: boolean
+        required: false
+        default: false
+
+jobs:
+  static-gates:
+    runs-on: ${{ inputs.runner || vars.CI_RUNNER || 'ubuntu-latest' }}
+    timeout-minutes: 10
+    name: static gates (compose parse · migration version · service-role · chat-reply)
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: docker compose file must parse (strict, duplicate-key detection)
+        run: |
+          for f in main api worker; do
+            docker compose -f "apps/backend/docker/$f/docker-compose.yml" config -q
+          done
+
+      - name: migration version prefixes must be unique
+        run: |
+          set +e
+          dups=$(ls supabase/migrations/*.sql 2>/dev/null \
+            | sed -E 's#.*/([0-9]+)_.*#\1#' | sort | uniq -d)
+          if [ -n "$dups" ]; then
+            echo "::error::duplicate migration version prefix(es) — two files share a YYYYMMDDHHMMSS version, which collides on schema_migrations_pkey at deploy and blocks ALL deploys. Rename one to a unique (later) version:"
+            for v in $dups; do
+              echo "::error::  version $v:"
+              ls supabase/migrations/${v}_*.sql | sed 's#^#::error::    #'
+            done
+            exit 1
+          fi
+          echo "OK — all migration version prefixes are unique."
+
+      - name: no permissive RLS (`to authenticated using (true)`) on a non-allowlisted table
+        run: node apps/backend/scripts/scan-permissive-rls.mjs
+
+      - name: service-role must not appear in apps/web
+        run: |
+          set +e
+          MATCH=$(grep -rEIn --include='*.ts' --include='*.tsx' --include='*.js' --include='*.jsx' --include='*.mjs' --include='*.cjs' \
+            -E 'process\.env\.SUPABASE_SERVICE_ROLE_KEY|\bcreateServiceClient\s*\(|\bserviceClient\s*\(\s*\)|from\s+["'\'']@/services/supabase' \
+            apps/web/ 2>/dev/null)
+          if [ -n "$MATCH" ]; then
+            echo "::error::service-role references found in apps/web/. The browser bundle is public — service-role bypasses RLS. Move the call to apps/backend or use the anon-key path."
+            echo "Lines:"
+            echo "$MATCH"
+            exit 1
+          fi
+          echo "OK — no service-role references in apps/web/."
+
+      - name: copilotkit — headless v2 entries only, no v1 hooks, no runtime package
+        run: |
+          set +e
+          MATCH=$(grep -rEIn --include='*.ts' --include='*.tsx' \
+            -E 'from\s+["'\'']@copilotkit/(react-core|react-core/v2|react-ui|runtime|runtime/[a-z0-9/]+)["'\'']|\b(useCopilotAction|useCopilotReadable|useCoAgent|AnthropicAdapter|CopilotRuntime)\b' \
+            apps/web/src apps/backend/src apps/backend/workers 2>/dev/null)
+          if [ -n "$MATCH" ]; then
+            echo "::error::Disallowed CopilotKit import. Use @copilotkit/react-core/v2/headless (+ /v2/context, @copilotkit/shared) on the web; the backend speaks AG-UI itself (routes/copilotkit)."
+            echo "$MATCH"
+            exit 1
+          fi
+          echo "OK — CopilotKit imports are headless-only."
+
+      - name: chat reply must use the canonical selector
+        run: |
+          set +e
+          DEAD=$(grep -rEIn --include='*.ts' \
+            -E '\b(function|const|let)\s+selectAssistantText\b|import[^\n]*\bselectAssistantText\b' \
+            apps/backend/ 2>/dev/null)
+          if [ -n "$DEAD" ]; then
+            echo "::error::selectAssistantText was removed in PR #480 (Slice 1). Chat reply text must be selected via selectChatReplyText / selectTerminalChatEmit (chat-reply-text.ts). Do not reintroduce a second selector — it re-opens the history-vs-realtime divergence."
+            echo "$DEAD"; exit 1
+          fi
+          MISS=""
+          grep -qE 'export function selectChatReplyText' apps/backend/src/services/agents/chat-reply-text.ts || MISS="$MISS chat-reply-text.ts:selectChatReplyText"
+          grep -qE '\bselectChatReplyText\b' apps/backend/src/services/agents/chat-dispatcher.ts || MISS="$MISS chat-dispatcher.ts(history-writer)"
+          grep -qE '\bselectTerminalChatEmit\b' apps/backend/src/services/agents/runner.ts || MISS="$MISS runner.ts(realtime-writer)"
+          if [ -n "$MISS" ]; then
+            echo "::error::canonical chat-reply wiring missing in:$MISS — BOTH the agent_thread_messages (chat-dispatcher) and thread_event (runner.persistTerminal) writers MUST select chat text through chat-reply-text.ts so live + reload cannot diverge (plan 2026-05-25 Slice 1). If you intentionally restructured this, update the guard in the same PR."
+            exit 1
+          fi
+          echo "OK — chat reply selection is unified through chat-reply-text.ts."
+
+      - name: provisioned-app template must stay locked + exactly pinned
+        run: |
+          set -e
+          TPL=apps/backend/src/services/provisioning/templates/nextjs-supabase-tailwind/files
+          if [ ! -f "$TPL/package-lock.json" ]; then
+            echo "::error::$TPL/package-lock.json is missing. Without a lockfile the Render build's \`npm ci\` cannot pin artifacts, and an agent-added package name would be resolved live from the public registry into a customer's deployed app (slopsquatting). Regenerate the lock and re-run generate-template-files.ts."
+            exit 1
+          fi
+          BAD=$(python3 -c "
+          import json,re,sys
+          d=json.load(open('$TPL/package.json'))
+          EX=re.compile(r'^\d+\.\d+\.\d+([-+][0-9A-Za-z.-]+)?\$')
+          bad=[f'{k}@{v}' for blk in ('dependencies','devDependencies') for k,v in d.get(blk,{}).items() if not EX.match(v)]
+          print(' '.join(bad))
+          ")
+          if [ -n "$BAD" ]; then
+            echo "::error::provisioned-app template has non-exact dependency pins: $BAD — ranges defeat the lockfile. Pin exactly."
+            exit 1
+          fi
+          echo "OK — template is locked and exactly pinned."
+
+      - name: vite site starter must stay exactly pinned (and locked once generated)
+        run: |
+          set -e
+          TPL=apps/backend/src/services/provisioning/templates/vite-react-supabase/files
+          BAD=$(python3 -c "
+          import json,re,os
+          d=json.load(open('$TPL/package.json'))
+          EX=re.compile(r'^\d+\.\d+\.\d+([-+][0-9A-Za-z.-]+)?\$')
+          deps={k:v for blk in ('dependencies','devDependencies') for k,v in d.get(blk,{}).items()}
+          bad=[f'{k}@{v}' for k,v in deps.items() if not EX.match(v)]
+          lp='$TPL/package-lock.json'
+          if os.path.exists(lp):
+              lock=json.load(open(lp)); root=lock['packages']['']
+              specs={**root.get('dependencies',{}),**root.get('devDependencies',{})}
+              bad+=[f'{k}@{v}(lock:{specs.get(k)})' for k,v in deps.items() if specs.get(k)!=v or lock['packages'].get('node_modules/'+k,{}).get('version')!=v]
+          print(' '.join(bad))
+          ")
+          if [ -n "$BAD" ]; then
+            echo "::error::vite site starter has non-exact pins or a lock that disagrees with package.json: $BAD"
+            exit 1
+          fi
+          if [ ! -f "$TPL/package-lock.json" ]; then
+            echo "::warning::$TPL/package-lock.json is not generated yet. Run scripts/generate-vite-starter-lockfile.ts (e2b). Until then new-flow builds fall back to the old flow."
+          fi
+          echo "OK — vite site starter is exactly pinned."
+
+      - name: customer app build command must be `npm ci` (never `npm install`)
+        run: |
+          set -e
+          if grep -qE 'buildCommand:\s*"npm install' apps/backend/src/services/provisioning/render-hosting.ts; then
+            echo "::error::render-hosting.ts sets buildCommand to \`npm install\` — this re-opens the supply-chain hole (unlocked resolution of agent-authored package names into a customer's live app). It MUST be \`npm ci\`."
+            exit 1
+          fi
+          grep -qE 'buildCommand:\s*"npm ci' apps/backend/src/services/provisioning/render-hosting.ts || {
+            echo "::error::render-hosting.ts no longer sets buildCommand to \`npm ci\`. The provisioned customer app must build with a locked install."
+            exit 1
+          }
+          echo "OK — provisioned apps build with \`npm ci\`."
+
+      - name: dependency admission gate must be wired into every repo writer
+        run: node .github/scripts/dependency-admission-gate.mjs
+
+      - name: scope secret scan to the checked-out commit
+        if: ${{ github.event_name != 'push' && github.event_name != 'pull_request' }}
+        run: |
+          head="$(git rev-parse HEAD)"
+          git for-each-ref --format='%(objectname) %(refname)' | while read -r sha ref; do
+            [ "$sha" = "$head" ] || git update-ref --no-deref -d "$ref"
+          done
+          echo "refs left for the scan:"; git for-each-ref --format='  %(refname)'
+      - name: secret scan (gitleaks)
+        if: ${{ github.event_name != 'push' }}
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_VERSION: "8.30.1"
+          TMPDIR: ${{ runner.temp }}
+
+      - name: dependency audit (critical, shipped prod deps)
+        run: node .github/scripts/prod-dep-audit.mjs
+
+  extension:
+    if: ${{ !inputs.static_only && !inputs.backend_deploy }}
+    runs-on: ${{ inputs.runner || vars.CI_RUNNER || 'ubuntu-latest' }}
+    timeout-minutes: 20
+    name: extension (typecheck + tests + build)
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: ${{ runner.environment == 'github-hosted' && 'npm' || '' }} # self-hosted Mac keeps ~/.npm on disk; uploading it only fills the repo cache and hangs the post step
+      - run: npm ci
+      - name: typecheck extension
+        run: npm run typecheck -w @zavi/extension
+      - name: extension tests
+        working-directory: apps/extension
+        run: npx vitest run
+      - name: extension build
+        env:
+          ZAVI_SUPABASE_ANON_KEY: sb_publishable_ci_placeholder
+        run: npm run build -w @zavi/extension
+      - name: bundled font url must stay package-relative
+        run: |
+          set -e
+          urls=$(grep -o 'url([^)]*\.woff2)' apps/extension/dist/panel.css || true)
+          if [ -z "$urls" ]; then
+            echo "::error::no @font-face url survived into dist/panel.css"
+            exit 1
+          fi
+          echo "$urls"
+          if echo "$urls" | grep -q '\.\.'; then
+            echo "::error::font url escaped the package root — it will 404 in the extension"
+            exit 1
+          fi
+
+  typecheck:
+    if: ${{ !inputs.static_only }}
+    runs-on: ${{ inputs.runner || vars.CI_RUNNER || 'ubuntu-latest' }}
+    timeout-minutes: 20
+    name: typecheck (backend + web)
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: ${{ runner.environment == 'github-hosted' && 'npm' || '' }} # self-hosted Mac keeps ~/.npm on disk; uploading it only fills the repo cache and hangs the post step
+      - run: npm ci
+      - name: typecheck backend
+        run: npm run typecheck -w @zavi/backend
+      - name: typecheck web
+        if: ${{ !inputs.backend_deploy }}
+        run: npm run typecheck -w @zavi/web
+      - name: typecheck connector
+        run: npm run typecheck -w @zavi/connector
+      - name: connector tests
+        run: npm test -w @zavi/connector
+      - name: connector build
+        run: npm run build -w @zavi/connector
+      - name: critical money + auth tests (deploy gate)
+        if: ${{ inputs.backend_deploy }}
+        working-directory: apps/backend
+        env:
+          VITEST_MAX_WORKERS: "2"
+        run: npx vitest run services/billing/__tests__ governance-eval tenant-client staff-middleware auth-middleware stripe credits harden_security_definer private-note-reader growth-budget.integration launch-funding.integration wallet-ledger.integration ad-holds-follow-live.integration
+
+  unit-tests:
+    needs: [static-gates, typecheck]
+    if: ${{ !inputs.static_only && !inputs.skip_unit }}
+    runs-on: ${{ inputs.runner || vars.CI_RUNNER || 'ubuntu-latest' }}
+    timeout-minutes: 30
+    name: backend unit suite (hermetic)
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: ${{ runner.environment == 'github-hosted' && 'npm' || '' }} # self-hosted Mac keeps ~/.npm on disk; uploading it only fills the repo cache and hangs the post step
+      - run: npm ci
+      - name: backend unit suite (shard ${{ matrix.shard }}/4)
+        working-directory: apps/backend
+        env:
+          VITEST_MAX_WORKERS: "2"
+        run: npx vitest run --shard=${{ matrix.shard }}/4

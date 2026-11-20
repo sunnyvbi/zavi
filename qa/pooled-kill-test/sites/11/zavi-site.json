@@ -1,0 +1,257 @@
+{
+  "schemaVersion": 2,
+  "roles": [],
+  "capabilities": [],
+  "actions": {
+    "rent_shoe": {
+      "target": {
+        "collection": "shoes",
+        "counter": "rented_count"
+      },
+      "delta": 1,
+      "initial": 0,
+      "bounds": {
+        "min": 0,
+        "maxField": "in_stock"
+      },
+      "creates": {
+        "collection": "rentals",
+        "targetField": "shoe_id"
+      },
+      "principals": [
+        "signed_in"
+      ],
+      "idempotency": "required",
+      "inverse": {
+        "name": "release_shoe",
+        "delta": -1,
+        "transition": {
+          "from": "reserved",
+          "to": "closed"
+        },
+        "principals": [
+          "owner",
+          "admin"
+        ],
+        "idempotency": "required"
+      }
+    }
+  },
+  "aggregates": {
+    "open_rentals": {
+      "collection": "rentals",
+      "fn": "count",
+      "filters": [
+        "shoe_id",
+        "status"
+      ],
+      "principals": [
+        "admin"
+      ]
+    }
+  },
+  "collections": {
+    "shoes": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "anyone"
+        ],
+        "get": [
+          "anyone"
+        ],
+        "create": [
+          "admin"
+        ],
+        "update": [
+          "admin"
+        ],
+        "delete": [
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "brand": {
+            "type": "string",
+            "maxLength": 60
+          },
+          "size": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 20
+          },
+          "daily_price_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "in_stock": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000
+          },
+          "rented_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "name",
+          "size",
+          "daily_price_cents",
+          "in_stock",
+          "rented_count"
+        ]
+      },
+      "fields": {},
+      "indexes": {
+        "size": {
+          "type": "number",
+          "ops": [
+            "eq",
+            "range"
+          ],
+          "sort": false
+        },
+        "daily_price_cents": {
+          "type": "number",
+          "ops": [
+            "range"
+          ],
+          "sort": true
+        }
+      },
+      "unique": [],
+      "references": {}
+    },
+    "rentals": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "owner",
+          "admin"
+        ],
+        "get": [
+          "owner",
+          "admin"
+        ],
+        "create": [],
+        "update": [],
+        "delete": [
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "shoe_id": {
+            "type": "string",
+            "maxLength": 36,
+            "format": "uuid"
+          },
+          "start_date": {
+            "type": "string",
+            "maxLength": 10,
+            "format": "date"
+          },
+          "end_date": {
+            "type": "string",
+            "maxLength": 10,
+            "format": "date"
+          },
+          "delivery_address": {
+            "type": "string",
+            "maxLength": 400
+          },
+          "status": {
+            "type": "string",
+            "maxLength": 8,
+            "enum": [
+              "reserved",
+              "closed"
+            ]
+          }
+        },
+        "required": [
+          "shoe_id",
+          "start_date",
+          "end_date",
+          "status"
+        ]
+      },
+      "fields": {},
+      "indexes": {
+        "start_date": {
+          "type": "timestamp",
+          "ops": [
+            "range"
+          ],
+          "sort": true
+        },
+        "shoe_id": {
+          "type": "text",
+          "ops": [
+            "eq"
+          ],
+          "sort": false
+        }
+      },
+      "unique": [],
+      "references": {
+        "shoe_id": {
+          "collection": "shoes",
+          "on_delete": "restrict"
+        }
+      },
+      "states": {
+        "field": "status",
+        "values": [
+          "reserved",
+          "closed"
+        ],
+        "initial": "reserved",
+        "transitions": [
+          {
+            "from": "reserved",
+            "to": "closed",
+            "principals": [
+              "owner",
+              "admin"
+            ]
+          }
+        ]
+      }
+    },
+    "shoe_photos": {
+      "kind": "files",
+      "rules": {
+        "list": [
+          "anyone"
+        ],
+        "get": [
+          "anyone"
+        ],
+        "create": [
+          "admin"
+        ],
+        "update": [
+          "admin"
+        ],
+        "delete": [
+          "admin"
+        ]
+      }
+    }
+  }
+}

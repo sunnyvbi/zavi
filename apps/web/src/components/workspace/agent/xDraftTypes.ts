@@ -1,0 +1,23 @@
+export type XDraft = {
+  post_revision?: string;
+  edited_body?: import("@zavi/shared").SavedPostDraft;
+  original_text?: string;
+  original_thread?: string[] | null;
+  original_image_path?: string | null;
+  decision_id: string;
+  source?: "staged" | "step";
+  label?: string | null;
+  needs_confirm?: boolean;
+  channel: string;
+  text: string;
+  thread: string[] | null;
+  image_path: string | null;
+  video_path: string | null;
+  scheduled_at: string | null;
+  rationale: string | null;
+  emitted_at: string | null;
+  snoozed_until?: string | null;
+  title?: string;
+  subreddit?: string;
+  thread_url?: string;
+};

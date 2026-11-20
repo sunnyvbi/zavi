@@ -1,0 +1,52 @@
+# Praxis voice sidecar — pinned versions per plan §"P2 Version pinning".
+# DO NOT use ~= or >= for production. Realtime APIs move quickly; an
+# unbounded float bricks the sidecar at boot the day a vendor ships a
+# breaking change.
+#
+# Refresh policy: bump versions in a dedicated PR with a 24h dogfood
+# soak in the browse-test tenant before flag flip.
+
+# LiveKit core — Worker SDK + agents framework + plugins.
+livekit-agents==1.5.3
+livekit-plugins-deepgram==1.5.3
+livekit-plugins-cartesia==1.5.3
+# VAD / turn detection for AgentSession. sidecar.py entrypoint does
+# `from livekit.plugins import silero` + `silero.VAD.load()`. Was missing
+# from Slice 3 — entrypoint crashed at the AgentSession constructor with
+# ImportError "cannot import name 'silero' from 'livekit.plugins'" on the
+# first real dispatch 2026-05-21 (caught by the defensive try/except, which
+# kept the worker alive + logged it).
+livekit-plugins-silero==1.5.3
+# NOT livekit-plugins-anthropic — see plan §"P0 Architecture" line 56;
+# bypasses Praxis tools.
+
+# Anthropic Python SDK — UNUSED at runtime (LLM goes via Node HTTP
+# adapter) but kept for the secret-loader smoke test that pings the
+# Anthropic /messages endpoint at boot to confirm reachability before
+# accepting LiveKit dispatches. Tiny dep.
+anthropic==0.39.0
+
+# AWS Secrets Manager loader — scripts/load-secrets.py pulls
+# praxis-envprod-1 + praxis-env-common-prod at boot.
+boto3==1.34.144
+botocore==1.34.144
+
+# HTTP — sidecar calls back to Node /internal/voice/* via HMAC-signed
+# POSTs. requests is sync (boot path), httpx is the async client used
+# inside livekit-agents' event loop.
+requests==2.32.3
+httpx==0.27.2
+
+# Health-endpoint micro-server — aiohttp.web is already a transitive
+# dep of livekit-agents; we just import the existing copy.
+# (no extra line; resolved via livekit-agents)
+
+# Structured logging — JSON formatter + redactor middleware (see
+# sidecar.py setup_logging()).
+structlog==24.4.0
+
+# .env loader — sidecar.py reads /app/apps/voice-pipeline/.env (written by
+# scripts/load-secrets.py) via `from dotenv import load_dotenv` at import.
+# Was missing from Slice 3 — sidecar.py crashed at line 58 with
+# ModuleNotFoundError on first prod boot 2026-05-21.
+python-dotenv==1.0.1

@@ -1,0 +1,77 @@
+{
+  "stored_body": {
+    "action_key": "890ddff081fbc1bf",
+    "intent": "reach_out",
+    "of": 2,
+    "owner": "founder",
+    "position": 2,
+    "rendered_markdown": "**Verdict.** Zavi can send marketing email from zaviagent.com today, and authentication isn't the blocker. The gap is lifecycle: every send so far went to a 5-person test list, and no welcome sequence exists.\n\n**This week (about 1.5 hours, founder).** 10 minutes to confirm the From address, about 1 hour to load the 3-email welcome sequence into SendGrid and attach it to account creation.\n\n**Do first.** Check the From address is on zaviagent.com, not www (details below).\n\n**Honesty line.** I read your lists and public DNS today. Nothing has been sent by today's check, and nothing sends without your approval.\n\n### Authentication, read today from public DNS\n- **DMARC:** present. `v=DMARC1; p=none; rua=mailto:41a685cff0884071ac445184da95dd20@dmarc-reports.cloudflare.net;`. Policy is monitor-only, and `rua=` is set, so failures are visible. Moving to `p=quarantine` is a later step once the reports look clean.\n- **SPF:** present. `v=spf1 include:_spf.google.com ~all`. Soft fail, Google only, and well under the ten-lookup limit. SendGrid isn't in the apex SPF. That is fine only if SendGrid authenticates through DKIM, which it appears to.\n- **DKIM:** `s1._domainkey.zaviagent.com` is a CNAME to `s1.domainkey.u55870032.wl033.sendgrid.net`. That is the SendGrid domain-authentication record. I did not check `s2`, and I can't confirm SendGrid shows the domain as verified.\n- **Not verifiable from outside:** one-click unsubscribe headers (RFC 8058) and the spam complaint rate. Check the complaint rate in Google Postmaster Tools, last 30 days, and keep it near 0.1% and well under 0.3%. Your saved SendGrid unsubscribe group (36207) should cover the unsubscribe header.\n\n### Lists, read today\n- Zavi list \"Testing\": 5 people, 5 can be emailed, 0 unsubscribed or bounced. Zavi reports \"Bulk email is not set up yet\" and no From address on this route.\n- SendGrid audience \"test\": 5 members.\n- I could not read opens, clicks or complaints. Recent sends were approved today, and no results were read, so there are no engagement numbers to quote.\n- Scoreboard: no recorded outcomes or experiments in the window. That means nothing has been tracked through Zavi here, not that nothing works.\n\n### Capture surface\nThe homepage (one fetch only) shows account signup (\"Get started\", \"Free to start. No card, no sales call.\") and no newsletter or waitlist form. I did not run a second check, so I can't say none exists. The destination for this channel is account creation, and the sequence below points there. The promise made is the free plan, so the welcome emails stay on onboarding. Don't send launch blasts to these addresses unless the signup flow says marketing email is included.\n\n### Lifecycle gap\nThere is no welcome sequence. Three one-off sends went to the test list today (all approved). Each new account getting nothing after signup is the message with the highest attention you're missing. Per-account activation data wasn't read, so I'm not sizing the gap.\n\n### The welcome sequence\nSee the card. Trigger: account created. Stop rule: anyone who adds their website leaves the sequence. Track the CTA link in SendGrid, so next month's run can tell whether it moved anyone to add a website.\n\n**If you only do one thing:** confirm the From address, then load Email 1.",
+    "step": {
+      "blocking": false,
+      "body": "Email 1 on account creation, Email 2 on day 3, Email 3 on day 7. Stop rule: anyone who adds their website leaves the sequence. The footer uses the postal address you saved in Settings; confirm it is a mailing address you want public. Success is observable without open rates: new accounts adding a website after clicking, and replies. Stop if the first 100 recipients produce no clicks and any unsubscribes, and rethink the copy. Send only to accounts that created an account, with a working unsubscribe.",
+      "deliverable": {
+        "content": "Email 1: on account creation\nSend: immediately\nSubject: You're in. Here's your first move\nPreview: Give Zavi your website and it builds the plan.\n\nWelcome to Zavi.\n\nName the number you want to move, like signups or bookings. Zavi works out what's most likely holding it back, proposes the work, and does it once you approve. Nothing goes live without your say.\n\nThe fastest start: add your website. Zavi reads it and drafts your growth plan.\n\nAdd your website -> https://www.zaviagent.com\n\n--\nYou're getting this because you created a Zavi account at zaviagent.com.\nZavi Labs, Inc., 548 Market Street, San Francisco, CA 94105\nUnsubscribe: [your email tool's unsubscribe link]\n\nEmail 2: day 3\nSend: day 3, only if no website added yet\nSubject: Pick one number, not five\nPreview: Zavi plans around a single goal.\n\nMost founders try to grow everything at once. Zavi works better with one number: signups, bookings, paying customers.\n\nPick yours, add your website, and Zavi shows what's holding that number back and what to do about it. The free plan gives you daily credits to try it, no card needed.\n\nAdd your website -> https://www.zaviagent.com\n\n--\nYou're getting this because you created a Zavi account at zaviagent.com.\nZavi Labs, Inc., 548 Market Street, San Francisco, CA 94105\nUnsubscribe: [your email tool's unsubscribe link]\n\nEmail 3: day 7\nSend: day 7, only if no website added yet\nSubject: What number are you trying to move?\nPreview: Reply with one line.\n\nQuick one from the Zavi team.\n\nWhat's the one number you want to move this quarter? Hit reply and tell us.\n\nIf you haven't added your website yet, that's the quickest way to get a plan built around it.\n\nAdd your website -> https://www.zaviagent.com\n\n--\nYou're getting this because you created a Zavi account at zaviagent.com.\nZavi Labs, Inc., 548 Market Street, San Francisco, CA 94105\nUnsubscribe: [your email tool's unsubscribe link]",
+        "kind": "email",
+        "label": "Welcome sequence, 3 emails",
+        "parts": [
+          {
+            "content": "Send: immediately\nSubject: You're in. Here's your first move\nPreview: Give Zavi your website and it builds the plan.\n\nWelcome to Zavi.\n\nName the number you want to move, like signups or bookings. Zavi works out what's most likely holding it back, proposes the work, and does it once you approve. Nothing goes live without your say.\n\nThe fastest start: add your website. Zavi reads it and drafts your growth plan.\n\nAdd your website -> https://www.zaviagent.com\n\n--\nYou're getting this because you created a Zavi account at zaviagent.com.\nZavi Labs, Inc., 548 Market Street, San Francisco, CA 94105\nUnsubscribe: [your email tool's unsubscribe link]",
+            "label": "Email 1: on account creation"
+          },
+          {
+            "content": "Send: day 3, only if no website added yet\nSubject: Pick one number, not five\nPreview: Zavi plans around a single goal.\n\nMost founders try to grow everything at once. Zavi works better with one number: signups, bookings, paying customers.\n\nPick yours, add your website, and Zavi shows what's holding that number back and what to do about it. The free plan gives you daily credits to try it, no card needed.\n\nAdd your website -> https://www.zaviagent.com\n\n--\nYou're getting this because you created a Zavi account at zaviagent.com.\nZavi Labs, Inc., 548 Market Street, San Francisco, CA 94105\nUnsubscribe: [your email tool's unsubscribe link]",
+            "label": "Email 2: day 3"
+          },
+          {
+            "content": "Send: day 7, only if no website added yet\nSubject: What number are you trying to move?\nPreview: Reply with one line.\n\nQuick one from the Zavi team.\n\nWhat's the one number you want to move this quarter? Hit reply and tell us.\n\nIf you haven't added your website yet, that's the quickest way to get a plan built around it.\n\nAdd your website -> https://www.zaviagent.com\n\n--\nYou're getting this because you created a Zavi account at zaviagent.com.\nZavi Labs, Inc., 548 Market Street, San Francisco, CA 94105\nUnsubscribe: [your email tool's unsubscribe link]",
+            "label": "Email 3: day 7"
+          }
+        ]
+      },
+      "effort": "hours",
+      "evidence": [
+        "web_fetch https://www.zaviagent.com - 'Free to start. No card, no sales call.' and 'Zavi writes your growth plan, runs the channels with your approval'",
+        "Saved channel setting postal_address: 548 Market Street, San Francisco, CA 94105"
+      ],
+      "target": {
+        "kind": "queue",
+        "ref": "SendGrid automation, new account"
+      },
+      "title": "Load the 3-email welcome sequence into SendGrid for new accounts"
+    }
+  },
+  "model_step": {
+    "blocking": false,
+    "body": "Email 1 on account creation, Email 2 on day 3, Email 3 on day 7. Only Email 1's subject changed, to \"Welcome to Zavi\". Stop rule: anyone who adds their website leaves the sequence. The footer uses the postal address you saved in Settings, so confirm it is a mailing address you want public. Success: new accounts adding a website after clicking, and replies. Stop if the first 100 recipients produce no clicks and any unsubscribes, and rethink the copy.",
+    "deliverable": {
+      "content": "Email 1: on account creation\nSend: immediately\nSubject: Welcome to Zavi\nPreview: Give Zavi your website and it builds the plan.\n\nWelcome to Zavi.\n\nName the number you want to move, like signups or bookings. Zavi works out what's most likely holding it back, proposes the work, and does it once you approve. Nothing goes live without your say.\n\nThe fastest start: add your website. Zavi reads it and drafts your growth plan.\n\nAdd your website -> https://www.zaviagent.com\n\n--\nYou're getting this because you created a Zavi account at zaviagent.com.\nZavi Labs, Inc., 548 Market Street, San Francisco, CA 94105\nUnsubscribe: [your email tool's unsubscribe link]\n\nEmail 2: day 3\nSend: day 3, only if no website added yet\nSubject: Pick one number, not five\nPreview: Zavi plans around a single goal.\n\nMost founders try to grow everything at once. Zavi works better with one number: signups, bookings, paying customers.\n\nPick yours, add your website, and Zavi shows what's holding that number back and what to do about it. The free plan gives you daily credits to try it, no card needed.\n\nAdd your website -> https://www.zaviagent.com\n\n--\nYou're getting this because you created a Zavi account at zaviagent.com.\nZavi Labs, Inc., 548 Market Street, San Francisco, CA 94105\nUnsubscribe: [your email tool's unsubscribe link]\n\nEmail 3: day 7\nSend: day 7, only if no website added yet\nSubject: What number are you trying to move?\nPreview: Reply with one line.\n\nQuick one from the Zavi team.\n\nWhat's the one number you want to move this quarter? Hit reply and tell us.\n\nIf you haven't added your website yet, that's the quickest way to get a plan built around it.\n\nAdd your website -> https://www.zaviagent.com\n\n--\nYou're getting this because you created a Zavi account at zaviagent.com.\nZavi Labs, Inc., 548 Market Street, San Francisco, CA 94105\nUnsubscribe: [your email tool's unsubscribe link]",
+      "kind": "email",
+      "label": "Welcome sequence",
+      "parts": [
+        {
+          "content": "Send: immediately\nSubject: Welcome to Zavi\nPreview: Give Zavi your website and it builds the plan.\n\nWelcome to Zavi.\n\nName the number you want to move, like signups or bookings. Zavi works out what's most likely holding it back, proposes the work, and does it once you approve. Nothing goes live without your say.\n\nThe fastest start: add your website. Zavi reads it and drafts your growth plan.\n\nAdd your website -> https://www.zaviagent.com\n\n--\nYou're getting this because you created a Zavi account at zaviagent.com.\nZavi Labs, Inc., 548 Market Street, San Francisco, CA 94105\nUnsubscribe: [your email tool's unsubscribe link]",
+          "label": "Email 1: on account creation"
+        },
+        {
+          "content": "Send: day 3, only if no website added yet\nSubject: Pick one number, not five\nPreview: Zavi plans around a single goal.\n\nMost founders try to grow everything at once. Zavi works better with one number: signups, bookings, paying customers.\n\nPick yours, add your website, and Zavi shows what's holding that number back and what to do about it. The free plan gives you daily credits to try it, no card needed.\n\nAdd your website -> https://www.zaviagent.com\n\n--\nYou're getting this because you created a Zavi account at zaviagent.com.\nZavi Labs, Inc., 548 Market Street, San Francisco, CA 94105\nUnsubscribe: [your email tool's unsubscribe link]",
+          "label": "Email 2: day 3"
+        },
+        {
+          "content": "Send: day 7, only if no website added yet\nSubject: What number are you trying to move?\nPreview: Reply with one line.\n\nQuick one from the Zavi team.\n\nWhat's the one number you want to move this quarter? Hit reply and tell us.\n\nIf you haven't added your website yet, that's the quickest way to get a plan built around it.\n\nAdd your website -> https://www.zaviagent.com\n\n--\nYou're getting this because you created a Zavi account at zaviagent.com.\nZavi Labs, Inc., 548 Market Street, San Francisco, CA 94105\nUnsubscribe: [your email tool's unsubscribe link]",
+          "label": "Email 3: day 7"
+        }
+      ]
+    },
+    "effort": "hours",
+    "evidence": [
+      "Stored card 680bbab2-a4d5-427e-b4da-e456c2b64cf5 email copy, read this run: Email 1 subject is \"You're in. Here's your first move\"",
+      "Saved channel setting postal_address: 548 Market Street, San Francisco, CA 94105"
+    ],
+    "repeat_of": "680bbab2-a4d5-427e-b4da-e456c2b64cf5",
+    "target": {
+      "kind": "queue",
+      "ref": "SendGrid automation, new account"
+    },
+    "title": "Load the 3-email welcome sequence into SendGrid for new accounts"
+  }
+}

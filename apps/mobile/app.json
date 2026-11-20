@@ -1,0 +1,147 @@
+{
+  "expo": {
+    "name": "Zavi",
+    "slug": "zavi",
+    "version": "1.8",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "zavi",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "icon": "./assets/images/ios-icon.png",
+      "bundleIdentifier": "com.zaviagent.app",
+      "version": "1.0.4",
+      "buildNumber": "1",
+      "supportsTablet": false,
+      "usesAppleSignIn": true,
+      "associatedDomains": [
+        "applinks:www.zaviagent.com"
+      ],
+      "config": {
+        "usesNonExemptEncryption": false
+      },
+      "infoPlist": {
+        "UISupportedInterfaceOrientations": [
+          "UIInterfaceOrientationPortrait"
+        ],
+        "NSMicrophoneUsageDescription": "Zavi uses your microphone to turn your words into a message draft.",
+        "NSSpeechRecognitionUsageDescription": "Zavi uses speech recognition to turn your words into a message draft."
+      },
+      "appleTeamId": "57L2Q2D5SV",
+      "googleServicesFile": "./GoogleService-Info.plist"
+    },
+    "android": {
+      "package": "com.zaviagent.app",
+      "versionCode": 9,
+      "googleServicesFile": "./google-services.json",
+      "adaptiveIcon": {
+        "backgroundColor": "#0a82fa",
+        "foregroundImage": "./assets/images/android-icon-foreground.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ],
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "www.zaviagent.com",
+              "pathPrefix": "/workspace"
+            },
+            {
+              "scheme": "https",
+              "host": "www.zaviagent.com",
+              "pathPrefix": "/approvals"
+            },
+            {
+              "scheme": "https",
+              "host": "www.zaviagent.com",
+              "pathPrefix": "/growth"
+            },
+            {
+              "scheme": "https",
+              "host": "www.zaviagent.com",
+              "pathPrefix": "/connectors"
+            },
+            {
+              "scheme": "https",
+              "host": "www.zaviagent.com",
+              "pathPrefix": "/invite/accept"
+            },
+            {
+              "scheme": "https",
+              "host": "www.zaviagent.com",
+              "pathPrefix": "/auth/reset"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ]
+    },
+    "web": {
+      "output": "single",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-dev-client",
+      "expo-notifications",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#ffffff",
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 120,
+          "resizeMode": "contain",
+          "dark": {
+            "backgroundColor": "#141414",
+            "image": "./assets/images/splash-icon-dark.png"
+          }
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Zavi uses your photos so you can attach images to agent messages.",
+          "cameraPermission": "Zavi uses your camera so you can take a photo and attach it to a message.",
+          "microphonePermission": "Zavi uses your microphone to turn your words into a message draft."
+        }
+      ],
+      "expo-apple-authentication",
+      "./plugins/withAndroidReleaseShrinking",
+      "./plugins/withIphoneOnlyDestinations",
+      "./plugins/withIosVersionBuildSettings",
+      "./plugins/withAndroidReleaseSigning",
+      "./plugins/withOptionalCameraFeatures",
+      "@react-native-firebase/app",
+      "@react-native-firebase/crashlytics",
+      "./plugins/withFirebaseNoSpm",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "d8504e40-403c-4346-ae92-5cec976ad3be"
+      }
+    },
+    "owner": "zavi-149"
+  }
+}

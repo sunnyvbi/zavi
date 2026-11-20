@@ -1,0 +1,89 @@
+{
+  "version": 1,
+  "briefs": [
+    {
+      "id": "dental-clinic",
+      "title": "Dental clinic",
+      "detail_level": "detailed",
+      "prompt": "Build a website for Brightside Dental, a family dental clinic in Austin, Texas. We offer checkups and cleanings, teeth whitening, Invisalign and emergency same-day appointments. Show our three dentists with a short bio each, our opening hours (Mon to Fri 8am to 6pm, Sat 9am to 1pm), the insurance plans we accept, and patient reviews. The main goal is for patients to book an appointment online: pick a service, pick a time, leave a name and phone number.",
+      "requirements": [
+        { "id": "name", "text": "Clinic name Brightside Dental is visible", "match": ["brightside dental"] },
+        { "id": "services", "text": "Lists checkups, whitening, Invisalign and emergency care", "match": ["whitening", "invisalign", "emergency"], "match_all": true },
+        { "id": "team", "text": "Shows the dentists with bios", "match": ["dr.", "dentist"] },
+        { "id": "hours", "text": "Shows opening hours", "match": ["8am", "8:00", "hours"] },
+        { "id": "insurance", "text": "Lists accepted insurance", "match": ["insurance"] },
+        { "id": "reviews", "text": "Shows patient reviews", "match": ["review", "patients say"] },
+        { "id": "booking", "text": "Has an online booking flow", "match": ["book", "appointment"] }
+      ],
+      "core_journey": { "name": "book_appointment", "cta_pattern": "book|appointment|schedule", "description": "Pick a service and time, leave name and phone" }
+    },
+    {
+      "id": "editorial-bakery",
+      "title": "Editorial bakery",
+      "detail_level": "detailed",
+      "prompt": "Create a website for Crumb & Column, an independent sourdough bakery in Portland with an editorial, magazine-like feel: big serif headlines, generous whitespace, real food photography. Show this week's menu with prices (country loaf $9, seeded rye $10, morning buns $4.50, seasonal galette $6), a short story about our baker, and our address and hours. Customers should be able to place an order for pickup: choose items, choose a pickup day, and confirm.",
+      "requirements": [
+        { "id": "name", "text": "Bakery name Crumb & Column is visible", "match": ["crumb & column", "crumb &amp; column", "crumb and column"] },
+        { "id": "menu", "text": "Weekly menu with items and prices", "match": ["country loaf", "rye", "$"], "match_all": true },
+        { "id": "story", "text": "Story about the baker", "match": ["story", "baker"] },
+        { "id": "location", "text": "Address and hours", "match": ["portland", "hours"] },
+        { "id": "editorial", "text": "Editorial look with serif headlines and photography", "match": [] },
+        { "id": "order", "text": "Order for pickup flow", "match": ["pickup", "pick up", "order"] }
+      ],
+      "core_journey": { "name": "order_for_pickup", "cta_pattern": "order|pickup|pick up", "description": "Choose items and a pickup day, then confirm" }
+    },
+    {
+      "id": "tattoo-studio",
+      "title": "Tattoo studio",
+      "detail_level": "underspecified",
+      "prompt": "Website for my tattoo studio.",
+      "requirements": [
+        { "id": "portfolio", "text": "Shows tattoo work", "match": ["portfolio", "gallery", "work"] },
+        { "id": "contact", "text": "A way to get in touch or book a consult", "match": ["book", "consult", "contact"] },
+        { "id": "location", "text": "Where the studio is", "match": ["address", "visit", "location", "find us"] }
+      ],
+      "core_journey": { "name": "request_consultation", "cta_pattern": "book|consult|contact|enquire|inquire", "description": "Reach the studio to book or ask about a tattoo" }
+    },
+    {
+      "id": "home-services",
+      "title": "Home services business",
+      "detail_level": "detailed",
+      "prompt": "Build a site for Northline Home Services, a plumbing, electrical and HVAC company serving Denver and nearby suburbs. We are licensed and insured, offer 24/7 emergency callouts, and have a 1-year workmanship guarantee. List each service with a short description, show our service area, a few customer testimonials, and our phone number prominently on every page. The main action is a quote request form: service type, short description of the job, address, preferred date, name, phone and email.",
+      "requirements": [
+        { "id": "name", "text": "Company name Northline Home Services is visible", "match": ["northline"] },
+        { "id": "services", "text": "Plumbing, electrical and HVAC listed", "match": ["plumbing", "electrical", "hvac"], "match_all": true },
+        { "id": "trust", "text": "Licensed, insured and guarantee shown", "match": ["licensed", "insured", "guarantee"] },
+        { "id": "emergency", "text": "24/7 emergency callouts", "match": ["24/7", "emergency"] },
+        { "id": "area", "text": "Service area shown", "match": ["denver", "service area"] },
+        { "id": "testimonials", "text": "Customer testimonials", "match": ["testimonial", "review", "customers say"] },
+        { "id": "phone", "text": "Phone number prominent", "match": ["tel:", "call"] },
+        { "id": "quote", "text": "Quote request form", "match": ["quote"] }
+      ],
+      "core_journey": { "name": "request_quote", "cta_pattern": "quote|estimate", "description": "Fill the quote form with job details and contact info" }
+    },
+    {
+      "id": "saas-landing",
+      "title": "SaaS landing page",
+      "detail_level": "underspecified",
+      "prompt": "Landing page for our new AI note-taking app. We want people to join the waitlist.",
+      "requirements": [
+        { "id": "value", "text": "Explains what the product does", "match": ["note"] },
+        { "id": "features", "text": "Shows a few features or benefits", "match": ["feature", "how it works", "why"] },
+        { "id": "waitlist", "text": "Waitlist signup", "match": ["waitlist", "early access"] }
+      ],
+      "core_journey": { "name": "join_waitlist", "cta_pattern": "waitlist|early access|join|sign up", "description": "Enter an email and join the waitlist" }
+    },
+    {
+      "id": "creative-portfolio",
+      "title": "Creative portfolio",
+      "detail_level": "underspecified",
+      "prompt": "Portfolio site for a freelance illustrator. Show my work and let clients contact me.",
+      "requirements": [
+        { "id": "gallery", "text": "Gallery of work", "match": ["gallery", "work", "portfolio", "projects"] },
+        { "id": "about", "text": "About the illustrator", "match": ["about"] },
+        { "id": "contact", "text": "Contact path for clients", "match": ["contact", "email", "hire"] }
+      ],
+      "core_journey": { "name": "contact_illustrator", "cta_pattern": "contact|hire|get in touch|email", "description": "Open the contact path and send an enquiry" }
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+name: deploy-readiness
+
+on:
+  schedule:
+    - cron: "17 13 * * *"
+  workflow_dispatch:
+    inputs:
+      types_only:
+        type: boolean
+        required: false
+        default: false
+
+concurrency:
+  group: deploy-readiness-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  suite:
+    permissions:
+      contents: read
+      pull-requests: read
+    uses: ./.github/workflows/lint.yml
+    with:
+      skip_unit: ${{ inputs.types_only == true }}
+
+  alert:
+    if: ${{ !cancelled() && github.ref == 'refs/heads/main' && inputs.types_only != true }}
+    needs: [suite]
+    runs-on: ubuntu-latest
+    name: main deploy-readiness
+    permissions:
+      issues: write
+      contents: read
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      SHA: ${{ github.sha }}
+      FAILED: ${{ needs.suite.result == 'failure' }}
+      RESULT: ${{ needs.suite.result }}
+      TITLE: main is not deploy-ready
+    steps:
+      - name: file, refresh or close the sentinel issue
+        run: |
+          set -euo pipefail
+          if [ "$RESULT" != "success" ] && [ "$RESULT" != "failure" ]; then
+            echo "suite result is '$RESULT' — not a verdict, leaving the issue alone"
+            exit 0
+          fi
+          existing="$(gh issue list --repo "$GITHUB_REPOSITORY" --state open \
+            --search "$TITLE in:title" --json number --jq '.[0].number // empty')"
+          if [ "$FAILED" != "true" ]; then
+            head_sha="$(gh api "repos/${GITHUB_REPOSITORY}/commits/main" -q .sha 2>/dev/null || true)"
+            if [ -n "$existing" ] && [ "$head_sha" != "$SHA" ]; then
+              echo "green on $SHA, but main is now ${head_sha:-unknown}; leaving #$existing for the newer run"
+            elif [ -n "$existing" ]; then
+              gh issue close "$existing" --repo "$GITHUB_REPOSITORY" \
+                --comment "Green again on $SHA. $RUN_URL"
+              echo "closed #$existing"
+            else
+              echo "main is deploy-ready"
+            fi
+            exit 0
+          fi
+          body="The deploy-readiness suite (the same jobs deploy.yml runs at validate) is RED on main."
+          body="$body"$'\n\n'"The full nightly suite is red. A deploy skips the unit shards (they run only here), so if only a unit test failed a deploy would still ship: fix it before deploying."
+          body="$body"$'\n\n'"This suite does NOT gate merges (see the CI-AT-DEPLOY note in .github/workflows/lint.yml), so the break is usually an already-merged PR rather than whoever next tries to deploy."
+          body="$body"$'\n\n'"Run: $RUN_URL"
+          body="$body"$'\n'"Commit: $SHA"
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --repo "$GITHUB_REPOSITORY" --body "$body"
+            echo "refreshed #$existing"
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "$TITLE" --body "$body"
+          fi
+          exit 1

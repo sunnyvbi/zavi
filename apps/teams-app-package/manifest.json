@@ -1,0 +1,50 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/teams/v1.29/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.29",
+  "version": "1.0.1",
+  "id": "e9ce593b-f077-4015-a0b5-b55527d36385",
+  "developer": {
+    "name": "zavi agent",
+    "websiteUrl": "https://www.zaviagent.com",
+    "privacyUrl": "https://www.zaviagent.com/privacy",
+    "termsOfUseUrl": "https://www.zaviagent.com/terms"
+  },
+  "name": {
+    "short": "Zavi AI Growth Agent",
+    "full": "Zavi AI Growth Agent"
+  },
+  "description": {
+    "short": "AI Growth Agent For Your Business, inside Microsoft Teams.",
+    "full": "Zavi is an AI growth agent for your business. It reads your business, drafts a growth plan, works on the channels you connect, and reports what changed. The Zavi app for Microsoft Teams lets your team talk to Zavi where you already work. Zavi is built for founders and for growth and marketing teams at startups and small businesses who want help deciding what to work on to grow. In Teams, you can ask Zavi a question in a one-to-one chat or @mention Zavi in a channel or group chat. Ask in plain language, for example \"Why did signups drop last week?\" or \"What should we test on the pricing page?\", and Zavi replies in the same conversation with an analysis of your business data and a proposed next step. You can also ask for drafts such as ad copy, email copy or a short growth plan, and review them with your team in the thread. Zavi requires a Zavi account. Sign up at https://www.zaviagent.com/start; a free plan is available and does not need a credit card. After you add the app to Teams, Zavi sends a one-time link in your chat, and a Zavi workspace owner or admin opens it to connect your Teams organization to your Zavi workspace. Until then, Zavi replies with the steps to connect. Type \"help\" at any time to see what Zavi can do. Signing up, connecting your data sources and marketing tools, reviewing and approving changes, and managing billing all happen in the Zavi web app at https://www.zaviagent.com, not inside Teams. The answers Zavi gives in Teams use the business data you have connected there. Replies are text only and usually take one to three minutes. Zavi uses AI to generate its replies, plans and drafts, and every AI-generated reply is labelled in Teams. AI-generated content may be incorrect, so review it before you act on it. If you come across any objectionable AI-generated content, or have any questions, please reach out to us at support@zaviagent.com. Get started at https://www.zaviagent.com/start, find help at https://www.zaviagent.com/support, or contact support@zaviagent.com."
+  },
+  "icons": {
+    "color": "color.png",
+    "outline": "outline.png"
+  },
+  "accentColor": "#1A1A1A",
+  "bots": [
+    {
+      "botId": "${MICROSOFT_APP_ID}",
+      "scopes": ["personal", "team", "groupChat"],
+      "supportsFiles": false,
+      "isNotificationOnly": false,
+      "commandLists": [
+        {
+          "scopes": ["personal", "team", "groupChat"],
+          "commands": [
+            {
+              "title": "help",
+              "description": "See what Zavi can do and how to get started"
+            },
+            {
+              "title": "ask",
+              "description": "Ask Zavi about your growth plan or give it a task"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "permissions": ["identity", "messageTeamMembers"],
+  "validDomains": ["zaviagent.com", "api.zaviagent.com"]
+}

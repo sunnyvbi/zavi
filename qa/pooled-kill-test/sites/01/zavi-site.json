@@ -1,0 +1,242 @@
+{
+  "schemaVersion": 2,
+  "roles": [],
+  "capabilities": [],
+  "actions": {},
+  "aggregates": {
+    "plays_in_group": {
+      "collection": "plays",
+      "fn": "count",
+      "filters": [
+        "group_id"
+      ],
+      "principals": [
+        "admin"
+      ]
+    }
+  },
+  "collections": {
+    "puzzles": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "anyone"
+        ],
+        "get": [
+          "anyone"
+        ],
+        "create": [
+          "admin"
+        ],
+        "update": [
+          "admin"
+        ],
+        "delete": [
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "difficulty": {
+            "type": "string",
+            "maxLength": 6,
+            "enum": [
+              "easy",
+              "medium",
+              "hard"
+            ]
+          },
+          "prompt": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "answer": {
+            "type": "string",
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "title",
+          "prompt"
+        ]
+      },
+      "fields": {
+        "answer": {
+          "read": [
+            "admin"
+          ]
+        }
+      },
+      "indexes": {
+        "difficulty": {
+          "type": "text",
+          "ops": [
+            "eq"
+          ],
+          "sort": false
+        }
+      },
+      "unique": [],
+      "references": {}
+    },
+    "groups": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "owner",
+          "admin"
+        ],
+        "get": [
+          "signed_in"
+        ],
+        "create": [
+          "signed_in"
+        ],
+        "update": [
+          "owner",
+          "admin"
+        ],
+        "delete": [
+          "owner",
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "mode": {
+            "type": "string",
+            "maxLength": 7,
+            "enum": [
+              "online",
+              "offline"
+            ]
+          },
+          "offline_players": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 40
+            },
+            "maxItems": 12
+          }
+        },
+        "required": [
+          "name",
+          "mode"
+        ]
+      },
+      "fields": {},
+      "indexes": {
+        "mode": {
+          "type": "text",
+          "ops": [
+            "eq"
+          ],
+          "sort": false
+        }
+      },
+      "unique": [],
+      "references": {}
+    },
+    "plays": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "signed_in"
+        ],
+        "get": [
+          "signed_in"
+        ],
+        "create": [
+          "signed_in"
+        ],
+        "update": [
+          "owner"
+        ],
+        "delete": [
+          "owner",
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "group_id": {
+            "type": "string",
+            "maxLength": 36,
+            "format": "uuid"
+          },
+          "puzzle_id": {
+            "type": "string",
+            "maxLength": 36,
+            "format": "uuid"
+          },
+          "player_name": {
+            "type": "string",
+            "maxLength": 40
+          },
+          "score": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100000
+          },
+          "solved": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "group_id",
+          "player_name",
+          "score"
+        ]
+      },
+      "fields": {},
+      "indexes": {
+        "group_id": {
+          "type": "text",
+          "ops": [
+            "eq"
+          ],
+          "sort": false
+        },
+        "score": {
+          "type": "number",
+          "ops": [
+            "range"
+          ],
+          "sort": true
+        }
+      },
+      "unique": [
+        {
+          "fields": [
+            "group_id",
+            "puzzle_id",
+            "player_name"
+          ],
+          "nulls": "not_distinct"
+        }
+      ],
+      "references": {
+        "group_id": {
+          "collection": "groups",
+          "on_delete": "cascade"
+        },
+        "puzzle_id": {
+          "collection": "puzzles",
+          "on_delete": "nullify"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "_fixture_note": "TEST FIXTURE. An invented company used only to prove the in_use film is a generator, not a one-off. Not a real business; every word here is made up for the test.",
+  "product_name": "Spokewise",
+  "one_liner": "A bike mechanic comes to your door.",
+  "features": [
+    { "title": "Pick a mechanic by repair type", "detail": "Each one lists what they fix." },
+    { "title": "Book a visit", "detail": "Choose a slot that suits you." },
+    { "title": "Pay after the fix", "detail": "Card or cash." }
+  ],
+  "cta_text": "Book a visit",
+  "cta_url": "https://spokewise.example",
+  "theme": "in_use",
+  "in_use": {
+    "brand": { "accent": "#1F8A70", "ground": "#F4F7F5" },
+    "app_name": "spokewise",
+    "nav": ["Find a mechanic", "How it works", "Prices", "Become a mechanic"],
+    "disclaimer": "Test fixture",
+    "hook": {
+      "kicker": "Mobile bike repair",
+      "headline": "Your bike, fixed at home.",
+      "sub": "No shop trip.",
+      "notes": ["Pay after the fix", "Free to browse"]
+    },
+    "find": {
+      "title": "What needs fixing?",
+      "filters": [
+        { "label": "Repair", "options": ["Flat tyre", "Brakes", "Gears", "Chain", "Wheel true", "Full service", "E-bike check"], "pick": "Brakes" },
+        { "label": "Bike type", "options": ["Road", "Mountain", "City", "Cargo", "E-bike", "Kids"], "pick": "City" }
+      ],
+      "button": "Find a mechanic",
+      "notes": ["Free to browse"]
+    },
+    "results": {
+      "title": "Mechanics for Brakes · City",
+      "noun": "mechanic",
+      "pick": 0,
+      "action": "Book",
+      "cards": [
+        { "title": "Brake specialist", "sub": "Comes to you", "tags": ["Brakes", "Gears"], "badge": "Same week", "rows": [["Price", "Shown before you book"], ["Visit", "At your door"], ["Bikes", "City, Road"]] },
+        { "title": "All-round mechanic", "sub": "Comes to you", "tags": ["Full service"], "rows": [["Price", "Shown before you book"], ["Visit", "At your door"], ["Bikes", "All types"]] },
+        { "title": "E-bike mechanic", "sub": "Comes to you", "tags": ["E-bike check"], "rows": [["Price", "Shown before you book"], ["Visit", "At your door"], ["Bikes", "E-bike"]] }
+      ]
+    },
+    "booking": {
+      "title": "Book a visit",
+      "slot_label": "Brake fix",
+      "status": [
+        { "label": "Booked", "detail": "You pick a slot" },
+        { "label": "On the way", "detail": "The mechanic heads over" }
+      ],
+      "notes": ["Pay after the fix"]
+    },
+    "pay": {
+      "title": "Pay when it rides right",
+      "methods": ["Card", "Cash"],
+      "steps": [
+        { "label": "Book", "detail": "Pick a slot" },
+        { "label": "Fix", "detail": "At your door" },
+        { "label": "Pay", "detail": "Card or cash" }
+      ]
+    },
+    "policy": {
+      "title": "Need to move it? Tell us the day before.",
+      "window": "1 day",
+      "before": { "label": "Move it free", "detail": "Up to the day before" },
+      "after": { "label": "Visit fee applies", "detail": "On the day" }
+    },
+    "checklist": {
+      "title": "Why riders use it",
+      "items": ["No shop trip", "Price before you book", "Pay after the fix", "Kids' bikes too"]
+    },
+    "steps": [
+      { "title": "Pick", "detail": "Repair and bike type." },
+      { "title": "Book", "detail": "A slot that suits you." },
+      { "title": "Ride", "detail": "Fixed at your door." }
+    ],
+    "close": { "headline": "Your bike, fixed at home.", "cta": "Book a visit", "url": "spokewise.example", "notes": ["Free to browse", "Pay after the fix"] }
+  }
+}

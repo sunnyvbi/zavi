@@ -1,0 +1,22 @@
+name = "${ZAVI_FN_OUTBOUND_WORKER_NAME}"
+main = "src/outbound.ts"
+compatibility_date = "2026-09-01"
+workers_dev = false
+
+[[services]]
+binding = "GATEWAY"
+service = "${ZAVI_SITE_GATEWAY_WORKER_NAME}"
+
+[[kv_namespaces]]
+binding = "HOSTS"
+id = "${ZAVI_STATIC_KV_NAMESPACE_ID}"
+
+[[ratelimits]]
+name = "RL_EGRESS"
+namespace_id = "${ZAVI_FN_RL_EGRESS_NS}"
+simple = { limit = 600, period = 60 }
+
+[[analytics_engine_datasets]]
+binding = "FN_METRICS"
+dataset = "zavi_site_functions"
+

@@ -1,0 +1,25 @@
+{
+  "_source": "TEST FIXTURE, INVENTED COMPANY. 'Ledgerline' is not a real business and none of these words or numbers describe one. It exists only to prove the journey film renders a different kind of company (a small B2B service, teal brand, 13 stations, different kinds) without empty or broken stations.",
+  "product_name": "Ledgerline",
+  "one_liner": "Bookkeeping for food trucks.",
+  "features": [],
+  "cta_text": "Start a free month",
+  "cta_url": "https://ledgerline.example/",
+  "theme": "journey",
+  "brand": { "accent": "#1F9E8F", "ground": "#F6F8F7", "ink": "#14201E" },
+  "journey": [
+    { "kind": "title", "slate": "Meet Ledgerline", "kicker": "Bookkeeping for food trucks", "headline": "Books closed by Friday.", "sub": "Snap a receipt at the window. We do the rest overnight.", "chips": ["Receipts", "Payroll", "Sales tax", "Mileage", "Invoices", "Fuel", "Commissary", "Permits"], "notes": ["No spreadsheets", "One flat price"] },
+    { "kind": "numeral", "slate": "Price", "label": "One flat price", "value": "$49", "unit": "a month", "notes": ["Cancel any time"] },
+    { "kind": "steps", "slate": "How it works", "title": "Four steps, one week.", "steps": [ { "title": "Connect", "detail": "Link your card reader and bank." }, { "title": "Snap", "detail": "Photograph receipts on the truck." }, { "title": "Review", "detail": "Approve the week in one screen." }, { "title": "File", "detail": "Sales tax goes out on time." } ] },
+    { "kind": "wall", "slate": "Categories", "title": "Every line sorted for you.", "countLabel": "categories", "items": ["Food cost", "Fuel", "Propane", "Commissary", "Permits", "Insurance", "Payroll", "Card fees", "Repairs", "Packaging", "Marketing", "Event fees"] },
+    { "kind": "flow", "slate": "Money in", "title": "Every sale lands in the books.", "from": "Sales", "to": "Books", "via": ["Card", "Cash", "Catering"], "zero": { "label": "Lost receipts", "value": "0" }, "caption": "Card, cash and catering, reconciled nightly." },
+    { "kind": "clock", "slate": "Overnight", "title": "You cook, we count", "left": { "place": "The truck", "when": "Service hours" }, "right": { "place": "Ledgerline", "when": "Overnight" }, "caption": "Receipts snapped at lunch are booked by morning." },
+    { "kind": "strike", "slate": "Gone", "title": "What you stop doing", "items": ["Shoebox of receipts", "Sunday spreadsheets", "Late sales tax"], "stamp": "Handled" },
+    { "kind": "burst", "slate": "Connects to", "title": "connections", "center": "Ledgerline", "items": ["Card reader", "Bank", "Payroll", "Sales tax", "Catering invoices", "Fuel card"] },
+    { "kind": "gate", "slate": "Review", "title": "Nothing files without you", "pass": ["Sorted", "Reviewed", "Filed"], "block": "Not reviewed", "empty": "You approve every filing.", "caption": "Every filing waits for your approval." },
+    { "kind": "quad", "slate": "Reports", "title": "Four reports, every Friday.", "tag": "Weekly", "items": [ { "title": "Profit", "detail": "What the week actually made." }, { "title": "Food cost", "detail": "Per menu item." }, { "title": "Cash", "detail": "What is in the bank." }, { "title": "Tax", "detail": "What you will owe." } ] },
+    { "kind": "terms", "slate": "Terms", "title": "Simple terms.", "rows": [ { "label": "Price", "value": "$49 a month" }, { "label": "Contract", "value": "None" }, { "label": "Trucks", "value": "One or many" } ] },
+    { "kind": "cycle", "slate": "Every week", "title": "The weekly loop", "center": "Your books", "nodes": ["Snap", "Sort", "Approve", "File"] },
+    { "kind": "cta", "slate": "Start", "headline": "Close your books.", "button": "Start a free month", "url": "ledgerline.example", "notes": ["No card to start", "Cancel any time"] }
+  ]
+}

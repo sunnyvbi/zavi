@@ -1,0 +1,165 @@
+// @vitest-environment jsdom
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { afterEach,beforeEach,expect,it,vi } from "vitest";
+const api=vi.hoisted(()=>vi.fn());
+vi.mock("./api",()=>({campaignFetch:api,requestKey:()=>({signature:"test",id:"11111111-1111-4111-8111-111111111111"})}));
+import {CampaignEditor} from "./CampaignEditor";
+import {CampaignAssets} from "./CampaignAssets";
+import {chatgpt_ads} from "../platforms/chatgpt_ads";
+const spec=chatgpt_ads.campaignWorkspace!;
+const options={conversion_events:[{id:"event1",name:"Completed signup"}],inclusion_audiences:[],exclusion_audiences:[],product_feeds:[],warnings:[]};
+beforeEach(()=>{api.mockReset();api.mockImplementation(async(path:string)=>path.endsWith("/resources")?options:{rows:[]});
+  HTMLDialogElement.prototype.showModal=function(){this.setAttribute("open","");};
+  HTMLDialogElement.prototype.close=function(){this.removeAttribute("open");};
+});
+afterEach(()=>cleanup());
+it("shows three goals and blocks conversions until an assigned event is selected",async()=>{
+  render(<CampaignEditor spec={spec} campaign="new" prefix="zv-acme--" currency="USD" onBack={()=>{}} onSaved={()=>{}}/>);
+  fireEvent.change(screen.getByLabelText("Campaign name"),{target:{value:"Launch"}});
+  fireEvent.change(screen.getByRole("spinbutton"),{target:{value:"100"}});
+  fireEvent.click(screen.getByRole("radio",{name:"Conversions"}));
+  expect((screen.getByRole("button",{name:"Create paused campaign"}) as HTMLButtonElement).disabled).toBe(true);
+  await screen.findByRole("option",{name:"Completed signup"});
+  fireEvent.change(screen.getByLabelText(/Conversion event/),{target:{value:"event1"}});
+  expect((screen.getByRole("button",{name:"Create paused campaign"}) as HTMLButtonElement).disabled).toBe(false);
+  api.mockResolvedValueOnce({campaign:{id:"new",name:"Launch",status:"paused"}});
+  fireEvent.click(screen.getByRole("button",{name:"Create paused campaign"}));
+  await waitFor(()=>expect(api.mock.calls.some(([p,o])=>p.endsWith("/campaigns")&&JSON.parse(o.body).conversion_event_setting_ids?.[0]==="event1")).toBe(true));
+});
+it("does not allow an open-ended daily-budget campaign",async()=>{
+  render(<CampaignEditor spec={spec} campaign="new" prefix="" currency="USD" onBack={()=>{}} onSaved={()=>{}}/>);
+  fireEvent.change(screen.getByLabelText("Campaign name"),{target:{value:"Launch"}});
+  fireEvent.click(screen.getByRole("radio",{name:"Daily average"}));
+  fireEvent.change(screen.getByRole("spinbutton"),{target:{value:"25"}});
+  expect((screen.getByRole("button",{name:"Create paused campaign"}) as HTMLButtonElement).disabled).toBe(true);
+  expect(screen.getByText(/Daily spend can reach twice/)).toBeTruthy();
+});
+it("converts a $60 CPM input to $0.06 per impression for the API",async()=>{
+  render(<CampaignAssets spec={spec} campaignId="c1" campaign={{id:"c1",name:"Views",status:"paused",bidding_type:"impressions"}} currency="USD"/>);
+  await screen.findByText(/Add an ad group with buyer context/);
+  fireEvent.click(screen.getByRole("button",{name:"Add ad group"}));
+  fireEvent.change(screen.getByLabelText("Name"),{target:{value:"Intent"}});
+  fireEvent.change(screen.getByRole("spinbutton"),{target:{value:"60"}});
+  fireEvent.click(screen.getByRole("button",{name:"Save paused"}));
+  await waitFor(()=>expect(api.mock.calls.some(([,o])=>o?.method==="POST"&&JSON.parse(o.body).max_bid_micros===60000)).toBe(true));
+});
+it("omits the fixed bid when automatic bidding is selected",async()=>{
+  render(<CampaignAssets spec={spec} campaignId="c1" campaign={{id:"c1",name:"Clicks",status:"paused",bidding_type:"clicks",budget:{daily_spend_limit_micros:25000000}}} currency="USD"/>);
+  fireEvent.click(screen.getByRole("button",{name:"Add ad group"}));
+  fireEvent.change(screen.getByLabelText("Name"),{target:{value:"Intent"}});
+  fireEvent.change(screen.getByLabelText("Bid strategy"),{target:{value:"maximize_clicks"}});
+  expect(screen.queryByRole("spinbutton")).toBeNull();
+  fireEvent.click(screen.getByRole("button",{name:"Save paused"}));
+  await waitFor(()=>expect(api.mock.calls.some(([,o])=>o?.method==="POST"&&JSON.parse(o.body).strategy==="maximize_clicks"&&!('max_bid_micros' in JSON.parse(o.body)))).toBe(true));
+});
+it("closes only on its own close event, never on a queued one while it is open again",()=>{
+  const onBack=vi.fn();
+  render(<CampaignEditor spec={spec} campaign="new" prefix="" currency="USD" onBack={onBack} onSaved={()=>{}}/>);
+  const dialog=screen.getByRole("dialog",{name:"New ChatGPT Ads campaign"});
+  fireEvent(dialog,new Event("close"));
+  expect(onBack).not.toHaveBeenCalled();
+  dialog.removeAttribute("open");
+  fireEvent(dialog,new Event("close"));
+  expect(onBack).toHaveBeenCalledTimes(1);
+});
+it("brings a save failure into view, since the submit button sits in the sticky footer",async()=>{
+  const scroll=vi.fn();HTMLElement.prototype.scrollIntoView=scroll;
+  render(<CampaignEditor spec={spec} campaign="new" prefix="" currency="USD" onBack={()=>{}} onSaved={()=>{}}/>);
+  fireEvent.change(screen.getByLabelText("Campaign name"),{target:{value:"Launch"}});
+  fireEvent.change(screen.getByRole("spinbutton"),{target:{value:"100"}});
+  await waitFor(()=>expect(api.mock.calls.some(([p])=>p.endsWith("/resources"))).toBe(true));
+  api.mockRejectedValueOnce(new Error("Insufficient wallet balance"));
+  fireEvent.click(screen.getByRole("button",{name:"Create paused campaign"}));
+  const alert=await screen.findByText("Insufficient wallet balance");
+  await waitFor(()=>expect(scroll).toHaveBeenCalled());
+  expect(scroll.mock.instances[0]).toBe(alert);
+});
+
+it("explains missing daily dates beside the disabled button and enables it once complete", async()=>{
+  render(<CampaignEditor spec={spec} campaign="new" prefix="" currency="USD" onBack={()=>{}} onSaved={()=>{}}/>);
+  fireEvent.change(screen.getByLabelText("Campaign name"),{target:{value:"Launch"}});
+  fireEvent.click(screen.getByRole("radio",{name:"Daily average"}));
+  fireEvent.change(screen.getByRole("spinbutton"),{target:{value:"25"}});
+  const button=screen.getByRole("button",{name:"Create paused campaign"}) as HTMLButtonElement;
+  expect(document.getElementById(button.getAttribute("aria-describedby")!)?.textContent).toMatch(/start time.*end time/);
+  fireEvent.change(screen.getByLabelText("Start time"),{target:{value:"2030-10-24T10:00:37"}});
+  expect(screen.getByText("Enter an end time.")).toBeTruthy();
+  fireEvent.change(screen.getByLabelText("End time"),{target:{value:"2030-10-25T10:00:37"}});
+  expect(button.disabled).toBe(false);
+  expect(button.getAttribute("aria-describedby")).toBeNull();
+});
+it("explains platform selection and applies the same guard to form submission", async()=>{
+  render(<CampaignEditor spec={spec} campaign="new" prefix="" currency="USD" onBack={()=>{}} onSaved={()=>{}}/>);
+  fireEvent.change(screen.getByLabelText("Campaign name"),{target:{value:"Launch"}});
+  fireEvent.change(screen.getByRole("spinbutton"),{target:{value:"25"}});
+  for (const c of screen.getAllByRole("checkbox")) fireEvent.click(c);
+  expect(screen.getByText("Select at least one platform.",{selector:"p[role=status]"})).toBeTruthy();
+  fireEvent.submit(screen.getByLabelText("Campaign name").closest("form")!);
+  expect(api.mock.calls.filter(([,o])=>o?.method==="POST")).toHaveLength(0);
+});
+it("explains unreadable currency and missing conversion setup", async()=>{
+  render(<CampaignEditor spec={spec} campaign="new" prefix="" currency={null} onBack={()=>{}} onSaved={()=>{}}/>);
+  expect(screen.getByText(/account currency is unavailable/)).toBeTruthy();
+  fireEvent.click(screen.getByRole("radio",{name:"Conversions"}));
+  await screen.findByRole("option",{name:"Completed signup"});
+  expect(await screen.findByText(/Select a conversion event\./)).toBeTruthy();
+});
+it("announces only a successful create and points to existing setup without activating", async()=>{
+  const saved={id:"new",name:"Launch",status:"paused",bidding_type:"clicks",budget:{lifetime_spend_limit_micros:25000000}};
+  api.mockImplementation(async(p:string,o?:{method?:string})=>o?.method==="POST"?{campaign:saved}:p.endsWith("/resources")?options:{rows:[]});
+  const scroll=vi.fn();HTMLElement.prototype.scrollIntoView=scroll;
+  render(<CampaignEditor spec={spec} campaign="new" prefix="" currency="USD" onBack={()=>{}} onSaved={()=>{}}/>);
+  fireEvent.change(screen.getByLabelText("Campaign name"),{target:{value:"Launch"}});
+  fireEvent.change(screen.getByRole("spinbutton"),{target:{value:"25"}});
+  fireEvent.click(screen.getByRole("button",{name:"Create paused campaign"}));
+  const notice=await screen.findByText("Campaign created and paused.");
+  await waitFor(()=>expect(document.activeElement).toBe(notice.parentElement));
+  fireEvent.click(screen.getByRole("button",{name:"Continue to ad setup"}));
+  expect(document.activeElement?.contains(screen.getByRole("button",{name:"Add ad group"}))).toBe(true);
+  expect(api.mock.calls.filter(([,o])=>o?.method==="POST").map(([p])=>p)).toEqual([`${spec.apiBase}/campaigns`]);
+});
+it.each([1700000037, Date.parse("2025-11-02T06:30:57Z") / 1000])("keeps exact instant %s on a name-only edit of an ended paused campaign", async startTime=>{
+  const saved={id:"c1",name:"Old",status:"paused",bidding_type:"clicks",updated_at:17,budget:{daily_spend_limit_micros:25000000},start_time:startTime,end_time:startTime+86400};
+  api.mockImplementation(async(p:string)=>p.endsWith("/resources")?options:p.includes("/entities")?{rows:[]}:{campaign:saved});
+  render(<CampaignEditor spec={spec} campaign={saved} prefix="" currency="USD" onBack={()=>{}} onSaved={()=>{}}/>);
+  await screen.findByDisplayValue("Old");
+  expect((screen.getByLabelText("Start time") as HTMLInputElement).value).toContain(`:${new Date(saved.start_time * 1000).getSeconds()}`);
+  fireEvent.change(screen.getByLabelText("Campaign name"),{target:{value:"Renamed"}});
+  const button=screen.getByRole("button",{name:"Save changes"}) as HTMLButtonElement;
+  expect(button.disabled).toBe(false);
+  fireEvent.click(button);
+  await waitFor(()=>expect(api.mock.calls.some(([,o])=>o?.method==="POST")).toBe(true));
+  const body=JSON.parse(api.mock.calls.find(([,o])=>o?.method==="POST")![1].body);
+  expect(body).not.toHaveProperty("start_time");expect(body).not.toHaveProperty("end_time");expect(body).not.toHaveProperty("daily_budget_micros");
+  expect(screen.queryByText("Campaign created and paused.")).toBeNull();
+});
+it.each(["2030-10-23T10:00", "2031-02-01T10:00"])("explains invalid daily schedule %s before posting",async end=>{
+  render(<CampaignEditor spec={spec} campaign="new" prefix="" currency="USD" onBack={()=>{}} onSaved={()=>{}}/>);
+  fireEvent.change(screen.getByLabelText("Campaign name"),{target:{value:"Launch"}});
+  fireEvent.click(screen.getByRole("radio",{name:"Daily average"}));
+  fireEvent.change(screen.getByRole("spinbutton"),{target:{value:"25"}});
+  fireEvent.change(screen.getByLabelText("Start time"),{target:{value:"2030-10-24T10:00"}});
+  fireEvent.change(screen.getByLabelText("End time"),{target:{value:end}});
+  const button=screen.getByRole("button",{name:"Create paused campaign"}) as HTMLButtonElement;
+  expect(button.disabled).toBe(true);expect(document.getElementById(button.getAttribute("aria-describedby")!)?.textContent).toMatch(/after the start|90 days/);
+});
+it("date presets fill the start and end times, and the preview follows the form", () => {
+  render(<CampaignEditor spec={spec} campaign="new" prefix="" currency="USD" onBack={()=>{}} onSaved={()=>{}}/>);
+  const preview=within(screen.getByRole("complementary",{name:"Live preview"}));
+  expect(preview.getByText("Not set yet")).toBeTruthy();
+  expect(preview.getByText("Website visits")).toBeTruthy();
+  fireEvent.click(screen.getByRole("radio",{name:"Awareness"}));
+  expect(preview.getByText("Awareness")).toBeTruthy();
+  fireEvent.change(screen.getByRole("spinbutton"),{target:{value:"120"}});
+  expect(preview.getByText("Up to 120 USD in total")).toBeTruthy();
+  fireEvent.click(screen.getByRole("button",{name:"Tomorrow"}));
+  const start=(screen.getByLabelText("Start time") as HTMLInputElement).value;
+  expect(start).toMatch(/T09:00/);
+  expect(screen.getByRole("button",{name:"Tomorrow"}).getAttribute("aria-pressed")).toBe("true");
+  fireEvent.click(screen.getByRole("button",{name:"After 7 days"}));
+  const end=(screen.getByLabelText("End time") as HTMLInputElement).value;
+  expect(new Date(end).getTime()-new Date(start).getTime()).toBe(7*86400*1000);
+  expect(screen.getByRole("button",{name:"After 7 days"}).getAttribute("aria-pressed")).toBe("true");
+  fireEvent.click(screen.getByRole("radio",{name:"Daily average"}));
+  expect((screen.getByRole("button",{name:"No end date"}) as HTMLButtonElement).disabled).toBe(true);
+});

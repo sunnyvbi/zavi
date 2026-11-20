@@ -1,0 +1,12 @@
+"use client";
+import { useEffect, useState } from "react";
+import type { CampaignMetrics } from "@zavi/shared";
+import { campaignFetch } from "./api";
+import { count, money, percent } from "./format";
+export function CampaignReport({ base, currency }: { base: string; currency: string | null }) {
+  const [breakdown, setBreakdown] = useState("daily"); const [days, setDays] = useState(30);
+  const [data, setData] = useState<{ rows: Array<CampaignMetrics & { label: string }>; period: { from: string; to: string; timezone: string } } | null>(null);
+  const [error, setError] = useState("");
+  useEffect(() => { let stale = false; setData(null); setError(""); void campaignFetch<NonNullable<typeof data>>(`${base}/report?breakdown=${breakdown}&days=${days}`).then(r => { if (!r || !Array.isArray(r.rows) || !r.period) throw new Error("Performance response could not be read."); if (!stale) setData(r); }).catch(e => { if (!stale) setError(e.message); }); return () => { stale = true; }; }, [base, breakdown, days]);
+  return <section className="space-y-3 border-t border-rule pt-5"><h3 className="text-lg font-medium">Performance breakdown</h3><div className="flex flex-wrap gap-3"><label className="text-[14px] font-medium">Group by<select className="ml-2 rounded-lg border border-rule p-2" value={breakdown} onChange={e => setBreakdown(e.target.value)}><option value="daily">Day</option><option value="country">Country</option></select></label><label className="text-[14px] font-medium">Period<select className="ml-2 rounded-lg border border-rule p-2" value={days} onChange={e => setDays(Number(e.target.value))}>{[7,14,30].map(n => <option key={n} value={n}>{n} complete days</option>)}</select></label></div>{error ? <p role="alert" className="text-sm text-danger">{error}</p> : !data ? <p role="status">Reading performance…</p> : <><p className="text-xs text-inkMuted">{data.period.from} – {data.period.to} · {data.period.timezone} · Figures may arrive late.</p><div className="overflow-x-auto"><table className="w-full text-right text-sm"><thead><tr>{[breakdown === "daily" ? "Day" : "Country", "Impressions", "Clicks", "Spend", "CTR"].map(h => <th className="p-2" key={h}>{h}</th>)}</tr></thead><tbody>{data.rows.map((r,i) => <tr key={`${r.label}:${i}`}><td className="p-2">{r.label}</td><td>{count(r.impressions)}</td><td>{count(r.clicks)}</td><td>{money(r.spend,currency)}</td><td>{percent(r.ctr)}</td></tr>)}</tbody></table></div>{!data.rows.length && <p className="text-sm text-inkMuted">No reported rows for this period.</p>}</>}</section>;
+}

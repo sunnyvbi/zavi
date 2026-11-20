@@ -1,0 +1,7 @@
+{
+  "node_version": "22",
+  "graphs": {
+    "zavi-growth": "./src/services/agents/deepagent/studio/graph.ts:graph"
+  },
+  "env": ".env"
+}

@@ -1,0 +1,19 @@
+{
+  "link.svg": "https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Link/SVG/ic_fluent_link_24_color.svg",
+  "phone.svg": "https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Phone/SVG/ic_fluent_phone_24_color.svg",
+  "people-community.svg": "https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/People%20Community/SVG/ic_fluent_people_community_24_color.svg",
+  "document-edit.svg": "https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Document%20Edit/SVG/ic_fluent_document_edit_24_color.svg",
+  "mail.svg": "https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Mail/SVG/ic_fluent_mail_24_color.svg",
+  "apps.svg": "https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Apps/SVG/ic_fluent_apps_24_color.svg",
+  "people-sync.svg": "https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/People%20Sync/SVG/ic_fluent_people_sync_24_color.svg",
+  "building-store.svg": "https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Building%20Store/SVG/ic_fluent_building_store_24_color.svg",
+  "people-interwoven.svg": "https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/People%20Interwoven/SVG/ic_fluent_people_interwoven_24_color.svg",
+  "news.svg": "https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/News/SVG/ic_fluent_news_24_color.svg",
+  "alert.svg": "https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Alert/SVG/ic_fluent_alert_24_color.svg",
+  "person-add.svg": "https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Person%20Add/SVG/ic_fluent_person_add_24_color.svg",
+  "star.svg": "https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Star/SVG/ic_fluent_star_24_color.svg",
+  "chat-multiple.svg": "https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Chat%20Multiple/SVG/ic_fluent_chat_multiple_24_color.svg",
+  "share-android.svg": "https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Share%20Android/SVG/ic_fluent_share_android_24_color.svg",
+  "video.svg": "https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/Video/SVG/ic_fluent_video_24_color.svg",
+  "history.svg": "https://raw.githubusercontent.com/microsoft/fluentui-system-icons/main/assets/History/SVG/ic_fluent_history_24_color.svg"
+}

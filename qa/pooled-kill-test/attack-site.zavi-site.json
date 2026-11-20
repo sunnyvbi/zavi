@@ -1,0 +1,277 @@
+{
+  "schemaVersion": 2,
+  "roles": [],
+  "capabilities": [],
+  "actions": {},
+  "aggregates": {},
+  "collections": {
+    "notes": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "owner",
+          "admin"
+        ],
+        "get": [
+          "owner",
+          "admin"
+        ],
+        "create": [
+          "signed_in"
+        ],
+        "update": [
+          "owner",
+          "admin"
+        ],
+        "delete": [
+          "owner",
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "body": {
+            "type": "string",
+            "maxLength": 2000
+          }
+        },
+        "required": [
+          "title"
+        ]
+      },
+      "fields": {},
+      "indexes": {
+        "title": {
+          "type": "text",
+          "ops": [
+            "eq"
+          ],
+          "sort": false
+        }
+      },
+      "unique": [],
+      "references": {}
+    },
+    "inbox": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "admin"
+        ],
+        "get": [
+          "admin"
+        ],
+        "create": [
+          "anyone"
+        ],
+        "update": [
+          "admin"
+        ],
+        "delete": [
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "body": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "status": {
+            "type": "string",
+            "maxLength": 4,
+            "enum": [
+              "new",
+              "done"
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "body",
+          "status"
+        ]
+      },
+      "fields": {},
+      "indexes": {},
+      "unique": [],
+      "references": {},
+      "states": {
+        "field": "status",
+        "values": [
+          "new",
+          "done"
+        ],
+        "initial": "new",
+        "transitions": [
+          {
+            "from": "new",
+            "to": "done",
+            "principals": [
+              "admin"
+            ]
+          }
+        ]
+      }
+    },
+    "vault": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "admin"
+        ],
+        "get": [
+          "admin"
+        ],
+        "create": [
+          "admin"
+        ],
+        "update": [
+          "admin"
+        ],
+        "delete": [
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "secret": {
+            "type": "string",
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "secret"
+        ]
+      },
+      "fields": {},
+      "indexes": {},
+      "unique": [],
+      "references": {}
+    },
+    "uploads": {
+      "kind": "files",
+      "rules": {
+        "list": [
+          "owner",
+          "admin"
+        ],
+        "get": [
+          "owner",
+          "admin"
+        ],
+        "create": [
+          "signed_in"
+        ],
+        "update": [
+          "owner"
+        ],
+        "delete": [
+          "owner",
+          "admin"
+        ]
+      }
+    },
+    "listings": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "anyone"
+        ],
+        "get": [
+          "anyone"
+        ],
+        "create": [
+          "signed_in"
+        ],
+        "update": [
+          "owner",
+          "admin"
+        ],
+        "delete": [
+          "owner",
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 120
+          }
+        },
+        "required": [
+          "title"
+        ]
+      },
+      "fields": {},
+      "indexes": {},
+      "unique": [],
+      "references": {}
+    },
+    "requests": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "owner",
+          "recipient",
+          "admin"
+        ],
+        "get": [
+          "owner",
+          "recipient",
+          "admin"
+        ],
+        "create": [
+          "signed_in"
+        ],
+        "update": [],
+        "delete": [
+          "owner",
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "listing_id": {
+            "type": "string",
+            "maxLength": 36,
+            "format": "uuid"
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "listing_id"
+        ]
+      },
+      "fields": {},
+      "indexes": {},
+      "unique": [],
+      "references": {
+        "listing_id": {
+          "collection": "listings",
+          "on_delete": "cascade"
+        }
+      },
+      "recipient": {
+        "reference": "listing_id"
+      }
+    }
+  }
+}

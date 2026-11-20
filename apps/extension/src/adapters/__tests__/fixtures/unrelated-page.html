@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<!--
+  Fixture: a page that is not Ads Manager at all.
+
+  It is deliberately NOT inert. It contains a real <table> with real <tr> rows
+  holding real money-looking numbers — a pricing comparison — but NO header cells
+  (<th> / role="columnheader"). That is the trap: a positional adapter would
+  happily emit "Starter" with spend 29 and "Pro" with spend 99, and hand an agent
+  three fabricated campaigns. The adapter must return zero rows here, because
+  without a header row it has no idea what any column means.
+-->
+<html lang="en">
+<head><title>Pricing — Northwind Tools</title></head>
+<body>
+  <nav aria-label="Primary">
+    <a href="/product">Product</a>
+    <a href="/pricing">Pricing</a>
+    <a href="/docs">Docs</a>
+  </nav>
+
+  <main>
+    <h1>Simple, honest pricing</h1>
+    <p>Every plan includes the whole toolkit. No seats, no feature gates.</p>
+
+    <table class="pricing">
+      <tbody>
+        <tr><td>Starter</td><td>$29.00</td><td>1,000</td><td>Active</td></tr>
+        <tr><td>Pro</td><td>$99.00</td><td>25,000</td><td>Active</td></tr>
+        <tr><td>Scale</td><td>$499.00</td><td>500,000</td><td>Active</td></tr>
+      </tbody>
+    </table>
+
+    <section>
+      <h2>Frequently asked</h2>
+      <div class="faq"><h3>Can I change plans?</h3><p>Any time, prorated.</p></div>
+      <div class="faq"><h3>Do you offer a trial?</h3><p>14 days, no card.</p></div>
+    </section>
+  </main>
+
+  <footer><p>&copy; Northwind Tools</p></footer>
+</body>
+</html>

@@ -1,0 +1,114 @@
+{
+  "agent": "pm",
+  "stage": "spec",
+  "stack": "nextjs-supabase-tailwind",
+  "source_run_id": "af0d81e4-db3d-4b6a-83b3-208fec85fad6",
+  "output_text": "## Cake Co website — first-version spec\n\nThe archetype came back as a SaaS dashboard; the idea is a customer-facing cake ordering site, so this spec is built to the idea (a storefront + checkout + a small staff admin), not the dashboard shell.\n\n**What it is**\nA public website for Cake Co where visitors browse a catalog of cakes, customize one for their occasion (size, flavor, filling, message on top), add it to a cart, and place an order with a pickup or delivery date. Staff sign in to a lightweight admin to add or hide cakes and see incoming orders.\n\n**Pages / routes**\n- `/` Home. Hero with the store's promise, a strip of featured cakes, an occasion picker (birthday, wedding, anniversary, custom), link to the full shop.\n- `/shop` Catalog. FilterBar (occasion, flavor, price band, dietary), grid of product cards, EmptyState when filters exclude everything.\n- `/cakes/:slug` Product detail. Photo gallery, description, base price, and the customize panel (size, flavor, filling, frosting, message, pickup vs delivery, date). Adds to cart.\n- `/cart` Cart. Line items with the customization summary, quantity, subtotal, delivery estimate, checkout button.\n- `/checkout` Checkout. Contact + address (only if delivery), pickup date/time picker, order notes, Stripe Checkout redirect for payment, place order.\n- `/orders/:id` Order confirmation and status.\n- `/account/orders` Signed-in customer's past orders.\n- `/admin` (staff only) DataTable of orders with status, and a small form to add/edit/hide a cake.\n- `/signin` Sign in for customers and staff.\n\n**Data model**\n- `profiles` — user id, name, email, role (customer or staff), phone.\n- `cakes` — id, slug, name, description, base_price_cents, occasion tags, photo urls, active flag.\n- `cake_options` — id, cake_id, kind (size, flavor, filling, frosting), label, price_delta_cents.\n- `orders` — id, customer_id, status (pending, paid, in_kitchen, ready, out_for_delivery, completed, cancelled), fulfillment (pickup, delivery), fulfillment_at, address, subtotal_cents, delivery_fee_cents, total_cents, stripe_payment_intent, notes, created_at.\n- `order_items` — id, order_id, cake_id, quantity, unit_price_cents, selected_options (json of option ids), message_on_cake.\n- `events` — append-only audit of order status transitions.\n\n**The primary flow**\nA first-time visitor lands on `/`, taps an occasion, sees the catalog filtered to it, opens a cake, picks size + flavor + filling + writes a message on top, chooses pickup on a specific date, adds it to the cart, signs in (email magic link or Google), pays via Stripe Checkout, and lands on `/orders/:id` with the confirmation and pickup instructions.\n\n**First-version scope — what is OUT**\n- Real-time order tracking beyond status changes.\n- Multi-location or shipping outside the store's own delivery zone.\n- Subscriptions, gift cards, loyalty points, and coupon codes beyond a single flat promo field.\n- Customer-uploaded reference images (accepted as free text in order notes for v1; a first-class asset flow is v2).\n- Staff calendar / production scheduling UI (admin sees the order list; the kitchen's own workflow is out).\n- Reviews and ratings.\n- Native mobile app.\n\n## RICE-ranked backlog\n| # | Item | RICE | Impact | Effort |\n| --- | --- | --- | --- | --- |\n| 1 | Public catalog + product detail | 0.0 | high | medium |\n_…5 more_",
+  "parsed": {
+    "status": "actionable",
+    "backlog": [
+      {
+        "theme": "Public catalog + product detail",
+        "effort": "medium",
+        "impact": "high",
+        "target": "frontend",
+        "item_id": "product-catalog-and-detail",
+        "problem": "Visitors have no way to see the cakes on offer or read what a specific cake is.",
+        "reasoning": "Core of the browse loop; nothing else in the site is usable without it.",
+        "code_reach": 0,
+        "rice_score": 0,
+        "proposed_fix": "Ship `/shop` (grid + FilterBar over occasion, flavor, price, dietary) and `/cakes/:slug` (gallery, description, base price). Empty state when filters exclude everything. Cakes read from the `cakes` table with `active=true`.",
+        "code_confidence": 1,
+        "evidence_sources": [],
+        "theme_normalized": "product-catalog-and-detail"
+      },
+      {
+        "theme": "Customize panel on product detail",
+        "effort": "medium",
+        "impact": "high",
+        "target": "frontend",
+        "item_id": "cake-customization-flow",
+        "problem": "A cake order needs size, flavor, filling, frosting, and a message on top; a plain product page cannot capture that.",
+        "reasoning": "This is the differentiator vs a plain e-commerce product page and drives basket size.",
+        "code_reach": 0,
+        "rice_score": 0,
+        "proposed_fix": "Add a Customize panel on `/cakes/:slug` that reads `cake_options` by kind and computes a live total (base_price + sum of price_delta). Fulfillment picker (pickup vs delivery, date/time) sits below it. Selection serializes into the cart line item as `selected_options` + `message_on_cake`.",
+        "code_confidence": 1,
+        "evidence_sources": [],
+        "theme_normalized": "cake-customization-flow"
+      },
+      {
+        "theme": "Cart + Stripe Checkout redirect",
+        "effort": "medium",
+        "impact": "high",
+        "target": "backend",
+        "item_id": "cart-and-checkout-stripe",
+        "problem": "Configured cakes need to become paid orders.",
+        "reasoning": "Converts intent into revenue; without it the site cannot transact.",
+        "code_reach": 0,
+        "rice_score": 0,
+        "proposed_fix": "`/cart` shows line items with the customization summary and totals. `/checkout` collects contact + (conditionally) address + pickup/delivery date/time + notes, then redirects to Stripe Checkout. On webhook success, mark `orders.status='paid'` and record `stripe_payment_intent`.",
+        "code_confidence": 1,
+        "evidence_sources": [],
+        "theme_normalized": "cart-and-checkout-stripe"
+      },
+      {
+        "theme": "Orders table + confirmation + status page",
+        "effort": "low",
+        "impact": "high",
+        "target": "backend",
+        "item_id": "order-lifecycle-and-confirmation",
+        "problem": "Once paid, a customer needs a confirmation and a way to check status.",
+        "reasoning": "Closes the customer loop end to end; small surface but load-bearing.",
+        "code_reach": 0,
+        "rice_score": 0,
+        "proposed_fix": "Persist `orders` + `order_items` at checkout, append `events` on every status transition, render `/orders/:id` with the summary + current status + pickup or delivery details. Send a plain confirmation email on `paid`.",
+        "code_confidence": 1,
+        "evidence_sources": [],
+        "theme_normalized": "order-lifecycle-and-confirmation"
+      },
+      {
+        "theme": "Staff admin: orders list + cake CRUD",
+        "effort": "medium",
+        "impact": "medium",
+        "target": "frontend",
+        "item_id": "staff-admin-orders-and-catalog",
+        "problem": "Staff need to see incoming orders and change what is on sale without asking an engineer.",
+        "reasoning": "Day-one operability for the store; without it every catalog change is a code push.",
+        "code_reach": 0,
+        "rice_score": 0,
+        "proposed_fix": "`/admin` (role='staff' only): DataTable of orders sortable by fulfillment_at with status buttons that write to `events`, plus a form to add/edit/hide a cake and its `cake_options`.",
+        "code_confidence": 1,
+        "evidence_sources": [],
+        "theme_normalized": "staff-admin-orders-and-catalog"
+      },
+      {
+        "theme": "Sign in + customer order history",
+        "effort": "low",
+        "impact": "medium",
+        "target": "backend",
+        "item_id": "auth-and-account-orders",
+        "problem": "Customers need an identity to attach orders to and a way to see past orders.",
+        "reasoning": "Low-cost enabler for the checkout row and for repeat purchase.",
+        "code_reach": 0,
+        "rice_score": 0,
+        "proposed_fix": "Email magic link + Google sign in at `/signin`, writes `profiles` on first sign in with role='customer' (staff role toggled by an allowlist env var). `/account/orders` lists that customer's past orders with a link to each `/orders/:id`.",
+        "code_confidence": 1,
+        "evidence_sources": [],
+        "theme_normalized": "auth-and-account-orders"
+      }
+    ],
+    "summary": {
+      "bullets": [
+        "Building a customer-facing cake storefront (browse, customize, order) with a small staff admin; archetype was SaaS dashboard, idea wins."
+      ],
+      "top_theme": "cake ordering site v1"
+    },
+    "sources_all": [],
+    "snapshot_run_id": "af0d81e4-db3d-4b6a-83b3-208fec85fad6",
+    "rendered_markdown": "## Cake Co website — first-version spec\n\nThe archetype came back as a SaaS dashboard; the idea is a customer-facing cake ordering site, so this spec is built to the idea (a storefront + checkout + a small staff admin), not the dashboard shell.\n\n**What it is**\nA public website for Cake Co where visitors browse a catalog of cakes, customize one for their occasion (size, flavor, filling, message on top), add it to a cart, and place an order with a pickup or delivery date. Staff sign in to a lightweight admin to add or hide cakes and see incoming orders.\n\n**Pages / routes**\n- `/` Home. Hero with the store's promise, a strip of featured cakes, an occasion picker (birthday, wedding, anniversary, custom), link to the full shop.\n- `/shop` Catalog. FilterBar (occasion, flavor, price band, dietary), grid of product cards, EmptyState when filters exclude everything.\n- `/cakes/:slug` Product detail. Photo gallery, description, base price, and the customize panel (size, flavor, filling, frosting, message, pickup vs delivery, date). Adds to cart.\n- `/cart` Cart. Line items with the customization summary, quantity, subtotal, delivery estimate, checkout button.\n- `/checkout` Checkout. Contact + address (only if delivery), pickup date/time picker, order notes, Stripe Checkout redirect for payment, place order.\n- `/orders/:id` Order confirmation and status.\n- `/account/orders` Signed-in customer's past orders.\n- `/admin` (staff only) DataTable of orders with status, and a small form to add/edit/hide a cake.\n- `/signin` Sign in for customers and staff.\n\n**Data model**\n- `profiles` — user id, name, email, role (customer or staff), phone.\n- `cakes` — id, slug, name, description, base_price_cents, occasion tags, photo urls, active flag.\n- `cake_options` — id, cake_id, kind (size, flavor, filling, frosting), label, price_delta_cents.\n- `orders` — id, customer_id, status (pending, paid, in_kitchen, ready, out_for_delivery, completed, cancelled), fulfillment (pickup, delivery), fulfillment_at, address, subtotal_cents, delivery_fee_cents, total_cents, stripe_payment_intent, notes, created_at.\n- `order_items` — id, order_id, cake_id, quantity, unit_price_cents, selected_options (json of option ids), message_on_cake.\n- `events` — append-only audit of order status transitions.\n\n**The primary flow**\nA first-time visitor lands on `/`, taps an occasion, sees the catalog filtered to it, opens a cake, picks size + flavor + filling + writes a message on top, chooses pickup on a specific date, adds it to the cart, signs in (email magic link or Google), pays via Stripe Checkout, and lands on `/orders/:id` with the confirmation and pickup instructions.\n\n**First-version scope — what is OUT**\n- Real-time order tracking beyond status changes.\n- Multi-location or shipping outside the store's own delivery zone.\n- Subscriptions, gift cards, loyalty points, and coupon codes beyond a single flat promo field.\n- Customer-uploaded reference images (accepted as free text in order notes for v1; a first-class asset flow is v2).\n- Staff calendar / production scheduling UI (admin sees the order list; the kitchen's own workflow is out).\n- Reviews and ratings.\n- Native mobile app.\n\n## RICE-ranked backlog\n| # | Item | RICE | Impact | Effort |\n| --- | --- | --- | --- | --- |\n| 1 | Public catalog + product detail | 0.0 | high | medium |\n_…5 more_",
+    "dispatched_actions": [],
+    "recommended_actions_not_dispatched": []
+  },
+  "files": []
+}

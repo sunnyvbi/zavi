@@ -1,0 +1,82 @@
+name: sync-main-to-development
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-main-to-development
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: development
+          fetch-depth: 0
+
+      - name: Merge main into development (main wins conflicts)
+        run: |
+          set -euo pipefail
+          git config user.name "zavi-sync-bot"
+          git config user.email "zavi-sync-bot@users.noreply.github.com"
+          git fetch origin main development
+
+          main_sha="$(git rev-parse origin/main)"
+          dev_sha="$(git rev-parse origin/development)"
+
+          if git merge-base --is-ancestor "$main_sha" "$dev_sha"; then
+            echo "development already contains main ($main_sha). Nothing to do."
+            exit 0
+          fi
+
+          if git merge-base --is-ancestor "$dev_sha" "$main_sha"; then
+            echo "development has no own commits; fast-forwarding to main."
+            git merge --ff-only "$main_sha"
+            git push origin HEAD:development
+            exit 0
+          fi
+
+          if ! git merge-tree --write-tree "$dev_sha" "$main_sha" >/dev/null 2>&1; then
+            tag="development-pre-sync/${dev_sha:0:10}"
+            echo "Conflicts expected; saving old development tip as $tag."
+            git tag -f "$tag" "$dev_sha"
+            git push -f origin "refs/tags/$tag"
+          fi
+
+          msg="Sync main (${main_sha:0:10}) into development"
+          if ! git merge --no-ff --no-edit -X theirs -m "$msg" "$main_sha"; then
+            git diff --name-only --diff-filter=U -z > "$RUNNER_TEMP/unmerged"
+            while IFS= read -r -d '' f; do
+              if git cat-file -e "$main_sha:$f" 2>/dev/null; then
+                git checkout "$main_sha" -- "$f"
+              else
+                git rm -q --ignore-unmatch -- "$f"
+              fi
+            done < "$RUNNER_TEMP/unmerged"
+            if [ -n "$(git diff --name-only --diff-filter=U)" ]; then
+              echo "::error::Unresolved conflicts remain after main-wins pass."
+              git diff --name-only --diff-filter=U
+              exit 1
+            fi
+            git commit --no-edit -m "$msg"
+          fi
+
+          missing="$(comm -23 \
+            <(git ls-tree --name-only "$main_sha" supabase/migrations/ | sort) \
+            <(git ls-tree --name-only HEAD supabase/migrations/ | sort))"
+          if [ -n "$missing" ]; then
+            echo "::error::Migrations on main missing from synced development:"
+            echo "$missing"
+            exit 1
+          fi
+
+          git push origin HEAD:development
+          echo "development is now $(git rev-parse --short HEAD) (contains main ${main_sha:0:10})."

@@ -1,0 +1,13 @@
+{
+  "running": { "status": "publishing", "started_at": "2026-10-05T05:48:00.000Z", "url": null, "retryable": false },
+  "repairPending": { "status": "publishing", "started_at": "2026-10-05T05:48:00.000Z", "url": null, "retryable": false, "fixing": true },
+  "repairSettled": { "status": "publishing", "started_at": "2026-10-05T05:48:00.000Z", "url": null, "retryable": false },
+  "live": { "status": "live", "started_at": null, "url": "https://alpha.zaviagent.com", "retryable": false },
+  "failed": {
+    "status": "failed",
+    "started_at": "2026-10-05T05:48:00.000Z",
+    "url": null,
+    "retryable": false,
+    "reason": "Zavi couldn't get one step of your app working. Try again, or describe your app a little differently."
+  }
+}

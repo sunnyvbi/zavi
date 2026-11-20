@@ -1,0 +1,163 @@
+{
+  "schemaVersion": 2,
+  "roles": [],
+  "capabilities": [],
+  "actions": {},
+  "aggregates": {},
+  "collections": {
+    "inquiries": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "admin"
+        ],
+        "get": [
+          "admin"
+        ],
+        "create": [
+          "anyone"
+        ],
+        "update": [
+          "admin"
+        ],
+        "delete": [
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "email": {
+            "type": "string",
+            "maxLength": 320,
+            "format": "email"
+          },
+          "phone": {
+            "type": "string",
+            "maxLength": 30
+          },
+          "service": {
+            "type": "string",
+            "maxLength": 10,
+            "enum": [
+              "portrait",
+              "event",
+              "commercial",
+              "family",
+              "other"
+            ]
+          },
+          "preferred_date": {
+            "type": "string",
+            "maxLength": 10,
+            "format": "date"
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "status": {
+            "type": "string",
+            "maxLength": 7,
+            "enum": [
+              "new",
+              "replied",
+              "booked",
+              "closed"
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "email",
+          "service",
+          "message",
+          "status"
+        ]
+      },
+      "fields": {},
+      "indexes": {
+        "preferred_date": {
+          "type": "timestamp",
+          "ops": [
+            "range"
+          ],
+          "sort": true
+        }
+      },
+      "unique": [],
+      "references": {},
+      "states": {
+        "field": "status",
+        "values": [
+          "new",
+          "replied",
+          "booked",
+          "closed"
+        ],
+        "initial": "new",
+        "transitions": [
+          {
+            "from": "new",
+            "to": "replied",
+            "principals": [
+              "admin"
+            ]
+          },
+          {
+            "from": "new",
+            "to": "closed",
+            "principals": [
+              "admin"
+            ]
+          },
+          {
+            "from": "replied",
+            "to": "booked",
+            "principals": [
+              "admin"
+            ]
+          },
+          {
+            "from": "replied",
+            "to": "closed",
+            "principals": [
+              "admin"
+            ]
+          },
+          {
+            "from": "booked",
+            "to": "closed",
+            "principals": [
+              "admin"
+            ]
+          }
+        ]
+      }
+    },
+    "portfolio": {
+      "kind": "files",
+      "rules": {
+        "list": [
+          "anyone"
+        ],
+        "get": [
+          "anyone"
+        ],
+        "create": [
+          "admin"
+        ],
+        "update": [
+          "admin"
+        ],
+        "delete": [
+          "admin"
+        ]
+      }
+    }
+  }
+}

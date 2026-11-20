@@ -1,0 +1,150 @@
+{
+  "schemaVersion": 2,
+  "roles": [],
+  "capabilities": [
+    "server_compute",
+    "jobs",
+    "secrets"
+  ],
+  "actions": {},
+  "aggregates": {},
+  "collections": {
+    "waitlist": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "admin"
+        ],
+        "get": [
+          "admin"
+        ],
+        "create": [
+          "anyone"
+        ],
+        "update": [
+          "admin"
+        ],
+        "delete": [
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 320,
+            "format": "email"
+          },
+          "company": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "website": {
+            "type": "string",
+            "maxLength": 300
+          },
+          "monthly_ad_spend": {
+            "type": "string",
+            "maxLength": 8,
+            "enum": [
+              "none",
+              "under_1k",
+              "1k_10k",
+              "10k_50k",
+              "over_50k"
+            ]
+          },
+          "channels": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 10,
+              "enum": [
+                "seo",
+                "meta_ads",
+                "google_ads",
+                "social",
+                "ugc",
+                "geo"
+              ]
+            },
+            "maxItems": 6
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "fields": {},
+      "indexes": {
+        "monthly_ad_spend": {
+          "type": "text",
+          "ops": [
+            "eq"
+          ],
+          "sort": false
+        }
+      },
+      "unique": [],
+      "references": {}
+    },
+    "reports": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "owner",
+          "admin"
+        ],
+        "get": [
+          "owner",
+          "admin"
+        ],
+        "create": [
+          "admin"
+        ],
+        "update": [
+          "admin"
+        ],
+        "delete": [
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "period_start": {
+            "type": "string",
+            "maxLength": 10,
+            "format": "date"
+          },
+          "summary": {
+            "type": "string",
+            "maxLength": 10000
+          }
+        },
+        "required": [
+          "title",
+          "period_start",
+          "summary"
+        ]
+      },
+      "fields": {},
+      "indexes": {
+        "period_start": {
+          "type": "timestamp",
+          "ops": [
+            "range"
+          ],
+          "sort": true
+        }
+      },
+      "unique": [],
+      "references": {}
+    }
+  }
+}

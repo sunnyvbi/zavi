@@ -1,0 +1,38 @@
+import { describe, expect, it } from "vitest";
+import { isGrowthDecision } from "./growthReviewScope";
+
+describe("isGrowthDecision", () => {
+  it("keeps the growth classes", () => {
+    for (const cls of [
+      "channel.recipe_step",
+      "social.publish.v2",
+      "social.publish",
+      "meta_ads.create_ad_set",
+      "google_ads.update_campaign_budget",
+    ]) {
+      expect(isGrowthDecision({ decision_class: cls }), cls).toBe(true);
+    }
+  });
+
+  it("keeps any decision stamped with a registry channel", () => {
+    expect(isGrowthDecision({ decision_class: "tiktok_ads.something", channel_slug: "tiktok_ads" })).toBe(true);
+    expect(isGrowthDecision({ decision_class: "x", channel_slug: "not_a_channel" })).toBe(false);
+  });
+
+  it("leaves out everything else", () => {
+    for (const cls of [
+      "pm.needs_action",
+      "qa.weekly-digest",
+      "engineer.ship-pr",
+      "chief-of-staff.dispatch-specialist",
+      "growth-lead.lifecycle-draft",
+      "operator.anything",
+      "dispute-response.triage",
+      "notetaker.summary",
+      "heartbeat.check",
+      "send_email",
+    ]) {
+      expect(isGrowthDecision({ decision_class: cls, channel_slug: null }), cls).toBe(false);
+    }
+  });
+});

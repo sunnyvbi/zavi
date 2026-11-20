@@ -1,0 +1,26 @@
+[project]
+name = "zavi-runtime"
+version = "0.1.0"
+description = "Zavi Python tool runtime foundation for LangChain Deep Agents"
+requires-python = ">=3.12"
+dependencies = [
+    "deepagents==0.7.8",
+    "langchain==1.3.16",
+    "langgraph==1.2.11",
+    "pydantic==2.13.4",
+]
+
+[project.optional-dependencies]
+dev = ["pytest==9.1.1", "pytest-asyncio"]
+supabase = ["supabase"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["zavi_runtime*"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

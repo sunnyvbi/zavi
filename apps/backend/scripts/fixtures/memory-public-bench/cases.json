@@ -1,0 +1,99 @@
+{
+  "suite": "public-memory-bench-v1",
+  "description": "LoCoMo-/LongMemEval-style public retrieval benchmark fixtures for Zavi memory. Each case is a self-contained multi-session conversation distilled into memory notes plus question/expected-note pairs. Hand-written in the public-dataset STYLE, NOT derived from any prod tenant — safe to commit and to ingest into a throwaway namespace. This is a SAMPLE harness (a few dozen questions), not the full published LongMemEval/LoCoMo run; the full datasets drop into this same { cases:[{notes,questions}] } shape for a published number. The set is deliberately HARD — paraphrased queries (query wording != note wording), per-conversation distractor notes (topically-similar but wrong), and multi-hop/temporal cases — so a lexical baseline scores BELOW 1.0 and the benchmark actually discriminates. Question types span LongMemEval's taxonomy: single-session fact recall, multi-session synthesis, temporal reasoning, knowledge-update (supersede / ordering), and abstention (off-topic negative).",
+  "k": 8,
+  "cases": [
+    {
+      "id": "locomo-harbor-founders",
+      "title": "Two founders discussing their marketplace-analytics SaaS over several sessions",
+      "notes": [
+        { "id": "ha-n1", "title": "Company and product", "body": "Harbor is a B2B platform that gives online marketplaces live revenue and retention dashboards. It launched in 2023." },
+        { "id": "ha-n2", "title": "Who leads what", "body": "Devi serves as chief executive and leads investor relations and the sales motion. Tomas is the chief technology officer and owns the data ingestion pipeline." },
+        { "id": "ha-n3", "title": "Plan pricing", "body": "The Launch plan is billed at 99 dollars per month, the Scale plan at 499 dollars per month, and large accounts negotiate bespoke contracts." },
+        { "id": "ha-n4", "title": "Planning cadence", "body": "The leadership group holds a quarterly planning offsite to set the product roadmap and the hiring plan for the next two quarters." },
+        { "id": "ha-n5", "title": "Dashboard capability", "body": "Harbor's revenue dashboard renders cohort retention curves and live volume tracking for every marketplace seller account." },
+        { "id": "ha-n6", "title": "Founder background", "body": "Devi spent her childhood in Pune and competes in weekend bouldering events." },
+        { "id": "ha-n7", "title": "Tech stack", "body": "The services are written in Go, events are stored in ClickHouse, and the operator console is built with React and TypeScript." },
+        { "id": "ha-n8", "title": "Growth milestone", "body": "Harbor crossed 120 paying accounts during the second quarter of 2024, having started that year with only 40 accounts." },
+        { "id": "ha-n9", "title": "First enterprise logo", "body": "During the first quarter of 2024 Harbor closed its first enterprise logo, a regional logistics company." }
+      ],
+      "questions": [
+        { "id": "ha-q1", "type": "single-session-fact", "query": "Who runs engineering and infrastructure, and what do they own?", "expected_note_ids": ["ha-n2"] },
+        { "id": "ha-q2", "type": "single-session-fact", "query": "How much does the Scale plan cost each month?", "expected_note_ids": ["ha-n3"] },
+        { "id": "ha-q3", "type": "multi-session-synthesis", "query": "Can Harbor show cohort retention and live transaction volume for sellers?", "expected_note_ids": ["ha-n5"] },
+        { "id": "ha-q4", "type": "temporal-reasoning", "query": "How many paying accounts did Harbor have by Q2 2024?", "expected_note_ids": ["ha-n8"] },
+        { "id": "ha-q5", "type": "single-session-fact", "query": "Where did Devi grow up and what does she do on weekends?", "expected_note_ids": ["ha-n6"] },
+        { "id": "ha-q6", "type": "abstention-negative", "query": "What is a good recipe for sourdough bread?", "expected_note_ids": [] }
+      ]
+    },
+    {
+      "id": "longmem-trip-planning",
+      "title": "A user planning a trip across multiple sessions, then revising it",
+      "notes": [
+        { "id": "tp-n1", "title": "Original destination", "body": "The user planned a two-week trip to Japan in October, centered on Tokyo and Kyoto." },
+        { "id": "tp-n2", "title": "Dietary need", "body": "The user is vegetarian and asked for plant-based restaurant options." },
+        { "id": "tp-n3", "title": "Budget", "body": "The user fixed a total trip budget of 4000 dollars not counting airfare." },
+        { "id": "tp-n4", "title": "Updated destination (supersede)", "body": "The user revised everything: the October trip now heads to South Korea, built around Seoul and Busan." },
+        { "id": "tp-n5", "title": "Travel companion", "body": "The user is taking the trip with their sister, who is a professional photographer." },
+        { "id": "tp-n6", "title": "Unrelated future idea", "body": "The user also bookmarked a separate winter trip idea to Japan for skiing in Hokkaido." }
+      ],
+      "questions": [
+        { "id": "tp-q1", "type": "single-session-fact", "query": "Any food restrictions for eating out?", "expected_note_ids": ["tp-n2"] },
+        { "id": "tp-q2", "type": "single-session-fact", "query": "Who is accompanying the user on the trip?", "expected_note_ids": ["tp-n5"] },
+        { "id": "tp-q3", "type": "multi-session-synthesis", "query": "What budget did the user set excluding flights?", "expected_note_ids": ["tp-n3"] },
+        { "id": "tp-q4", "type": "knowledge-update", "query": "Where is the user's October trip going now after they changed their plans?", "expected_note_ids": ["tp-n4"], "expected_order": ["tp-n4", "tp-n1"] }
+      ]
+    },
+    {
+      "id": "locomo-ops-handbook",
+      "title": "An operator describing internal policies over time",
+      "notes": [
+        { "id": "op-n1", "title": "Refund window", "body": "Refunds are granted within 14 days of purchase when the customer has consumed under 20 percent of their credits." },
+        { "id": "op-n2", "title": "Response SLA", "body": "A first reply to any support ticket is due within 4 business hours, and full resolution is targeted at 2 business days." },
+        { "id": "op-n3", "title": "Escalation path", "body": "Tier-1 agents route billing disputes to the finance desk and route outages to the on-call engineer." },
+        { "id": "op-n4", "title": "Data retention", "body": "Raw event logs are kept for 90 days and then anonymized and rolled up into aggregates." },
+        { "id": "op-n5", "title": "Discount policy", "body": "New annual customers receive a 20 percent discount for the first year." },
+        { "id": "op-n6", "title": "Credit grants", "body": "Customers on the Scale plan get 5000 monthly credits included." }
+      ],
+      "questions": [
+        { "id": "op-q1", "type": "single-session-fact", "query": "How quickly must support give a first response to a ticket?", "expected_note_ids": ["op-n2"] },
+        { "id": "op-q2", "type": "single-session-fact", "query": "When can a customer receive a refund?", "expected_note_ids": ["op-n1"] },
+        { "id": "op-q3", "type": "single-session-fact", "query": "Who deals with payment disputes after tier-1 hands them off?", "expected_note_ids": ["op-n3"] },
+        { "id": "op-q4", "type": "single-session-fact", "query": "How long are raw event logs stored before anonymization?", "expected_note_ids": ["op-n4"] }
+      ]
+    },
+    {
+      "id": "longmem-health-coach",
+      "title": "A coaching relationship with facts that update over time",
+      "notes": [
+        { "id": "hc-n1", "title": "Fitness goal", "body": "The member's goal is to run a half marathon in the spring." },
+        { "id": "hc-n2", "title": "Injury history", "body": "The member tore their left ACL in 2021 and recovered after surgery." },
+        { "id": "hc-n3", "title": "Recent progress", "body": "As of last month the member can comfortably run 10 kilometers without knee pain." },
+        { "id": "hc-n4", "title": "Diet preference", "body": "The member follows a high-protein diet and avoids dairy." },
+        { "id": "hc-n5", "title": "Previous coach", "body": "The member's previous coach focused on cycling sessions, not running." },
+        { "id": "hc-n6", "title": "Old goal (superseded)", "body": "Two years ago the member's goal was simply to walk 8000 steps a day." }
+      ],
+      "questions": [
+        { "id": "hc-q1", "type": "single-session-fact", "query": "What event are they training for?", "expected_note_ids": ["hc-n1"] },
+        { "id": "hc-q2", "type": "temporal-reasoning", "query": "How far can the member run right now without pain?", "expected_note_ids": ["hc-n3"] },
+        { "id": "hc-q3", "type": "multi-session-synthesis", "query": "Which knee was injured in the past?", "expected_note_ids": ["hc-n2"] },
+        { "id": "hc-q4", "type": "single-session-fact", "query": "What does the member eat and what do they avoid?", "expected_note_ids": ["hc-n4"] }
+      ]
+    },
+    {
+      "id": "locomo-contract-terms",
+      "title": "A vendor agreement summarized clause by clause",
+      "notes": [
+        { "id": "ct-n1", "title": "Term length", "body": "The agreement runs for an initial term of 24 months with automatic renewal." },
+        { "id": "ct-n2", "title": "Termination", "body": "Either party may terminate for convenience with 60 days written notice." },
+        { "id": "ct-n3", "title": "Payment terms", "body": "Invoices are net 30 and late payments accrue 1.5 percent monthly interest." },
+        { "id": "ct-n4", "title": "Notice address", "body": "All formal notices must be delivered to the legal department at the registered office." }
+      ],
+      "questions": [
+        { "id": "ct-q1", "type": "single-session-fact", "query": "How long is the initial contract term?", "expected_note_ids": ["ct-n1"] },
+        { "id": "ct-q2", "type": "single-session-fact", "query": "How much advance warning before ending the contract?", "expected_note_ids": ["ct-n2"] },
+        { "id": "ct-q3", "type": "single-session-fact", "query": "When are invoices due and what is the late fee?", "expected_note_ids": ["ct-n3"] }
+      ]
+    }
+  ]
+}

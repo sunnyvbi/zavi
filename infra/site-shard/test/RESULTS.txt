@@ -1,0 +1,859 @@
+seed: A catalog 0ab8027a-80dd-4467-8764-ed01d615571d 02d489ef-5826-4ce5-b919-62d84d0d78f8 a5eab5a4-bdb9-4fdc-93c0-358e09e670e8; A bookings u1=2ae29a09-b4a3-484f-b4e0-50d4719831a6,b82456bf-1a46-4713-a849-5f9484af09a0 u2=1032758b-f166-48c9-b5b8-ab47d966d942
+PASS  seed: B admin uploads B/images/b.png  [ok]
+== POSITIVE CASES ==
+PASS  P1 anon lists A public catalog (A rows only)  [A-coupe,A-sedan,A-van]
+PASS  P1b anon catalog view hides admin-only field cost  [0]
+PASS  P2 admin sees cost on catalog  [3]
+PASS  P3 anon get catalog item  [A-sedan]
+PASS  P4 anonymous booking create  [False]
+PASS  P4b anonymous booking has no owner (server-assigned)  [null]
+PASS  P4c idempotent replay returns the same id  [e405e3d5-9ac1-4303-b942-1641a9518ae6]
+PASS  P4d same key, different payload -> conflict  [denied: idempotency_conflict]
+PASS  P4e anonymous create without idempotency key  [denied: idempotency_key_required]
+PASS  P4f anon cannot read the booking it created  [NULL]
+PASS  P5 admin sees all A bookings  [4]
+PASS  P6 user sees only own bookings  [U1,U1 again]
+PASS  P6b every row in user list is mine  [t]
+PASS  P7 user updates own booking notes  [true]
+PASS  P7b admin confirms booking (masked status field)  [true]
+PASS  P7c user still owns it after admin edit  [a0000000-0000-4000-8000-000000000002]
+PASS  P8 page 1 has 2 items + cursor  [2 True]
+PASS  P8b page 2 has the last item, no cursor  [1 none]
+PASS  P9 equality filter on declared index  [A-van]
+PASS  P10 limit is clamped (0 -> 1)  [1]
+PASS  P11 admin deletes a booking  [true]
+== M1 token for site A against site B's records ==
+PASS  M1a A token never lists B catalog rows  [0]
+PASS  M1b A admin get B booking -> null  [NULL]
+PASS  M1c A admin update B booking  [denied: not_found]
+PASS  M1d A admin delete B booking  [denied: not_found]
+PASS  M1e [via facade] A admin direct table read of B rows  [0]
+PASS  M1f [via facade] A admin direct table update of B row  [0]
+PASS  M1g [via facade] A admin direct table delete of B row  [0]
+PASS  M1h B booking untouched  [b-private]
+PASS  M1i end users hold no privilege on zsite.records (anon read)  [denied: permission denied for table records]
+PASS  M1j ...nor authenticated read (no raw documents past list rule / read masks)  [denied: permission denied for table records]
+PASS  M1k ...nor authenticated insert (idempotency_hash cannot be forged)  [denied: permission denied for table records]
+PASS  M1l the PostgREST login role cannot switch into the facade role  [denied: permission denied to set role "zsite_facade"]
+PASS  M1l2 facade holds no INSERT/UPDATE on idempotency_hash, owner_id, site_id (update)  [f]
+PASS  M1m stored hash is server-computed  [t]
+== M2 forged site_id in the body ==
+PASS  M2a site_id inside data is rejected  [denied: schema_violation: unknown field site_id]
+PASS  M2b [via facade] anon direct insert with site_id = B  [denied: site_mismatch]
+PASS  M2c [via facade] user direct insert with site_id = B  [denied: site_mismatch]
+PASS  M2d B row count unchanged  [3]
+== M3 anonymous update / delete ==
+PASS  M3a anon update_record  [denied: anonymous_write_forbidden]
+PASS  M3b anon delete_record  [denied: anonymous_write_forbidden]
+PASS  M3c anon direct table update  [denied: permission denied for table records]
+PASS  M3d anon direct table delete  [denied: permission denied for table records]
+PASS  M3e platform cannot grant 'anyone' on update  [denied: new row for relation "collections" violates check constraint "collections_valid"]
+PASS  M3f anon DB role carrying an authenticated claim + admin sub  [denied: anonymous_write_forbidden]
+PASS  M3g [via facade] anon update matches no row even inside the facade  [0]
+PASS  M3h [via facade] anon delete matches no row even inside the facade  [0]
+== M4 non-owner editing an owner-only record ==
+PASS  M4a u2 updates u1's booking  [denied: not_found]
+PASS  M4b u2 get u1's booking -> null  [NULL]
+PASS  M4c [via facade] u2 direct table update of u1's booking  [0]
+PASS  M4d u1 deletes own booking (delete is admin-only)  [denied: not_found]
+PASS  M4e u1 booking notes intact  [changed]
+== M5 member of A acting as admin on B ==
+PASS  M5a A admin re-pointed at B lists no B bookings  [0]
+PASS  M5b A admin re-pointed at B creates B catalog  [denied: new row violates row-level security policy for table "records"]
+PASS  M5c A admin re-pointed at B updates B catalog  [denied: not_found]
+PASS  M5d A user with forged site_role=admin still sees only own bookings  [U1,U1 again]
+PASS  M5e A user with forged site_role=admin creates catalog  [denied: new row violates row-level security policy for table "records"]
+PASS  M5f an A account can never become a member of B  [denied: insert or update on table "members" violates foreign key constraint "members_site_id_user_id_fkey"]
+== M6 writing system fields / owner_id ==
+PASS  M6a owner_id inside data  [denied: schema_violation: unknown field owner_id]
+PASS  M6b direct insert with owner_id of another user  [denied: permission denied for table records]
+PASS  M6c direct update of owner_id  [denied: permission denied for table records]
+PASS  M6d direct update of created_at  [denied: permission denied for table records]
+PASS  M6e direct update of site_id  [denied: permission denied for table records]
+PASS  M6f user sets admin-only status on own booking  [denied: field_not_writable: status]
+PASS  M6g anon creates a booking with status preset  [denied: field_not_writable: status]
+PASS  M6h idempotency hash column is not writable  [denied: permission denied for table records]
+== M8 guessed collection name from another site ==
+PASS  M8a A lists B-only collection  [denied: unknown_collection]
+PASS  M8b A get B secret by id -> null  [NULL]
+PASS  M8c A creates into B-only collection  [denied: unknown_collection]
+PASS  M8d [via facade] A direct select of the B collection  [0]
+PASS  M8e A cannot see B's collection definitions  [0]
+== M9 no / bad site claim ==
+PASS  M9a list without a site claim  [denied: no_site]
+PASS  M9b [via facade] direct read without a site claim  [0]
+PASS  M9c site from a spoofed header is ignored  [denied: no_site]
+PASS  M9d empty claims  [denied: no_site]
+PASS  M9e non-uuid site claim  [denied: no_site]
+PASS  M9f suspended site  [denied: no_site]
+PASS  M9g claim role other than anon/authenticated  [denied: no_site]
+PASS  M9h malformed claims JSON  [denied: invalid input syntax for type json]
+PASS  M9i members table invisible to anon  [0]
+PASS  M9j user sees only its own member row  [1]
+PASS  M9k identities are not readable by end users  [denied: permission denied for table identities]
+PASS  M9l quotas/usage are not readable by end users  [denied: permission denied for table usage]
+PASS  M9m end users cannot reset usage counters  [denied: permission denied for table usage]
+== M10 SQL injection via filter / cursor / names ==
+PASS  M10a quote injection in filter value  [0]
+PASS  M10b injection in filter key  [denied: filter_not_allowed]
+PASS  M10c injection in cursor  [denied: invalid_cursor]
+PASS  M10d injection in collection name  [denied: unknown_collection]
+PASS  M10e filter on an undeclared field  [denied: filter_not_allowed]
+PASS  M10f operator object as filter value  [denied: filter_not_allowed]
+PASS  M10i filter on a field the caller cannot read (value oracle)  [denied: filter_not_allowed]
+PASS  M10j admin may filter on the masked field  [A-sedan]
+PASS  M10g records table still intact  [t]
+PASS  M10h huge limit is clamped to 100  [t]
+== M11 JSON schema bypass ==
+PASS  M11a number sent as string  [denied: schema_violation: price must be a number]
+PASS  M11b missing required field  [denied: schema_violation: email is required]
+PASS  M11c maxLength exceeded  [denied: schema_violation: name is longer than 80]
+PASS  M11d enum violated  [denied: schema_violation: category is not an allowed value]
+PASS  M11e unknown extra field  [denied: schema_violation: unknown field is_admin]
+PASS  M11f object smuggled into a string field  [denied: schema_violation: name must be a string]
+PASS  M11g bad email format  [denied: schema_violation: email is not an email]
+PASS  M11h [via facade] direct table insert bypassing the RPC  [denied: schema_violation: name must be a string]
+PASS  M11i update that removes a required field  [denied: schema_violation: email is required]
+PASS  M11j [via facade] admin direct table update with invalid data  [denied: schema_violation: price is below the minimum]
+PASS  M11k document is not an object  [denied: schema_violation: document must be an object]
+PASS  M11l integer field given a fraction  [denied: schema_violation: seats must be an integer]
+PASS  M11m array item too long  [denied: schema_violation: tags[] is longer than 20]
+PASS  M11q impossible calendar date  [denied: schema_violation: date is not a date]
+PASS  M11n platform insert is validated too  [denied: schema_violation: price is required]
+PASS  M11p record over max_record_bytes (byte quota)  [denied: quota_exceeded]
+== STORAGE (mimic of storage.objects; not the real Storage service) ==
+PASS  S1 anon uploads into admin-only area  [denied: new row violates row-level security policy for table "objects"]
+PASS  S2 A admin uploads to A  [ok]
+PASS  S3 A admin uploads under B's prefix  [denied: new row violates row-level security policy for table "objects"]
+PASS  S4a path traversal A/../B  [denied: new row violates row-level security policy for table "objects"]
+PASS  S4b dot-dot file name  [denied: new row violates row-level security policy for table "objects"]
+PASS  S4c extra path depth  [denied: new row violates row-level security policy for table "objects"]
+PASS  S4d undeclared area  [denied: new row violates row-level security policy for table "objects"]
+PASS  S5 forged owner_id on upload  [denied: new row violates row-level security policy for table "objects"]
+PASS  S6 anon reads A public file  [1]
+PASS  S7 A token cannot see B's file  [0]
+PASS  S8 anon delete does nothing  [0]
+PASS  S9 non-admin user delete does nothing  [0]
+PASS  S10 A admin cannot delete B's file  [0]
+PASS  S11 A admin cannot rename its file into B  [denied: new row violates row-level security policy for table "objects"]
+PASS  S11b A admin may rename within A (positive)  [1]
+PASS  S11c anon upload into an anyone-create area  [ok]
+PASS  S11d admin moderates (renames) the anonymous upload  [1]
+PASS  S11e anon update matches no row (no anon update policy)  [0]
+PASS  S11f ...nothing renamed by anon  [1]
+PASS  S13 files area with list != get is rejected  [denied: new row for relation "collections" violates check constraint "collections_valid"]
+PASS  S12 B file intact  [1]
+== M7 quota under truly concurrent sessions ==
+      workers queued at the barrier: 25 of 25
+PASS  M7a all 25 workers were blocked together before the race  [25]
+PASS  M7b exactly max_records (10) creates succeed  [10]
+PASS  M7c the other 15 get quota_exceeded  [15]
+PASS  M7d rows on site C  [10]
+PASS  M7e usage counter matches rows  [10]
+PASS  M7f writes/min cap (5) holds under 12 concurrent writers  [5]
+PASS  M7g concurrent same-key creates -> one row  [1]
+PASS  M7h ...and all 10 callers got the same id  [1]
+PASS  M7i usage counters equal real rows on every site  [0]
+== keyset pagination over rows sharing one created_at ==
+PASS  K1 3 pages cover all 121 B catalog rows exactly once  [3 121 121]
+== 0004: legacy index shape converted ==
+PASS  L1 0001-shape indexes converted to the typed manifest  [{"n": {"ops": ["eq"], "sort": false, "type": "number"}, "category": {"ops": ["eq"], "sort": false, "type": "text"}} {"n": "n1", "category": "t1"}]
+PASS  L2 existing record re-materialized into typed slots  [cars 7]
+PASS  L4 legacy pending-with-auth-user identity became 'unverified' (grants nothing), with a notice  [unverified 1]
+PASS  L5 legacy indexed string whose values fit: maxLength narrowed to 512, indexed, noticed  [512 t1 1]
+PASS  L6 legacy indexed string with a 600-char value: index dropped, noticed, data intact  [{} 1 600]
+PASS  L3 0001 slot columns are gone  [0]
+== 0004: membership row is authoritative (same token) ==
+PASS  R1 promoted user (token still says site_role=user) sees all bookings at once  [5]
+PASS  R1b ...and may write admin-only fields  [true]
+PASS  R2 demoted again: own bookings only  [U1,U1 again]
+PASS  R3 demoted admin (token still says site_role=admin) loses admin at once  [0]
+PASS  R3b ...cannot create catalog items  [denied: new row violates row-level security policy for table "records"]
+PASS  R4 re-promoted admin works again with the same token  [5]
+PASS  R5 disabled member: nothing of its own  [0]
+== 0004: pending identity reservations ==
+PASS  I1 pending reservation without an auth user  [ok]
+PASS  I2 duplicate reservation for the same (site, email)  [denied: duplicate key value violates unique constraint "identities_pkey"]
+PASS  I3 pending row cannot carry an auth user  [denied: new row for relation "identities" violates check constraint "identities_pending_no_user"]
+PASS  I4 active row must carry an auth user  [denied: new row for relation "identities" violates check constraint "identities_pending_no_user"]
+PASS  I5 same email may be reserved on another site  [ok]
+PASS  I6 identity being deleted grants nothing (own list empty)  [0]
+PASS  I6b ...nor get of its own booking  [NULL]
+PASS  I7 end users cannot read emails from identities  [ERR: permission denied for table identities]
+== 0004: typed index slots ==
+PASS  T1 range filter price >= 10 and < 20  [10]
+PASS  T2 sort price asc: first is e1  [e1]
+PASS  T2b sort price desc: first is e30  [e30]
+PASS  T3 sorted keyset pages: 5 pages, prices 30..1 in order, each once  [5 30,29,28,27,26,25,24,23,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1]
+PASS  T4 timestamp range on starts_at  [3]
+PASS  T5 text prefix  [20,10]
+PASS  T6 in-list  [20]
+PASS  T7 date equality (midnight UTC)  [1]
+PASS  T7b combined filters  [5]
+PASS  T8 undeclared op: prefix on a number  [denied: filter_not_allowed]
+PASS  T8b undeclared op: range on a text field declared eq/in/prefix  [denied: filter_not_allowed]
+PASS  T8c undeclared op: eq on starts_at (range only)  [denied: filter_not_allowed]
+PASS  T8d wrong value type (string for number)  [denied: invalid_filter]
+PASS  T8e impossible date in a filter  [denied: invalid_filter]
+PASS  T8f in-list over 50 values  [denied: invalid_filter]
+PASS  T9 sort on a field declared sort:false  [denied: sort_not_allowed]
+PASS  T9b sort on an undeclared field  [denied: sort_not_allowed]
+PASS  T10 filter on an undeclared field  [denied: filter_not_allowed]
+PASS  T11 budget overflow: 4 text indexes  [denied: new row for relation "collections" violates check constraint "collections_slots_complete"]
+PASS  T11b budget overflow: 3 number indexes  [denied: new row for relation "collections" violates check constraint "collections_slots_complete"]
+PASS  T12 text index on an unbounded-ish string (maxLength 10000)  [denied: new row for relation "collections" violates check constraint "collections_valid"]
+PASS  T13 number index on a string field  [denied: new row for relation "collections" violates check constraint "collections_valid"]
+PASS  T14 prefix declared on a number  [denied: new row for relation "collections" violates check constraint "collections_valid"]
+PASS  T14b unknown op  [denied: new row for relation "collections" violates check constraint "collections_valid"]
+PASS  T15 after an index change, filters wait for the reindex  [denied: index_building]
+PASS  T15a ...newest-first listing still works meanwhile  [30]
+PASS  T15d after zsite.reindex_collection the new filter works  [1]
+PASS  T15b existing slot assignment is stable  [t1]
+PASS  T15c re-materialization is not charged as site writes  [0]
+PASS  T16 cursor with a wrong-typed sort value  [denied: invalid_cursor]
+PASS  T16b cursor reused under a different sort  [denied: invalid_cursor]
+PASS  T17 text sort asc: first city  [Austin]
+PASS  T18 masked field cannot be a sort key for anon  [sort_not_allowed]
+== F3: manifest change vs in-flight insert (two real sessions) ==
+PASS  F3a the insert committed  [1]
+PASS  F3b the manifest change waited for the in-flight insert (>1s)  [True]
+PASS  F3e the manifest change marked the collection for reindex  [t]
+PASS  F3c every race row's slot matches the NEW manifest (t1 = b)  [BBB {"b": "t1"}]
+PASS  F3d filter on the new field finds the in-flight row  [1]
+== deletes: free quota, separate end-user limit, erasure never limited ==
+PASS  D0 20 platform inserts were not rate-limited (writes/min = 2)  [20]
+PASS  D1 end-user deletes beyond the write limit (2/min) succeed: 3 of 3  [truetruetrue]
+PASS  D2 the 4th end-user delete hits the separate delete limit (3/min)  [denied: quota_exceeded: delete rate]
+PASS  D3 deletes did not consume the write window: 2 creates still allowed  [falsefalse]
+PASS  D3b ...and the 3rd create is rate-limited  [denied: quota_exceeded]
+PASS  D4 broker erasure deletes all 12 of the user's records despite both limits  [12]
+PASS  D5 service_role bulk delete is never rate-limited  [7]
+PASS  D6 deletes freed records/bytes: usage equals real rows (0) and bytes 0  [0 0]
+== 0005: migration checksums ==
+PASS  C1 0001-0004 back-filled with the sha256 of the file text (as S5 computes it)  [yyyy]
+PASS  C2 runner records 0005's checksum (NULL filled)  [t]
+PASS  C2b recording the same checksum again is idempotent  [t]
+PASS  C2c runner records the 0006-0009 checksums in the ledger  [yyyyy]
+PASS  C3 a different checksum for an applied version is refused  [denied: checksum_mismatch: 0001_core was applied with a7d7ead171e6f4475cf429f1426eb73ca609cfeb18c966019e2da6a9a0ed5fb6]
+PASS  C3b malformed checksum refused  [denied: invalid_migration_record]
+PASS  C4 end users cannot call it  [denied: permission denied for function record_migration]
+== 0005: S4 validator parity (collections CHECK vs the S4 manifest validator) ==
+PASS  V1 all 37 S4 validator cases agree with the shard CHECK (incl. the 5 former SQL gaps)  [37/37]
+PASS  V2 extra NULL / non-integer paths (maxLength, minLength, maxItems, items, type, enum, minimum, index defs, masks) refused  [19/19]
+== 0005: archived collections ==
+PASS  A1 archived: list refused  [denied: unknown_collection]
+PASS  A2 archived: get returns null  [NULL]
+PASS  A3 archived: create refused  [denied: unknown_collection]
+PASS  A4 archived: admin update refused  [denied: not_found]
+PASS  A5 archived: admin delete refused  [denied: not_found]
+PASS  A6 archived files area: files no longer readable  [0]
+PASS  A7 archived data stays exportable by the platform  [kept]
+PASS  A8 restored by un-archiving: list works, rules intact  [nonekept]
+PASS  A9 restored files area readable again  [t]
+== 0005: batched reindex with concurrent writers ==
+PASS  X1 index change on a collection with records: pending, gen bumped  [true 1]
+PASS  X1b all 45 concurrent updates applied  [45]
+PASS  X1c writes overlapped the reindex (rows written by writers while it ran)  [t]
+PASS  X2 reindex done (pending cleared)  [f]
+PASS  X3 every row consistent with the new manifest (t1 = b, n1 = n) after concurrent writes  [0]
+PASS  X4 writers' rows all landed (5000 + 45)  [5045]
+PASS  X5 filters work after the reindex  [10]
+PASS  X6 reindex charged no quota (usage = rows)  [0]
+      reindex of ~5,000 rows in 10-row batches with 3 concurrent writers: 0.41s
+PASS  X7 a batch from the old generation is told to restart  [true]
+PASS  X8 after the restart pass: consistent and done  [false 0]
+PASS  X9 end users cannot run a reindex  [denied: permission denied for function reindex_batch]
+== quota change serializes with an in-flight write ==
+PASS  F4a quota update waited for the in-flight write (>1s)  [True]
+PASS  F4b next write sees the lowered quota  [denied: quota_exceeded]
+== v2 kernel: seed (two v2 sites) ==
+PASS  K0 two v2 contracts + 7 collections commit through the deferred site validator  [ok]
+PASS  K0b slot assignment: uniques -> uk1, references -> ref1  [{"{\"nulls\": \"not_distinct\", \"fields\": [\"listing_id\", \"starts_at\"]}": "uk1"} {"listing_id": "ref1"}]
+== v2 kernel: contract validation (each a separate transaction; must fail at COMMIT) ==
+PASS  KC1 undeclared role:ghost in a rule  [denied: invalid_contract: undeclared role ghost]
+PASS  KC1b undeclared role in an action principal  [denied: invalid_contract: undeclared role ghost]
+PASS  KC2 reference cycle listings -> tags -> listings  [denied: invalid_contract: reference graph must be acyclic with depth <= 4]
+PASS  KC3 reference chain of depth 5 (c1 -> ... -> c6)  [denied: invalid_contract: reference graph must be acyclic with depth <= 4]
+PASS  KC3b ...while depth 4 (c1 -> ... -> c5) is accepted  [ok]
+PASS  KC3c self-reference is a cycle  [denied: invalid_contract: reference graph must be acyclic with depth <= 4]
+PASS  KC3d reference to a collection that does not exist  [denied: invalid_contract: reference to an unknown collection]
+PASS  KC4 aggregate over a field the principal cannot read (cost: owner/admin)  [denied: invalid_contract: aggregate cost_sum principal role:moderator cannot read cost]
+PASS  KC4b aggregate principal other than admin/role  [denied: invalid_contract: aggregate x principals are admin or roles]
+PASS  KC4c sum over a non-indexed field  [denied: invalid_contract: aggregate x field must be a numeric indexed field]
+PASS  KC5 removing a role a member still holds  [denied: role_in_use]
+PASS  KC6 roles may not include admin  [denied: invalid_contract: roles]
+PASS  KC7 unknown capability  [denied: invalid_contract: capabilities]
+PASS  KC8 v2 feature (states) on a v1 site  [denied: invalid_contract: recipient, unique, states and references need schemaVersion 2]
+PASS  KC9 recipient principal on a collection without recipient  [denied: new row for relation "collections" violates check constraint "collections_v2_valid"]
+PASS  KC10 recipient principal on create  [denied: new row for relation "collections" violates check constraint "collections_v2_valid"]
+PASS  KC11 state field enum must equal the values  [denied: new row for relation "collections" violates check constraint "collections_v2_valid"]
+PASS  KC12 counter must be an integer field  [denied: invalid_contract: action reserve_slot target counter must be an integer field]
+PASS  KC13 nullify on a required field  [denied: new row for relation "collections" violates check constraint "collections_v2_valid"]
+PASS  KC14 the prior contract is still live after every refused change  [["seller", "moderator", "vip"] 0]
+== v2 kernel: states (moderation) ==
+PASS  ST1 generic create injects the initial state  [draft]
+PASS  ST2 anon sees no drafts  [0]
+PASS  ST3 the owner sees its own drafts (state read: owner)  [3]
+PASS  ST4 owner publishes L1  [{"id": "8904a211-befa-44b2-9178-b6d461a5320e", "to": "published", "from": "draft", "transitioned": true}]
+PASS  ST5 anon now lists the 3 published listings only  [3]
+PASS  ST5b anon get of a draft -> null  [NULL]
+PASS  ST5c another seller cannot read the draft either  [NULL]
+PASS  ST6 same-state transition is a no-op  [false]
+PASS  ST7 illegal transition: no edge into 'draft' at all -> not_found  [denied: not_found]
+PASS  ST8 illegal transition for an authorized caller (draft -> archived) -> transition_conflict  [denied: transition_conflict]
+PASS  ST9 unauthorized transition (buyer archives the seller's listing) -> not_found  [denied: not_found]
+PASS  ST10 transition of a hidden draft by a non-owner -> not_found (no existence oracle)  [denied: not_found]
+PASS  ST11 transition of a missing id -> not_found  [denied: not_found]
+PASS  ST12 anonymous transition  [denied: permission denied for function transition_record]
+PASS  ST13 generic update cannot change the state  [denied: field_not_writable: status]
+PASS  ST13b ...nor remove it  [denied: field_not_writable: status]
+PASS  ST14 generic create cannot pick a non-initial state  [denied: field_not_writable: status]
+PASS  ST15 [via facade] direct write of the state column  [denied: permission denied for table records]
+PASS  ST16 the draft is still a draft  [draft draft]
+PASS  ST17 field read mask (cost: owner/admin) applies on a published listing  [falsetrue]
+== v2 kernel: derived recipient ==
+PASS  RC1 recipient = owner of the referenced listing, copied by the server  [f2000000-0000-4000-8000-000000000002 pending 8904a211-befa-44b2-9178-b6d461a5320e]
+PASS  RC2 the recipient (seller) lists the requests addressed to it  [2]
+PASS  RC2b the owner (buyer) lists its own  [2]
+PASS  RC2c a bystander (buyer2, seller2) lists none  [00]
+PASS  RC2d recipient get works; bystander get -> null  [2c0742c3-59d1-447f-acdb-32a038c532d7 NULL]
+PASS  RC3 reading by naming the listing: buyer2 filters listing_id = L1 -> nothing  [0]
+PASS  RC3b reading by naming yourself: filter on a recipient key is refused  [denied: filter_not_allowed]
+PASS  RC3c ...nor on the derived column name  [denied: filter_not_allowed]
+PASS  RC4 recipient spoofing: a raw user id as the reference  [denied: invalid_reference]
+PASS  RC4b recipient spoofing: an explicit recipient field  [denied: schema_violation: unknown field recipient]
+PASS  RC4c [via facade] direct insert naming recipient_u1  [denied: permission denied for table records]
+PASS  RC4d [via facade] direct update of recipient_u1  [denied: permission denied for table records]
+PASS  RC4e [via facade] direct update of a reference slot / unique slot  [denied: permission denied for table records]
+PASS  RC5 hidden (draft), cross-site, missing, ownerless and archived targets: one identical error  [5 ERR: invalid_reference]
+PASS  RC5b platform insert on R2 referencing an R listing (cross-site target)  [denied: invalid_reference]
+PASS  RC6 source reference is immutable (admin may update requests, not listing_id)  [denied: field_not_writable: listing_id]
+PASS  RC6b admin may update other fields; recipient unchanged  [true f2000000-0000-4000-8000-000000000002]
+PASS  RC7 the owner cannot accept its own request (recipient/admin only) -> not_found  [denied: not_found]
+PASS  RC8 the recipient accepts  [true]
+PASS  RC8b ...and cannot then decline it (no edge from accepted)  [denied: transition_conflict]
+PASS  RC8c a non-recipient seller cannot touch it (not_found)  [denied: not_found]
+PASS  RC8d cross-site token (R2 user) on an R request -> not_found  [denied: not_found]
+PASS  RC8e the owner cancels its other request  [true]
+PASS  RC9 30 requests to one recipient within the minute succeed  [30]
+PASS  RC9b the 31st is recipient_rate_limited  [denied: recipient_rate_limited]
+PASS  RC9c ...and nothing was written for it (30 rows)  [30]
+PASS  RC9d another recipient is unaffected  [false]
+PASS  RC10 the per-site cap defaults to 30 (0009 quota column)  [30]
+PASS  RC10b a lowered cap applies at once: 2 creates pass  [false,false]
+PASS  RC10c ...and the 3rd is recipient_rate_limited  [denied: recipient_rate_limited]
+PASS  RC10d the per-site value never touches another site's quota  [aaaaaaaa-0000-4000-8000-00000000000a=30,f2000000-0000-4000-8000-0000000000f2=2,f3000000-0000-4000-8000-0000000000f3=30]
+PASS  RC10e the cap is bounded (0..10000)  [denied: new row for relation "quotas" violates check constraint "quotas_recipient_cap_range"]
+PASS  RC10f end users cannot read or set it  [denied: permission denied for table quotas]
+== v2 kernel: uniques ==
+PASS  U1 counter injected at its initial value  [0]
+PASS  U2 duplicate (listing, starts_at) written as a different representation of the same instant + upper-case uuid  [denied: unique_conflict]
+PASS  U2b a different instant is fine  [false]
+PASS  U2c an update that collides is unique_conflict too  [denied: unique_conflict]
+PASS  U3 duplicate under concurrency: 10 racing creates -> exactly 1 row  [1 9 1]
+PASS  U4 distinct: two rows without the handle are fine  [falsefalse]
+PASS  U4b distinct: a handle once is fine  [false]
+PASS  U4c distinct: same handle twice conflicts  [denied: unique_conflict]
+PASS  U5 not_distinct: one row without email2 is fine  [false]
+PASS  U5b not_distinct: a second row without email2 conflicts (absent == absent)  [denied: unique_conflict]
+PASS  U6 same tuple on another site does not conflict (per-site scope)  [false]
+PASS  U7 adding a unique over existing duplicates fails the manifest change  [denied: unique_conflict]
+PASS  U7b ...and the prior definition is still live  [[]]
+== v2 kernel: declared actions ==
+PASS  AC1 generic write of the counter (no raw increment)  [denied: field_not_writable: booked_count]
+PASS  AC1b generic create cannot preset the counter  [denied: field_not_writable: booked_count]
+PASS  AC1c generic create of the action's record is impossible (bookings create: [])  [denied: new row violates row-level security policy for table "records"]
+PASS  AC2 reserve: counter 1, booking created in the same transaction  [1 False 74527a15-7566-4fa5-add6-56baa5952c81 74527a15-7566-4fa5-add6-56baa5952c81 booked f2000000-0000-4000-8000-000000000003]
+PASS  AC3 replay with the same key returns the same receipt  [21f8bdff-4c6b-4316-a657-b44d47283497 true]
+PASS  AC3b same key, different request -> idempotency_conflict  [denied: idempotency_conflict]
+PASS  AC3c same key, different caller -> idempotency_conflict  [denied: idempotency_conflict]
+PASS  AC4 key required  [denied: idempotency_key_required]
+PASS  AC5 anonymous caller on a signed_in action  [denied: action_not_allowed]
+PASS  AC6 undeclared action  [denied: action_not_allowed]
+PASS  AC7 the caller cannot set the created record's state  [denied: field_not_writable: status]
+PASS  AC7b ...nor point targetField elsewhere  [denied: invalid_action_input]
+PASS  AC8 cross-site target uuid (R2 user, R slot) -> not_found  [denied: not_found]
+PASS  AC8b cross-site receipt isolation: R's key on R2 is a fresh action, not a replay  [false]
+PASS  AC8c an action that declares anyone runs for an anonymous caller (record has no owner)  [2 1]
+PASS  AC8d ...still capped by the bound (capacity 2)  [denied: action_bound]
+PASS  AG0 contract updated through the validator; R kept signed_in  [["signed_in"]]
+PASS  AC9 the booking owner cancels (inverse): counter back to 0, state cancelled  [0 74527a15-7566-4fa5-add6-56baa5952c81 cancelled]
+PASS  AC9b the inverse executes once (new key -> transition_conflict)  [denied: transition_conflict]
+PASS  AC9c ...and the counter did not move again  [0]
+PASS  AC9d another user cannot cancel someone's booking (not visible) -> not_found  [denied: not_found]
+PASS  AC9e inverse input must be a record id only  [denied: invalid_action_input]
+PASS  AC10 all 25 writers were queued together before the race  [25]
+PASS  AC10b counter overshoot under 25 concurrent writers: exactly 10 succeed, 15 action_bound  [10 15]
+PASS  AC10c counter = 10 = live bookings on the slot, never above capacity  [10 10]
+PASS  AC10d the successful counters are exactly 1..10 (serialized)  [1,2,3,4,5,6,7,8,9,10]
+PASS  AC11 5 concurrent inverses on one booking: exactly 1 succeeds, 4 transition_conflict, counter 9  [1 4 9]
+PASS  AC12 lowering capacity below the counter is action_bound  [denied: action_bound]
+PASS  AC12b restrict: a slot with bookings cannot be deleted  [denied: reference_restricted]
+== v2 kernel: aggregates ==
+PASS  AG1 admin counts booked bookings of the slot  [9]
+PASS  AG2 a plain user is refused  [denied: aggregate_not_allowed]
+PASS  AG2b a forged site_role=admin token is refused (DB role is authoritative)  [denied: aggregate_not_allowed]
+PASS  AG2c anonymous callers cannot call it at all  [denied: permission denied for function aggregate]
+PASS  AG3 filter on an undeclared field  [denied: filter_not_allowed]
+PASS  AG3b undeclared aggregate  [denied: aggregate_not_allowed]
+PASS  AG4 row visibility: the moderator counts only listings it can read (published)  [4 4]
+PASS  AG4b ...while the admin counts drafts too  [5]
+PASS  AG5 moderator sum over a readable numeric field, visible rows only  [200]
+PASS  AG6 aggregate over a masked field is refused at runtime too  [denied: aggregate_not_allowed]
+PASS  AG6b ...while an admin (who reads cost) may  [60]
+== v2 kernel: references on delete ==
+PASS  RF1 restrict: a listing with requests cannot be deleted by its owner  [denied: reference_restricted]
+PASS  RF2 cascade + nullify: the owner deletes L4  [true]
+PASS  RF2b the buyer's notes on L4 were cascaded (deleted by the kernel, not the buyer)  [0]
+PASS  RF2c the tags were nullified: key removed, slot cleared, rows kept  [2 0]
+PASS  RF3 a cascade never crosses sites: R2's row with the same uuid survives  [1]
+PASS  RF4 fan-out cap: an end-user delete touching 1,001 dependents is refused  [denied: cascade_too_large]
+PASS  RF4b ...and nothing was deleted  [1002]
+PASS  RF5 platform erasure is never stranded: restrict and the cap do not apply (L1 + its requests/slots/bookings)  [0]
+PASS  RF5b ...bookings of the deleted slots went too (depth 2)  [0]
+PASS  RF6 usage counters still equal real rows on R (kernel cascades are charged)  [t]
+== v2 kernel: backfill + schemaVersion 1 ==
+PASS  BF1 adding a state machine to a collection with rows injects the initial state  [4/4]
+PASS  BF2 a v1 site has no contract row and its collections carry empty v2 fields  [0 7/7]
+PASS  BF3 v1 rows keep working through the new triggers (create/list on site A)  [false 1]
+PASS  BF4 v1 rows have no derived slots  [0]
+== v2 kernel: aggregate cost limit ==
+PASS  AG7 an aggregate over more than 10,000 visible rows is aggregate_too_large  [denied: aggregate_too_large]
+PASS  AG7b a filter that narrows below the limit still answers  [1]
+== v2 kernel: codex review regressions ==
+PASS  CX1 an action-inverse edge is not a generic transition (no counter bypass)  [denied: not_found]
+PASS  CX1b ...booking still booked, counter still 1  [booked 1]
+PASS  CX2 the action-created record cannot be repointed at another target  [denied: field_not_writable: slot_id]
+PASS  CX2b ...other fields stay editable  [true]
+PASS  CX3 [via facade] the recipient window cannot be charged outside the records trigger  [denied: not_in_trigger]
+PASS  CX4 [via facade] one multi-row delete is capped across all its roots (2 x 600 dependents)  [denied: cascade_too_large]
+PASS  CX4b ...while one root with 600 dependents is fine  [true]
+PASS  CX6 owner-or-recipient pages: 6 rows, each once (the self-addressed row is not duplicated)  [6 6 b1,b2,b3,s1,s2,self]
+PASS  CX7 a changed recipient definition moves access to the new target's owner  [f2000000-0000-4000-8000-000000000006]
+PASS  CX7b ...the old recipient (seller) no longer lists the buyer's msgs  [0]
+== v2 kernel: deleting an action-created record releases its capacity (0010) ==
+PASS  PD1 reserve then platform-delete the reservation: counter 1 -> 0, record gone  [1 true 0 0]
+PASS  PD1b the broker role may call it (account erasure)  [true 0]
+PASS  PD2 an end user cannot call the helper  [denied: permission denied for function k_platform_delete_record]
+PASS  PD2b ...nor anon  [denied: permission denied for function k_platform_delete_record]
+PASS  PD2c [via facade] the platform-delete marker cannot be forged  [denied: permission denied for table platform_delete_tx]
+PASS  PD2d [via facade] the release helper refuses a direct call  [denied: not_in_trigger]
+PASS  PD3 inverse first, then delete: the counter moves once  [0 true 0]
+PASS  PD4 an end-user delete (rules allow it) releases too  [1 true 0]
+PASS  PD4b a plain platform delete (archive purge / erasure SQL) releases too  [1 0]
+PASS  PD4c a released hold cannot be inverted again (receipt says released)  [denied: not_found]
+PASS  PD5 cascade from the parent listing: slot + both reservations gone, every receipt released, no error  [true 0 0]
+PASS  PD5b an end-user delete of a slot that holds reservations is still restricted  [denied: reference_restricted]
+PASS  PD6 concurrent reserves + deletes at capacity: counter = live reservations, never above 2  [2 2 true,true]
+PASS  PD6b ...and the counter is within capacity  [t]
+== v2 kernel: roles and grants ==
+PASS  KR1 zsite_kernel: no login, no BYPASSRLS, not superuser, owns no table  [f]
+PASS  KR2 end users cannot execute any kernel function directly  [0]
+PASS  KR3 the kernel holds no column privilege on any derived slot  [0]
+PASS  KR4 [via facade] a buggy facade cannot finish a delete of a live record through the kernel  [denied: not_deleted]
+PASS  KR5 receipts and recipient windows are invisible to end users  [permission denied]
+== privilege audit ==
+PASS  Z1 SECURITY DEFINER = 8 api RPCs owned by zsite_facade + 6 kernel functions owned by zsite_kernel + 2 justified postgres-owned  [aggregate:zsite_facade,create_record:zsite_facade,delete_record:zsite_facade,get_record:zsite_facade,idempotent_replay:postgres,k_platform_delete_record:zsite_kernel,k_recipient_take:zsite_kernel,k_ref_delete:zsite_kernel,k_release_deleted:zsite_kernel,k_run_action:zsite_kernel,k_transition:zsite_kernel,list_records:zsite_facade,run_action:zsite_facade,tg_records_quota:postgres,transition_record:zsite_facade,update_record:zsite_facade]
+PASS  Z1b zsite_facade: no login, no BYPASSRLS, not superuser, owns no table  [f]
+PASS  Z2 every zsite/api function pins search_path (except reindex_collection, which pins it per batch: COMMIT forbids a SET clause)  [0]
+PASS  Z3 PUBLIC holds EXECUTE on no zsite/api function  [0]
+PASS  Z4 anon cannot execute the definer quota trigger fn directly  [f]
+PASS  Z5 RLS enabled on every zsite table  [0]
+PASS  Z6 api exposes functions only (no tables/views)  [0]
+TOTAL: 420 passed, 0 failed
+
+===== perf.sh (2,000 sites x 7 collections x 1,000 records + one 100K collection = 14.1M rows; v2 contract on every site) =====
+seed: sites/identities/members/collections in 11s
+bulk load: 14000000 records in 69s
+indexes + vacuum analyze: 66s
+size: 7401 MB records table+indexes, 14099000 rows
+
+== list_records latency, 50-row pages, random site per call (500 calls each, after 50 warm-up) ==
+S1 anon: public catalog, newest first                      p50   1.67 ms  p95   6.48 ms  p99   9.05 ms  max  11.51 ms  (n=500)
+S2 anon: catalog category=vans sorted -price               p50   2.36 ms  p95   3.67 ms  p99   6.46 ms  max  18.91 ms  (n=500)
+S3 user: own bookings (owner-only rule, ~50 of 1000)       p50   2.52 ms  p95   3.41 ms  p99   6.89 ms  max  10.96 ms  (n=500)
+S4 admin: bookings day range, sorted by day                p50   2.73 ms  p95   3.83 ms  p99   7.37 ms  max  12.96 ms  (n=500)
+S5 anon: reviews stars>=4 sorted -stars                    p50   2.73 ms  p95   3.55 ms  p99   5.59 ms  max   7.73 ms  (n=500)
+S7 anon: 100K-record collection, newest first              p50   0.94 ms  p95   1.00 ms  p99   1.10 ms  max   1.29 ms  (n=500)
+S8 user: requests it owns OR is the recipient of (v2)      p50   4.36 ms  p95   8.37 ms  p99  11.73 ms  max  16.76 ms  (n=500)
+S9 anon: moderated listings, published only (v2 states.read) p50   2.40 ms  p95   3.43 ms  p99   8.72 ms  max  10.19 ms  (n=500)
+S10 user: listings sorted -price (own drafts + published, RLS) p50   1.88 ms  p95   2.83 ms  p99   4.23 ms  max   6.61 ms  (n=500)
+S11 admin: aggregate count of pending requests (v2)        p50   2.29 ms  p95   9.71 ms  p99  38.15 ms  max  52.59 ms  (n=500)
+
+== executed plans (auto_explain, nested; site 7) ==
+-- S1 anon public catalog
+Query Text: select array_agg(s.r order by s.n) from (select r, row_number() over () as n from (select r.* from zsite.records r where r.site_id = $1 and r.collection = $2 order by r.created_at desc, r.id desc limit $12) r) s
+Query Parameters: $1 = 'e2380f92-2a47-3d17-5869-743ae00c37dd', $2 = 'catalog', $3 = NULL, $4 = '{}', $5 = '{}', $6 = '{}', $7 = NULL, $8 = NULL, $9 = NULL, $10 = NULL, $11 = NULL, $12 = '51', $13 = NULL
+Aggregate  (cost=349.66..349.67 rows=1 width=32) (actual time=1.314..1.314 rows=1 loops=1)
+  Buffers: shared hit=28 read=8
+  ->  Sort  (cost=349.41..349.53 rows=51 width=602) (actual time=1.309..1.310 rows=51 loops=1)
+        Sort Key: (row_number() OVER (?))
+        Sort Method: quicksort  Memory: 36kB
+        Buffers: shared hit=28 read=8
+        ->  WindowAgg  (cost=3.68..347.96 rows=51 width=602) (actual time=0.933..1.299 rows=51 loops=1)
+              Buffers: shared hit=25 read=8
+              ->  Subquery Scan on r  (cost=3.68..347.32 rows=51 width=594) (actual time=0.930..1.291 rows=51 loops=1)
+                    Buffers: shared hit=25 read=8
+                    ->  Limit  (cost=3.68..346.81 rows=51 width=570) (actual time=0.928..1.280 rows=51 loops=1)
+                          Buffers: shared hit=25 read=8
+                          InitPlan 1
+                            ->  Result  (cost=0.00..0.26 rows=1 width=16) (actual time=0.056..0.056 rows=1 loops=1)
+                                  Buffers: shared hit=3
+                          InitPlan 2
+                            ->  Result  (cost=0.00..0.26 rows=1 width=32) (never executed)
+                          InitPlan 3
+                            ->  Result  (cost=0.00..0.26 rows=1 width=32) (never executed)
+                          InitPlan 4
+                            ->  Result  (cost=0.00..0.26 rows=1 width=16) (never executed)
+                          InitPlan 5
+                            ->  Result  (cost=0.00..0.26 rows=1 width=32) (never executed)
+                          InitPlan 6
+                            ->  Result  (cost=0.00..0.26 rows=1 width=16) (never executed)
+                          InitPlan 7
+                            ->  Result  (cost=0.00..0.26 rows=1 width=32) (never executed)
+                          InitPlan 8
+                            ->  Result  (cost=0.00..0.26 rows=1 width=32) (actual time=0.260..0.260 rows=1 loops=1)
+                                  Buffers: shared hit=22
+                          InitPlan 9
+                            ->  Result  (cost=0.00..0.26 rows=1 width=16) (never executed)
+                          InitPlan 10
+                            ->  Result  (cost=0.00..0.26 rows=1 width=32) (never executed)
+                          InitPlan 11
+                            ->  Result  (cost=0.00..0.26 rows=1 width=16) (never executed)
+                          InitPlan 12
+                            ->  Result  (cost=0.00..0.26 rows=1 width=32) (never executed)
+                          ->  Result  (cost=0.56..4057.58 rows=603 width=570) (actual time=0.928..1.278 rows=51 loops=1)
+                                One-Time Filter: ((InitPlan 1).col1 = 'e2380f92-2a47-3d17-5869-743ae00c37dd'::uuid)
+                                Buffers: shared hit=25 read=8
+                                ->  Index Scan using records_list_idx on records r_1  (cost=0.56..4057.58 rows=603 width=570) (actual time=0.871..1.218 rows=51 loops=1)
+                                      Index Cond: ((site_id = 'e2380f92-2a47-3d17-5869-743ae00c37dd'::uuid) AND (collection = 'catalog'::text))
+                                      Filter: (((state IS NULL) OR (collection <> ALL ((InitPlan 2).col1)) OR (((collection || '/'::text) || state) = ANY ((InitPlan 3).col1)) OR ((owner_id IS NOT NULL) AND (owner_id = (InitPlan 4).col1) AND (((collection || '/'::text) || state) = ANY ((InitPlan 5).col1))) OR ((recipient_u1 IS NOT NULL) AND (recipient_u1 = (InitPlan 6).col1) AND (((collection || '/'::text) || state) = ANY ((InitPlan 7).col1)))) AND ((collection = ANY ((InitPlan 8).col1)) OR ((owner_id = (InitPlan 9).col1) AND (collection = ANY ((InitPlan 10).col1))) OR ((recipient_u1 IS NOT NULL) AND (recipient_u1 = (InitPlan 11).col1) AND (collection = ANY ((InitPlan 12).col1)))))
+                                      Buffers: shared hit=22 read=8
+-- S3 user own bookings
+Query Text: select array_agg(s.r order by s.n) from (select r, row_number() over () as n from (select r.* from zsite.records r where r.site_id = $1 and r.collection = $2 and r.owner_id = $3 order by r.created_at desc, r.id desc limit $12) r) s
+Query Parameters: $1 = 'e2380f92-2a47-3d17-5869-743ae00c37dd', $2 = 'bookings', $3 = '302df66d-0b16-b9f7-d7b2-b33a1575d376', $4 = '{}', $5 = '{}', $6 = '{}', $7 = NULL, $8 = NULL, $9 = NULL, $10 = NULL, $11 = NULL, $12 = '51', $13 = NULL
+Aggregate  (cost=11.86..11.87 rows=1 width=32) (actual time=2.408..2.409 rows=1 loops=1)
+  Buffers: shared hit=88 read=30
+  ->  Sort  (cost=11.85..11.85 rows=1 width=602) (actual time=2.403..2.405 rows=50 loops=1)
+        Sort Key: (row_number() OVER (?))
+        Sort Method: quicksort  Memory: 36kB
+        Buffers: shared hit=88 read=30
+        ->  WindowAgg  (cost=3.68..11.84 rows=1 width=602) (actual time=1.516..2.393 rows=50 loops=1)
+              Buffers: shared hit=85 read=30
+              ->  Subquery Scan on r  (cost=3.68..11.82 rows=1 width=594) (actual time=1.514..2.384 rows=50 loops=1)
+                    Buffers: shared hit=85 read=30
+                    ->  Limit  (cost=3.68..11.81 rows=1 width=570) (actual time=1.510..2.372 rows=50 loops=1)
+                          Buffers: shared hit=85 read=30
+                          InitPlan 1
+                            ->  Result  (cost=0.00..0.26 rows=1 width=16) (actual time=0.042..0.042 rows=1 loops=1)
+                                  Buffers: shared hit=3
+                          InitPlan 2
+                            ->  Result  (cost=0.00..0.26 rows=1 width=32) (never executed)
+                          InitPlan 3
+                            ->  Result  (cost=0.00..0.26 rows=1 width=32) (never executed)
+                          InitPlan 4
+                            ->  Result  (cost=0.00..0.26 rows=1 width=16) (never executed)
+                          InitPlan 5
+                            ->  Result  (cost=0.00..0.26 rows=1 width=32) (never executed)
+                          InitPlan 6
+                            ->  Result  (cost=0.00..0.26 rows=1 width=16) (never executed)
+                          InitPlan 7
+                            ->  Result  (cost=0.00..0.26 rows=1 width=32) (never executed)
+                          InitPlan 8
+                            ->  Result  (cost=0.00..0.26 rows=1 width=32) (actual time=0.585..0.585 rows=1 loops=1)
+                                  Buffers: shared hit=41
+                          InitPlan 9
+                            ->  Result  (cost=0.00..0.26 rows=1 width=16) (actual time=0.187..0.187 rows=1 loops=1)
+                                  Buffers: shared hit=16
+                          InitPlan 10
+                            ->  Result  (cost=0.00..0.26 rows=1 width=32) (actual time=0.373..0.373 rows=1 loops=1)
+                                  Buffers: shared hit=24
+                          InitPlan 11
+                            ->  Result  (cost=0.00..0.26 rows=1 width=16) (never executed)
+                          InitPlan 12
+                            ->  Result  (cost=0.00..0.26 rows=1 width=32) (never executed)
+                          ->  Result  (cost=0.56..8.70 rows=1 width=570) (actual time=1.510..2.369 rows=50 loops=1)
+                                One-Time Filter: ((InitPlan 1).col1 = 'e2380f92-2a47-3d17-5869-743ae00c37dd'::uuid)
+                                Buffers: shared hit=85 read=30
+                                ->  Index Scan using records_owner_idx on records r_1  (cost=0.56..8.70 rows=1 width=570) (actual time=1.467..2.323 rows=50 loops=1)
+                                      Index Cond: ((site_id = 'e2380f92-2a47-3d17-5869-743ae00c37dd'::uuid) AND (collection = 'bookings'::text) AND (owner_id = '302df66d-0b16-b9f7-d7b2-b33a1575d376'::uuid))
+                                      Filter: (((state IS NULL) OR (collection <> ALL ((InitPlan 2).col1)) OR (((collection || '/'::text) || state) = ANY ((InitPlan 3).col1)) OR ((owner_id IS NOT NULL) AND (owner_id = (InitPlan 4).col1) AND (((collection || '/'::text) || state) = ANY ((InitPlan 5).col1))) OR ((recipient_u1 IS NOT NULL) AND (recipient_u1 = (InitPlan 6).col1) AND (((collection || '/'::text) || state) = ANY ((InitPlan 7).col1)))) AND ((collection = ANY ((InitPlan 8).col1)) OR ((owner_id = (InitPlan 9).col1) AND (collection = ANY ((InitPlan 10).col1))) OR ((recipient_u1 IS NOT NULL) AND (recipient_u1 = (InitPlan 11).col1) AND (collection = ANY ((InitPlan 12).col1)))))
+                                      Buffers: shared hit=82 read=30
+-- S7 anon 100K-record posts, newest first (first page)
+Query Text: select array_agg(s.r order by s.n) from (select r, row_number() over () as n from (select r.* from zsite.records r where r.site_id = $1 and r.collection = $2 order by r.created_at desc, r.id desc limit $12) r) s
+Query Parameters: $1 = 'c2b3a517-1af2-b8f7-64e9-b96f87188696', $2 = 'posts', $3 = NULL, $4 = '{}', $5 = '{}', $6 = '{}', $7 = NULL, $8 = NULL, $9 = NULL, $10 = NULL, $11 = NULL, $12 = '51', $13 = NULL
+Aggregate  (cost=343.39..343.40 rows=1 width=32) (actual time=3.272..3.273 rows=1 loops=1)
+  Buffers: shared hit=28 read=6
+  ->  Sort  (cost=343.13..343.26 rows=51 width=602) (actual time=3.267..3.268 rows=51 loops=1)
+        Sort Key: (row_number() OVER (?))
+        Sort Method: quicksort  Memory: 38kB
+        Buffers: shared hit=28 read=6
+        ->  WindowAgg  (cost=3.68..341.68 rows=51 width=602) (actual time=3.223..3.257 rows=51 loops=1)
+              Buffers: shared hit=25 read=6
+              ->  Subquery Scan on r  (cost=3.68..341.04 rows=51 width=594) (actual time=3.220..3.249 rows=51 loops=1)
+                    Buffers: shared hit=25 read=6
+                    ->  Limit  (cost=3.68..340.53 rows=51 width=570) (actual time=3.218..3.239 rows=51 loops=1)
+                          Buffers: shared hit=25 read=6
+                          InitPlan 1
+                            ->  Result  (cost=0.00..0.26 rows=1 width=16) (actual time=0.051..0.051 rows=1 loops=1)
+                                  Buffers: shared hit=3
+                          InitPlan 2
+                            ->  Result  (cost=0.00..0.26 rows=1 width=32) (never executed)
+                          InitPlan 3
+                            ->  Result  (cost=0.00..0.26 rows=1 width=32) (never executed)
+                          InitPlan 4
+                            ->  Result  (cost=0.00..0.26 rows=1 width=16) (never executed)
+                          InitPlan 5
+                            ->  Result  (cost=0.00..0.26 rows=1 width=32) (never executed)
+                          InitPlan 6
+                            ->  Result  (cost=0.00..0.26 rows=1 width=16) (never executed)
+                          InitPlan 7
+                            ->  Result  (cost=0.00..0.26 rows=1 width=32) (never executed)
+                          InitPlan 8
+                            ->  Result  (cost=0.00..0.26 rows=1 width=32) (actual time=0.284..0.284 rows=1 loops=1)
+                                  Buffers: shared hit=21
+                          InitPlan 9
+                            ->  Result  (cost=0.00..0.26 rows=1 width=16) (never executed)
+                          InitPlan 10
+                            ->  Result  (cost=0.00..0.26 rows=1 width=32) (never executed)
+                          InitPlan 11
+                            ->  Result  (cost=0.00..0.26 rows=1 width=16) (never executed)
+                          InitPlan 12
+                            ->  Result  (cost=0.00..0.26 rows=1 width=32) (never executed)
+                          ->  Result  (cost=0.56..63573.61 rows=9625 width=570) (actual time=3.218..3.236 rows=51 loops=1)
+                                One-Time Filter: ((InitPlan 1).col1 = 'c2b3a517-1af2-b8f7-64e9-b96f87188696'::uuid)
+                                Buffers: shared hit=25 read=6
+                                ->  Index Scan using records_list_idx on records r_1  (cost=0.56..63573.61 rows=9625 width=570) (actual time=3.166..3.181 rows=51 loops=1)
+                                      Index Cond: ((site_id = 'c2b3a517-1af2-b8f7-64e9-b96f87188696'::uuid) AND (collection = 'posts'::text))
+                                      Filter: (((state IS NULL) OR (collection <> ALL ((InitPlan 2).col1)) OR (((collection || '/'::text) || state) = ANY ((InitPlan 3).col1)) OR ((owner_id IS NOT NULL) AND (owner_id = (InitPlan 4).col1) AND (((collection || '/'::text) || state) = ANY ((InitPlan 5).col1))) OR ((recipient_u1 IS NOT NULL) AND (recipient_u1 = (InitPlan 6).col1) AND (((collection || '/'::text) || state) = ANY ((InitPlan 7).col1)))) AND ((collection = ANY ((InitPlan 8).col1)) OR ((owner_id = (InitPlan 9).col1) AND (collection = ANY ((InitPlan 10).col1))) OR ((recipient_u1 IS NOT NULL) AND (recipient_u1 = (InitPlan 11).col1) AND (collection = ANY ((InitPlan 12).col1)))))
+                                      Buffers: shared hit=22 read=6
+S7 check: collection rows = 100000, scan using records_list_idx, rows read by the scan = 51, explicit sort nodes on created_at = 0
+-- S8 user requests owned or addressed (v2)
+Query Text: select array_agg(s.r order by s.n) from (select r, row_number() over () as n from (select r.* from ((select r.* from zsite.records r where r.site_id = $1 and r.collection = $2 and r.owner_id = $3 order by r.created_at desc, r.id desc limit $12) union all (select r.* from zsite.records r where r.site_id = $1 and r.collection = $2 and r.recipient_u1 = $3 and r.owner_id is distinct from $3 order by r.created_at desc, r.id desc limit $12)) r order by r.created_at desc, r.id desc limit $12) r) s
+Query Parameters: $1 = 'e2380f92-2a47-3d17-5869-743ae00c37dd', $2 = 'requests', $3 = '302df66d-0b16-b9f7-d7b2-b33a1575d376', $4 = '{}', $5 = '{}', $6 = '{}', $7 = NULL, $8 = NULL, $9 = NULL, $10 = NULL, $11 = NULL, $12 = '51', $13 = NULL
+Aggregate  (cost=23.72..23.73 rows=1 width=32) (actual time=9.624..9.627 rows=1 loops=1)
+  Buffers: shared hit=271 read=10
+  ->  Sort  (cost=23.71..23.71 rows=2 width=602) (actual time=9.618..9.622 rows=51 loops=1)
+        Sort Key: (row_number() OVER (?))
+        Sort Method: quicksort  Memory: 40kB
+        Buffers: shared hit=271 read=10
+        ->  WindowAgg  (cost=7.36..23.70 rows=2 width=602) (actual time=9.469..9.613 rows=51 loops=1)
+              Buffers: shared hit=268 read=10
+              ->  Subquery Scan on r  (cost=7.36..23.68 rows=2 width=594) (actual time=9.467..9.604 rows=51 loops=1)
+                    Buffers: shared hit=268 read=10
+                    ->  Limit  (cost=7.36..23.66 rows=2 width=570) (actual time=9.463..9.590 rows=51 loops=1)
+                          Buffers: shared hit=268 read=10
+                          ->  Merge Append  (cost=7.36..23.66 rows=2 width=570) (actual time=9.462..9.588 rows=51 loops=1)
+                                Sort Key: r_2.created_at DESC, r_2.id DESC
+                                Buffers: shared hit=268 read=10
+                                ->  Limit  (cost=3.68..11.81 rows=1 width=570) (actual time=6.597..6.668 rows=26 loops=1)
+                                      Buffers: shared hit=133 read=5
+                                      InitPlan 1
+                                        ->  Result  (cost=0.00..0.26 rows=1 width=16) (actual time=0.049..0.049 rows=1 loops=1)
+                                              Buffers: shared hit=3
+                                      InitPlan 2
+                                        ->  Result  (cost=0.00..0.26 rows=1 width=32) (actual time=0.706..0.706 rows=1 loops=1)
+                                              Buffers: shared hit=41
+                                      InitPlan 3
+                                        ->  Result  (cost=0.00..0.26 rows=1 width=32) (never executed)
+                                      InitPlan 4
+                                        ->  Result  (cost=0.00..0.26 rows=1 width=16) (never executed)
+                                      InitPlan 5
+                                        ->  Result  (cost=0.00..0.26 rows=1 width=32) (never executed)
+                                      InitPlan 6
+                                        ->  Result  (cost=0.00..0.26 rows=1 width=16) (never executed)
+                                      InitPlan 7
+                                        ->  Result  (cost=0.00..0.26 rows=1 width=32) (never executed)
+                                      InitPlan 8
+                                        ->  Result  (cost=0.00..0.26 rows=1 width=32) (actual time=0.355..0.355 rows=1 loops=1)
+                                              Buffers: shared hit=24
+                                      InitPlan 9
+                                        ->  Result  (cost=0.00..0.26 rows=1 width=16) (actual time=0.171..0.171 rows=1 loops=1)
+                                              Buffers: shared hit=16
+                                      InitPlan 10
+                                        ->  Result  (cost=0.00..0.26 rows=1 width=32) (actual time=0.388..0.388 rows=1 loops=1)
+                                              Buffers: shared hit=24
+                                      InitPlan 11
+                                        ->  Result  (cost=0.00..0.26 rows=1 width=16) (never executed)
+                                      InitPlan 12
+                                        ->  Result  (cost=0.00..0.26 rows=1 width=32) (never executed)
+                                      ->  Result  (cost=0.56..8.70 rows=1 width=570) (actual time=6.597..6.665 rows=26 loops=1)
+                                            One-Time Filter: ((InitPlan 1).col1 = 'e2380f92-2a47-3d17-5869-743ae00c37dd'::uuid)
+                                            Buffers: shared hit=133 read=5
+                                            ->  Index Scan using records_owner_idx on records r_2  (cost=0.56..8.70 rows=1 width=570) (actual time=6.547..6.614 rows=26 loops=1)
+                                                  Index Cond: ((site_id = 'e2380f92-2a47-3d17-5869-743ae00c37dd'::uuid) AND (collection = 'requests'::text) AND (owner_id = '302df66d-0b16-b9f7-d7b2-b33a1575d376'::uuid))
+                                                  Filter: (((state IS NULL) OR (collection <> ALL ((InitPlan 2).col1)) OR (((collection || '/'::text) || state) = ANY ((InitPlan 3).col1)) OR ((owner_id IS NOT NULL) AND (owner_id = (InitPlan 4).col1) AND (((collection || '/'::text) || state) = ANY ((InitPlan 5).col1))) OR ((recipient_u1 IS NOT NULL) AND (recipient_u1 = (InitPlan 6).col1) AND (((collection || '/'::text) || state) = ANY ((InitPlan 7).col1)))) AND ((collection = ANY ((InitPlan 8).col1)) OR ((owner_id = (InitPlan 9).col1) AND (collection = ANY ((InitPlan 10).col1))) OR ((recipient_u1 IS NOT NULL) AND (recipient_u1 = (InitPlan 11).col1) AND (collection = ANY ((InitPlan 12).col1)))))
+                                                  Buffers: shared hit=130 read=5
+                                ->  Limit  (cost=3.67..11.81 rows=1 width=570) (actual time=2.865..2.918 rows=26 loops=1)
+                                      Buffers: shared hit=135 read=5
+                                      InitPlan 13
+                                        ->  Result  (cost=0.00..0.26 rows=1 width=16) (actual time=0.025..0.025 rows=1 loops=1)
+                                              Buffers: shared hit=3
+                                      InitPlan 14
+                                        ->  Result  (cost=0.00..0.26 rows=1 width=32) (actual time=0.320..0.320 rows=1 loops=1)
+                                              Buffers: shared hit=24
+                                      InitPlan 15
+                                        ->  Result  (cost=0.00..0.26 rows=1 width=32) (never executed)
+                                      InitPlan 16
+                                        ->  Result  (cost=0.00..0.26 rows=1 width=16) (never executed)
+                                      InitPlan 17
+                                        ->  Result  (cost=0.00..0.26 rows=1 width=32) (never executed)
+                                      InitPlan 18
+                                        ->  Result  (cost=0.00..0.26 rows=1 width=16) (never executed)
+                                      InitPlan 19
+                                        ->  Result  (cost=0.00..0.26 rows=1 width=32) (never executed)
+                                      InitPlan 20
+                                        ->  Result  (cost=0.00..0.26 rows=1 width=32) (actual time=0.311..0.312 rows=1 loops=1)
+                                              Buffers: shared hit=27
+                                      InitPlan 21
+                                        ->  Result  (cost=0.00..0.26 rows=1 width=16) (actual time=0.126..0.126 rows=1 loops=1)
+                                              Buffers: shared hit=16
+                                      InitPlan 22
+                                        ->  Result  (cost=0.00..0.26 rows=1 width=32) (never executed)
+                                      InitPlan 23
+                                        ->  Result  (cost=0.00..0.26 rows=1 width=16) (actual time=0.121..0.121 rows=1 loops=1)
+                                              Buffers: shared hit=16
+                                      InitPlan 24
+                                        ->  Result  (cost=0.00..0.26 rows=1 width=32) (actual time=0.377..0.377 rows=1 loops=1)
+                                              Buffers: shared hit=24
+                                      ->  Result  (cost=0.55..8.69 rows=1 width=570) (actual time=2.865..2.916 rows=26 loops=1)
+                                            One-Time Filter: ((InitPlan 13).col1 = 'e2380f92-2a47-3d17-5869-743ae00c37dd'::uuid)
+                                            Buffers: shared hit=135 read=5
+                                            ->  Index Scan using records_rcpt_idx on records r_3  (cost=0.55..8.69 rows=1 width=570) (actual time=2.838..2.887 rows=26 loops=1)
+                                                  Index Cond: ((site_id = 'e2380f92-2a47-3d17-5869-743ae00c37dd'::uuid) AND (collection = 'requests'::text) AND (recipient_u1 = '302df66d-0b16-b9f7-d7b2-b33a1575d376'::uuid))
+                                                  Filter: ((owner_id IS DISTINCT FROM '302df66d-0b16-b9f7-d7b2-b33a1575d376'::uuid) AND ((state IS NULL) OR (collection <> ALL ((InitPlan 14).col1)) OR (((collection || '/'::text) || state) = ANY ((InitPlan 15).col1)) OR ((owner_id IS NOT NULL) AND (owner_id = (InitPlan 16).col1) AND (((collection || '/'::text) || state) = ANY ((InitPlan 17).col1))) OR ((recipient_u1 IS NOT NULL) AND (recipient_u1 = (InitPlan 18).col1) AND (((collection || '/'::text) || state) = ANY ((InitPlan 19).col1)))) AND ((collection = ANY ((InitPlan 20).col1)) OR ((owner_id = (InitPlan 21).col1) AND (collection = ANY ((InitPlan 22).col1))) OR ((recipient_u1 IS NOT NULL) AND (recipient_u1 = (InitPlan 23).col1) AND (collection = ANY ((InitPlan 24).col1)))))
+                                                  Buffers: shared hit=132 read=5
+-- S9 anon moderated listings (v2)
+Query Text: select array_agg(s.r order by s.n) from (select r, row_number() over () as n from (select r.* from zsite.records r where r.site_id = $1 and r.collection = $2 and r.state = any($13) order by r.created_at desc, r.id desc limit $12) r) s
+Query Parameters: $1 = 'e2380f92-2a47-3d17-5869-743ae00c37dd', $2 = 'listings', $3 = NULL, $4 = '{}', $5 = '{}', $6 = '{}', $7 = NULL, $8 = NULL, $9 = NULL, $10 = NULL, $11 = NULL, $12 = '51', $13 = '{published}'
+Aggregate  (cost=417.50..417.51 rows=1 width=32) (actual time=10.884..10.886 rows=1 loops=1)
+  Buffers: shared hit=58 read=709
+  ->  Sort  (cost=417.25..417.37 rows=51 width=602) (actual time=10.874..10.877 rows=51 loops=1)
+        Sort Key: (row_number() OVER (?))
+        Sort Method: quicksort  Memory: 36kB
+        Buffers: shared hit=58 read=709
+        ->  WindowAgg  (cost=414.52..415.80 rows=51 width=602) (actual time=10.846..10.864 rows=51 loops=1)
+              Buffers: shared hit=55 read=709
+              ->  Subquery Scan on r  (cost=414.52..415.16 rows=51 width=594) (actual time=10.842..10.855 rows=51 loops=1)
+                    Buffers: shared hit=55 read=709
+                    ->  Limit  (cost=414.52..414.65 rows=51 width=570) (actual time=10.833..10.837 rows=51 loops=1)
+                          Buffers: shared hit=55 read=709
+                          InitPlan 1
+                            ->  Result  (cost=0.00..0.26 rows=1 width=16) (actual time=0.062..0.062 rows=1 loops=1)
+                                  Buffers: shared hit=3
+                          InitPlan 2
+                            ->  Result  (cost=0.00..0.26 rows=1 width=32) (actual time=0.256..0.256 rows=1 loops=1)
+                                  Buffers: shared hit=22
+                          InitPlan 3
+                            ->  Result  (cost=0.00..0.26 rows=1 width=32) (actual time=0.173..0.174 rows=1 loops=1)
+                                  Buffers: shared hit=11
+                          InitPlan 4
+                            ->  Result  (cost=0.00..0.26 rows=1 width=16) (never executed)
+                          InitPlan 5
+                            ->  Result  (cost=0.00..0.26 rows=1 width=32) (never executed)
+                          InitPlan 6
+                            ->  Result  (cost=0.00..0.26 rows=1 width=16) (never executed)
+                          InitPlan 7
+                            ->  Result  (cost=0.00..0.26 rows=1 width=32) (never executed)
+                          InitPlan 8
+                            ->  Result  (cost=0.00..0.26 rows=1 width=32) (actual time=0.207..0.208 rows=1 loops=1)
+                                  Buffers: shared hit=11
+                          InitPlan 9
+                            ->  Result  (cost=0.00..0.26 rows=1 width=16) (never executed)
+                          InitPlan 10
+                            ->  Result  (cost=0.00..0.26 rows=1 width=32) (never executed)
+                          InitPlan 11
+                            ->  Result  (cost=0.00..0.26 rows=1 width=16) (never executed)
+                          InitPlan 12
+                            ->  Result  (cost=0.00..0.26 rows=1 width=32) (never executed)
+                          ->  Sort  (cost=411.40..411.55 rows=60 width=570) (actual time=10.833..10.834 rows=51 loops=1)
+                                Sort Key: r_1.created_at DESC, r_1.id DESC
+                                Sort Method: top-N heapsort  Memory: 38kB
+                                Buffers: shared hit=55 read=709
+                                ->  Result  (cost=9.80..409.63 rows=60 width=570) (actual time=1.251..10.715 rows=700 loops=1)
+                                      One-Time Filter: ((InitPlan 1).col1 = 'e2380f92-2a47-3d17-5869-743ae00c37dd'::uuid)
+                                      Buffers: shared hit=49 read=709
+                                      ->  Bitmap Heap Scan on records r_1  (cost=9.80..409.63 rows=60 width=570) (actual time=1.188..10.610 rows=700 loops=1)
+                                            Recheck Cond: ((site_id = 'e2380f92-2a47-3d17-5869-743ae00c37dd'::uuid) AND (collection = 'listings'::text) AND (state = ANY ('{published}'::text[])))
+                                            Filter: (((state IS NULL) OR (collection <> ALL ((InitPlan 2).col1)) OR (((collection || '/'::text) || state) = ANY ((InitPlan 3).col1)) OR ((owner_id IS NOT NULL) AND (owner_id = (InitPlan 4).col1) AND (((collection || '/'::text) || state) = ANY ((InitPlan 5).col1))) OR ((recipient_u1 IS NOT NULL) AND (recipient_u1 = (InitPlan 6).col1) AND (((collection || '/'::text) || state) = ANY ((InitPlan 7).col1)))) AND ((collection = ANY ((InitPlan 8).col1)) OR ((owner_id = (InitPlan 9).col1) AND (collection = ANY ((InitPlan 10).col1))) OR ((recipient_u1 IS NOT NULL) AND (recipient_u1 = (InitPlan 11).col1) AND (collection = ANY ((InitPlan 12).col1)))))
+                                            Heap Blocks: exact=700
+                                            Buffers: shared hit=46 read=709
+                                            ->  Bitmap Index Scan on records_state_idx  (cost=0.00..9.78 rows=98 width=0) (actual time=0.510..0.510 rows=700 loops=1)
+                                                  Index Cond: ((site_id = 'e2380f92-2a47-3d17-5869-743ae00c37dd'::uuid) AND (collection = 'listings'::text) AND (state = ANY ('{published}'::text[])))
+                                                  Buffers: shared hit=2 read=9
+-- S4 admin bookings day range sorted
+Query Text: select array_agg(s.r order by s.n) from (select r, row_number() over () as n from (select r.* from zsite.records r where r.site_id = $1 and r.collection = $2 and r.d1 < $6[1] and r.d1 >= $6[2] and r.d1 is not null order by r.d1 asc, r.created_at desc, r.id desc limit $12) r) s
+Query Parameters: $1 = 'e2380f92-2a47-3d17-5869-743ae00c37dd', $2 = 'bookings', $3 = NULL, $4 = '{}', $5 = '{}', $6 = '{"2026-05-31 17:00:00-07","2026-02-28 16:00:00-08"}', $7 = NULL, $8 = NULL, $9 = NULL, $10 = NULL, $11 = NULL, $12 = '51', $13 = NULL
+Aggregate  (cost=161.11..161.12 rows=1 width=32) (actual time=2.580..2.581 rows=1 loops=1)
+  Buffers: shared hit=137 read=8
+  ->  Sort  (cost=161.09..161.10 rows=4 width=602) (actual time=2.574..2.576 rows=51 loops=1)
+        Sort Key: (row_number() OVER (?))
+        Sort Method: quicksort  Memory: 36kB
+        Buffers: shared hit=137 read=8
+        ->  WindowAgg  (cost=160.95..161.05 rows=4 width=602) (actual time=2.544..2.564 rows=51 loops=1)
+              Buffers: shared hit=134 read=8
+              ->  Subquery Scan on r  (cost=160.95..161.00 rows=4 width=594) (actual time=2.542..2.556 rows=51 loops=1)
+                    Buffers: shared hit=134 read=8
+                    ->  Limit  (cost=160.95..160.96 rows=4 width=570) (actual time=2.540..2.543 rows=51 loops=1)
+                          Buffers: shared hit=134 read=8
+                          InitPlan 1
+                            ->  Result  (cost=0.00..0.26 rows=1 width=16) (actual time=0.054..0.054 rows=1 loops=1)
+                                  Buffers: shared hit=3
+                          InitPlan 2
+                            ->  Result  (cost=0.00..0.26 rows=1 width=32) (never executed)
+                          InitPlan 3
+                            ->  Result  (cost=0.00..0.26 rows=1 width=32) (never executed)
+                          InitPlan 4
+                            ->  Result  (cost=0.00..0.26 rows=1 width=16) (never executed)
+                          InitPlan 5
+                            ->  Result  (cost=0.00..0.26 rows=1 width=32) (never executed)
+                          InitPlan 6
+                            ->  Result  (cost=0.00..0.26 rows=1 width=16) (never executed)
+                          InitPlan 7
+                            ->  Result  (cost=0.00..0.26 rows=1 width=32) (never executed)
+                          InitPlan 8
+                            ->  Result  (cost=0.00..0.26 rows=1 width=32) (actual time=0.508..0.508 rows=1 loops=1)
+                                  Buffers: shared hit=32
+                          InitPlan 9
+                            ->  Result  (cost=0.00..0.26 rows=1 width=16) (actual time=0.178..0.178 rows=1 loops=1)
+                                  Buffers: shared hit=16
+                          InitPlan 10
+                            ->  Result  (cost=0.00..0.26 rows=1 width=32) (actual time=0.363..0.363 rows=1 loops=1)
+                                  Buffers: shared hit=24
+                          InitPlan 11
+                            ->  Result  (cost=0.00..0.26 rows=1 width=16) (actual time=0.122..0.122 rows=1 loops=1)
+                                  Buffers: shared hit=16
+                          InitPlan 12
+                            ->  Result  (cost=0.00..0.26 rows=1 width=32) (actual time=0.342..0.342 rows=1 loops=1)
+                                  Buffers: shared hit=24
+                          ->  Sort  (cost=157.83..157.84 rows=4 width=570) (actual time=2.539..2.541 rows=51 loops=1)
+                                Sort Key: r_1.d1, r_1.created_at DESC, r_1.id DESC
+                                Sort Method: top-N heapsort  Memory: 40kB
+                                Buffers: shared hit=134 read=8
+                                ->  Result  (cost=137.18..157.79 rows=4 width=570) (actual time=2.419..2.483 rows=276 loops=1)
+                                      One-Time Filter: ((InitPlan 1).col1 = 'e2380f92-2a47-3d17-5869-743ae00c37dd'::uuid)
+                                      Buffers: shared hit=128 read=8
+                                      ->  Bitmap Heap Scan on records r_1  (cost=137.18..157.79 rows=4 width=570) (actual time=2.364..2.410 rows=276 loops=1)
+                                            Recheck Cond: (((site_id = 'e2380f92-2a47-3d17-5869-743ae00c37dd'::uuid) AND (collection = ANY ((InitPlan 8).col1)) AND (collection = 'bookings'::text) AND (d1 < '2026-05-31 17:00:00-07'::timestamp with time zone) AND (d1 >= '2026-02-28 16:00:00-08'::timestamp with time zone) AND (d1 IS NOT NULL)) OR ((site_id = 'e2380f92-2a47-3d17-5869-743ae00c37dd'::uuid) AND (collection = ANY ((InitPlan 10).col1)) AND (collection = 'bookings'::text) AND (owner_id = (InitPlan 9).col1)) OR ((site_id = 'e2380f92-2a47-3d17-5869-743ae00c37dd'::uuid) AND (collection = ANY ((InitPlan 12).col1)) AND (collection = 'bookings'::text) AND (recipient_u1 IS NOT NULL) AND (recipient_u1 = (InitPlan 11).col1)))
+                                            Filter: ((d1 IS NOT NULL) AND (d1 < '2026-05-31 17:00:00-07'::timestamp with time zone) AND (d1 >= '2026-02-28 16:00:00-08'::timestamp with time zone) AND ((state IS NULL) OR (collection <> ALL ((InitPlan 2).col1)) OR (((collection || '/'::text) || state) = ANY ((InitPlan 3).col1)) OR ((owner_id IS NOT NULL) AND (owner_id = (InitPlan 4).col1) AND (((collection || '/'::text) || state) = ANY ((InitPlan 5).col1))) OR ((recipient_u1 IS NOT NULL) AND (recipient_u1 = (InitPlan 6).col1) AND (((collection || '/'::text) || state) = ANY ((InitPlan 7).col1)))))
+                                            Heap Blocks: exact=10
+                                            Buffers: shared hit=125 read=8
+                                            ->  BitmapOr  (cost=137.18..137.18 rows=5 width=0) (actual time=2.357..2.357 rows=0 loops=1)
+                                                  Buffers: shared hit=115 read=8
+                                                  ->  Bitmap Index Scan on records_d1_idx  (cost=0.00..45.73 rows=5 width=0) (actual time=1.192..1.192 rows=276 loops=1)
+                                                        Index Cond: ((site_id = 'e2380f92-2a47-3d17-5869-743ae00c37dd'::uuid) AND (collection = ANY ((InitPlan 8).col1)) AND (collection = 'bookings'::text) AND (d1 < '2026-05-31 17:00:00-07'::timestamp with time zone) AND (d1 >= '2026-02-28 16:00:00-08'::timestamp with time zone) AND (d1 IS NOT NULL))
+                                                        Buffers: shared hit=32 read=7
+                                                  ->  Bitmap Index Scan on records_owner_idx  (cost=0.00..45.75 rows=1 width=0) (actual time=0.699..0.699 rows=0 loops=1)
+                                                        Index Cond: ((site_id = 'e2380f92-2a47-3d17-5869-743ae00c37dd'::uuid) AND (collection = ANY ((InitPlan 10).col1)) AND (collection = 'bookings'::text) AND (owner_id = (InitPlan 9).col1))
+                                                        Buffers: shared hit=43 read=1
+                                                  ->  Bitmap Index Scan on records_rcpt_idx  (cost=0.00..45.70 rows=1 width=0) (actual time=0.466..0.466 rows=0 loops=1)
+                                                        Index Cond: ((site_id = 'e2380f92-2a47-3d17-5869-743ae00c37dd'::uuid) AND (collection = ANY ((InitPlan 12).col1)) AND (collection = 'bookings'::text) AND (recipient_u1 IS NOT NULL) AND (recipient_u1 = (InitPlan 11).col1))
+                                                        Buffers: shared hit=40
+
+== batched reindex: add a text index to the 100K-record collection, CALL zsite.reindex_collection (2,000-row batches) ==
+reindex: 100000 rows in 3.36s = 29794 rows/s; consistent: t; pending cleared: t
+
+== write throughput, 20 concurrent writers, 15s each (synchronous_commit=on, fsync=on) ==
+one site   : number of failed transactions: 0 (0.000%) latency average = 3.019 ms tps = 6624.146500 (without initial connection time) 
+20 sites   : number of failed transactions: 0 (0.000%) latency average = 1.776 ms tps = 11260.490503 (without initial connection time) 
+counters ok: t

@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "site-quality-bench/run-record",
+  "title": "Site quality benchmark run record",
+  "description": "One website output for one brief from one system. lib/schema.mjs validateRecord is the enforced contract; it adds the cross-field rules listed in x-rules that JSON Schema cannot express.",
+  "type": "object",
+  "required": ["run_id", "brief_id", "system", "provenance", "captured_at", "screenshots", "timings", "cost", "repairs", "failures", "journeys", "requirement_coverage"],
+  "properties": {
+    "run_id": { "type": "string", "minLength": 1 },
+    "brief_id": { "type": "string", "minLength": 1 },
+    "system": { "enum": ["zavi", "lovable", "other"] },
+    "provenance": { "enum": ["actual_ai_build", "mocked", "hand_written_demo", "manual_import"] },
+    "captured_at": { "type": "string", "format": "date-time" },
+    "urls": {
+      "type": ["object", "null"],
+      "additionalProperties": { "type": ["string", "null"] }
+    },
+    "screenshots": {
+      "type": "object",
+      "required": ["desktop", "mobile"],
+      "properties": {
+        "desktop": { "type": ["string", "null"], "description": "full-page PNG at 1280x800 viewport" },
+        "mobile": { "type": ["string", "null"], "description": "full-page PNG at 390x844 viewport" }
+      }
+    },
+    "timings": {
+      "type": "object",
+      "required": ["to_first_preview_s", "to_usable_complete_s"],
+      "properties": {
+        "to_first_preview_s": { "type": ["number", "null"], "minimum": 0 },
+        "to_usable_complete_s": { "type": ["number", "null"], "minimum": 0 }
+      }
+    },
+    "cost": {
+      "type": "object",
+      "required": ["usd", "source"],
+      "properties": {
+        "usd": { "type": ["number", "null"], "minimum": 0 },
+        "source": { "type": "string", "minLength": 1 }
+      }
+    },
+    "repairs": { "type": ["integer", "null"], "minimum": 0 },
+    "failures": { "type": "array", "items": { "type": "string" } },
+    "journeys": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "passed"],
+        "properties": { "name": { "type": "string" }, "passed": { "type": "boolean" }, "detail": { "type": "string" } }
+      }
+    },
+    "requirement_coverage": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["requirement", "met", "evidence"],
+        "properties": { "requirement": { "type": "string" }, "met": { "type": "boolean" }, "evidence": { "type": "string" } }
+      }
+    },
+    "scores": {
+      "type": ["object", "null"],
+      "properties": {
+        "rater": { "type": ["string", "null"] },
+        "hierarchy": { "$ref": "#/$defs/score" },
+        "typography": { "$ref": "#/$defs/score" },
+        "spacing": { "$ref": "#/$defs/score" },
+        "imagery": { "$ref": "#/$defs/score" },
+        "consistency": { "$ref": "#/$defs/score" },
+        "mobile_readability": { "$ref": "#/$defs/score" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "score": { "type": ["integer", "null"], "minimum": 1, "maximum": 5 }
+  },
+  "x-rules": [
+    "provenance is required; a record without it is rejected",
+    "scores.rater is required as soon as any axis has a value",
+    "provenance actual_ai_build is rejected for any file under fixtures/mock and for screenshots under fixtures/mock",
+    "provenance actual_ai_build is only valid for system zavi; competitor outputs are manual_import",
+    "system zavi cannot be manual_import"
+  ]
+}

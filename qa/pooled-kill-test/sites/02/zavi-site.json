@@ -1,0 +1,231 @@
+{
+  "schemaVersion": 2,
+  "roles": [],
+  "capabilities": [],
+  "actions": {},
+  "aggregates": {
+    "bookings_by_status": {
+      "collection": "bookings",
+      "fn": "count",
+      "filters": [
+        "status"
+      ],
+      "principals": [
+        "admin"
+      ]
+    }
+  },
+  "collections": {
+    "services": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "anyone"
+        ],
+        "get": [
+          "anyone"
+        ],
+        "create": [
+          "admin"
+        ],
+        "update": [
+          "admin"
+        ],
+        "delete": [
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "price_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "duration_min": {
+            "type": "integer",
+            "minimum": 5,
+            "maximum": 480
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "name",
+          "price_cents",
+          "duration_min"
+        ]
+      },
+      "fields": {},
+      "indexes": {},
+      "unique": [],
+      "references": {}
+    },
+    "bookings": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "anyone"
+        ],
+        "get": [
+          "anyone"
+        ],
+        "create": [
+          "anyone"
+        ],
+        "update": [
+          "admin"
+        ],
+        "delete": [
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "service_id": {
+            "type": "string",
+            "maxLength": 36,
+            "format": "uuid"
+          },
+          "slot_start": {
+            "type": "string",
+            "maxLength": 40,
+            "format": "date-time"
+          },
+          "customer_name": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "phone": {
+            "type": "string",
+            "maxLength": 30
+          },
+          "email": {
+            "type": "string",
+            "maxLength": 320,
+            "format": "email"
+          },
+          "dog_name": {
+            "type": "string",
+            "maxLength": 60
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 1000
+          },
+          "status": {
+            "type": "string",
+            "maxLength": 9,
+            "enum": [
+              "booked",
+              "done",
+              "cancelled",
+              "no_show"
+            ]
+          }
+        },
+        "required": [
+          "service_id",
+          "slot_start",
+          "customer_name",
+          "phone",
+          "dog_name",
+          "status"
+        ]
+      },
+      "fields": {
+        "customer_name": {
+          "read": [
+            "admin"
+          ]
+        },
+        "phone": {
+          "read": [
+            "admin"
+          ]
+        },
+        "email": {
+          "read": [
+            "admin"
+          ]
+        },
+        "dog_name": {
+          "read": [
+            "admin"
+          ]
+        },
+        "notes": {
+          "read": [
+            "admin"
+          ]
+        }
+      },
+      "indexes": {
+        "slot_start": {
+          "type": "timestamp",
+          "ops": [
+            "eq",
+            "in",
+            "range"
+          ],
+          "sort": true
+        }
+      },
+      "unique": [
+        {
+          "fields": [
+            "slot_start"
+          ],
+          "nulls": "distinct"
+        }
+      ],
+      "references": {
+        "service_id": {
+          "collection": "services",
+          "on_delete": "restrict"
+        }
+      },
+      "states": {
+        "field": "status",
+        "values": [
+          "booked",
+          "done",
+          "cancelled",
+          "no_show"
+        ],
+        "initial": "booked",
+        "transitions": [
+          {
+            "from": "booked",
+            "to": "done",
+            "principals": [
+              "admin"
+            ]
+          },
+          {
+            "from": "booked",
+            "to": "cancelled",
+            "principals": [
+              "admin"
+            ]
+          },
+          {
+            "from": "booked",
+            "to": "no_show",
+            "principals": [
+              "admin"
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

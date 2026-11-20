@@ -1,0 +1,68 @@
+{
+  "run_id": "mock-lovable-dental-clinic",
+  "brief_id": "dental-clinic",
+  "system": "lovable",
+  "provenance": "mocked",
+  "captured_at": "2026-10-07T00:00:00.000Z",
+  "urls": {
+    "site": null
+  },
+  "screenshots": {
+    "desktop": "shots/mock-lovable-dental-clinic-desktop.png",
+    "mobile": "shots/mock-lovable-dental-clinic-mobile.png"
+  },
+  "timings": {
+    "to_first_preview_s": 12,
+    "to_usable_complete_s": 180
+  },
+  "cost": {
+    "usd": null,
+    "source": "mocked: competitor cost unknown"
+  },
+  "repairs": null,
+  "failures": [],
+  "journeys": [
+    {
+      "name": "book_appointment",
+      "passed": true
+    }
+  ],
+  "requirement_coverage": [
+    {
+      "requirement": "Clinic name Brightside Dental is visible",
+      "met": true,
+      "evidence": "mocked: not checked"
+    },
+    {
+      "requirement": "Lists checkups, whitening, Invisalign and emergency care",
+      "met": true,
+      "evidence": "mocked: not checked"
+    },
+    {
+      "requirement": "Shows the dentists with bios",
+      "met": true,
+      "evidence": "mocked: not checked"
+    },
+    {
+      "requirement": "Shows opening hours",
+      "met": false,
+      "evidence": "mocked: not checked"
+    },
+    {
+      "requirement": "Lists accepted insurance",
+      "met": true,
+      "evidence": "mocked: not checked"
+    },
+    {
+      "requirement": "Shows patient reviews",
+      "met": true,
+      "evidence": "mocked: not checked"
+    },
+    {
+      "requirement": "Has an online booking flow",
+      "met": true,
+      "evidence": "mocked: not checked"
+    }
+  ],
+  "scores": null
+}

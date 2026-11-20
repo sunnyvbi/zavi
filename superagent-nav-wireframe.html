@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>*,*::before,*::after{box-sizing:border-box}body{margin:0}img,svg{max-width:100%}</style>
+<title>Zavi — domain nav, Zavi always on the right</title>
+
+<style>
+  :root {
+    --paper:#F5F4F0; --panel:#FFFFFF; --chrome:#ECEAE4; --line:#DAD7CE;
+    --ink:#1B1E24; --muted:#6E7280; --faint:#9A9CA3;
+    --accent:#A85426; --accent-bg:#F2E4D8;
+    --danger:#9E362E; --ok:#3A6F52; --sel:#E3E0D8;
+    --zavi:#2F5D63; --zavi-bg:#DFEAEB;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper:#15171B; --panel:#1C1F25; --chrome:#1F232A; --line:#2E333C;
+      --ink:#E4E3DF; --muted:#9096A0; --faint:#666C76;
+      --accent:#D68A55; --accent-bg:#37281C;
+      --danger:#D97A70; --ok:#79B695; --sel:#2A2F37;
+      --zavi:#8FBFC4; --zavi-bg:#1D2C2E;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:#15171B; --panel:#1C1F25; --chrome:#1F232A; --line:#2E333C;
+    --ink:#E4E3DF; --muted:#9096A0; --faint:#666C76;
+    --accent:#D68A55; --accent-bg:#37281C; --danger:#D97A70; --ok:#79B695;
+    --sel:#2A2F37; --zavi:#8FBFC4; --zavi-bg:#1D2C2E;
+  }
+  :root[data-theme="light"] {
+    --paper:#F5F4F0; --panel:#FFFFFF; --chrome:#ECEAE4; --line:#DAD7CE;
+    --ink:#1B1E24; --muted:#6E7280; --faint:#9A9CA3;
+    --accent:#A85426; --accent-bg:#F2E4D8; --danger:#9E362E; --ok:#3A6F52;
+    --sel:#E3E0D8; --zavi:#2F5D63; --zavi-bg:#DFEAEB;
+  }
+
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--paper); color:var(--ink);
+         font-family:var(--sans); line-height:1.55; -webkit-font-smoothing:antialiased; }
+  .wrap { max-width:1240px; margin:0 auto; padding:40px 24px 80px; }
+
+  header.top { border-bottom:1px solid var(--line); padding-bottom:22px; margin-bottom:24px; }
+  .eyebrow { font-family:var(--mono); font-size:11px; letter-spacing:.12em;
+             text-transform:uppercase; color:var(--muted); margin:0 0 10px; }
+  h1 { font-size:29px; line-height:1.2; margin:0 0 10px; font-weight:600; letter-spacing:-.01em; text-wrap:balance; }
+  .lede { margin:0; color:var(--muted); max-width:70ch; font-size:15px; }
+  .lede code, footer code { font-family:var(--mono); font-size:12.5px; background:var(--chrome);
+                padding:1px 5px; border-radius:3px; color:var(--ink); }
+
+  .switch { display:flex; flex-wrap:wrap; gap:6px; margin:0 0 20px; }
+  .switch button { font-family:var(--mono); font-size:12px; background:transparent; color:var(--muted);
+                   border:1px solid var(--line); border-radius:2px; padding:8px 13px; cursor:pointer; transition:all .12s; }
+  .switch button:hover { color:var(--ink); border-color:var(--muted); }
+  .switch button[aria-selected="true"] { background:var(--ink); color:var(--paper); border-color:var(--ink); }
+  .switch button:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+
+  .summary { border-left:2px solid var(--zavi); padding:2px 0 2px 14px; margin:0 0 8px; max-width:76ch; }
+  .summary .tag { font-family:var(--mono); font-size:10.5px; text-transform:uppercase;
+                  letter-spacing:.1em; color:var(--zavi); display:block; margin-bottom:3px; }
+  .summary p { margin:0; font-size:14.5px; }
+  .hint { font-size:12.5px; color:var(--faint); font-style:italic; margin:8px 0 18px; }
+
+  .app { display:grid; grid-template-columns:198px 1fr; border:1px solid var(--line);
+         border-radius:4px; overflow:hidden; background:var(--panel); min-height:500px;
+         box-shadow:0 1px 2px rgba(0,0,0,.04); }
+  .nav { background:var(--chrome); border-right:1px solid var(--line); padding:10px 0;
+         font-family:var(--mono); font-size:12.5px; overflow-y:auto; }
+  .navrow { display:flex; align-items:center; gap:7px; padding:6px 12px; cursor:pointer;
+            color:var(--ink); border:none; background:none; width:100%; text-align:left;
+            font-family:var(--mono); font-size:12.5px; }
+  .navrow:hover { background:var(--sel); }
+  .navrow[aria-current="true"] { background:var(--sel); font-weight:600; }
+  .navrow:focus-visible { outline:2px solid var(--accent); outline-offset:-2px; }
+  .navrow .dot { width:5px; height:5px; border-radius:50%; background:var(--faint); flex:none; }
+  .navrow.is-new .dot { background:var(--accent); }
+  .navrow.is-new { color:var(--accent); }
+  .navrow.zavi .dot { background:var(--zavi); }
+  .navrow.zavi { color:var(--zavi); font-weight:600; }
+  .navrow.indent { padding-left:26px; color:var(--muted); font-size:12px; }
+  .navrow .badge { margin-left:auto; font-size:10px; background:var(--danger); color:#fff;
+                   border-radius:8px; padding:0 5px; font-variant-numeric:tabular-nums; }
+  .navhead { font-family:var(--mono); font-size:10px; letter-spacing:.12em; text-transform:uppercase;
+             color:var(--faint); padding:12px 12px 4px; display:flex; justify-content:space-between; }
+  .navrule { height:1px; background:var(--line); margin:8px 12px; }
+
+  .stage { display:flex; flex-direction:column; min-width:0; }
+  .panehead { font-family:var(--mono); font-size:11px; letter-spacing:.06em; text-transform:uppercase;
+              color:var(--muted); padding:9px 14px; border-bottom:1px solid var(--line); background:var(--chrome); }
+  .panes { display:grid; flex:1; min-height:0; }
+  .panes.split { grid-template-columns:1fr 340px; }
+  .panes.three { grid-template-columns:120px 1fr 300px; }
+  .panes.one { grid-template-columns:1fr; }
+  .pane { padding:14px; border-right:1px solid var(--line); overflow-y:auto; min-width:0; }
+  .pane:last-child { border-right:none; }
+  .pane.chat { background:var(--zavi-bg); }
+  .panelabel { font-family:var(--mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase;
+               color:var(--faint); margin-bottom:10px; display:flex; align-items:center; gap:6px; }
+  .pane.chat .panelabel { color:var(--zavi); }
+  .pane.chat .panelabel .dot { width:6px; height:6px; border-radius:50%; background:var(--zavi); }
+
+  .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:8px; }
+  .card { border:1px solid var(--line); border-radius:3px; padding:10px 11px; background:var(--panel); }
+  .k { font-family:var(--mono); font-size:10px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); }
+  .v { font-family:var(--mono); font-size:19px; font-variant-numeric:tabular-nums; margin-top:2px; }
+  .v .delta { font-size:11px; color:var(--ok); margin-left:5px; }
+  .v .delta.bad { color:var(--danger); }
+  .spark { display:block; margin-top:6px; color:var(--accent); }
+  .rows { margin-top:10px; border-top:1px solid var(--line); }
+  .row { display:flex; justify-content:space-between; padding:7px 2px; border-bottom:1px solid var(--line);
+         font-size:13px; font-family:var(--mono); }
+  .row .s { color:var(--muted); }
+  .row .s.warn { color:var(--danger); }
+
+  .bubble { border-radius:8px; padding:9px 11px; margin-bottom:9px; font-size:13px; }
+  .bubble.me { background:var(--sel); margin-left:24px; }
+  .bubble.ai { background:var(--panel); border:1px solid var(--line); }
+  .who { font-family:var(--mono); font-size:9.5px; text-transform:uppercase; letter-spacing:.1em;
+         color:var(--zavi); margin-bottom:3px; font-weight:600; }
+  .ctx { font-family:var(--mono); font-size:10px; color:var(--zavi); background:var(--panel);
+         border:1px dashed var(--zavi); border-radius:3px; padding:4px 7px; margin-bottom:10px; }
+  .composer { margin-top:10px; border:1px solid var(--line); border-radius:5px; background:var(--panel);
+              padding:8px 10px; font-size:12.5px; color:var(--faint); }
+  .rosterrow { font-family:var(--mono); font-size:11px; color:var(--muted); padding:3px 0; }
+  .rosterrow.on { color:var(--ink); font-weight:600; }
+
+  .verdict { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:16px; }
+  .vbox { border:1px solid var(--line); border-radius:3px; padding:12px 14px; }
+  .vbox h4 { margin:0 0 6px; font-size:11px; font-family:var(--mono); letter-spacing:.1em; text-transform:uppercase; }
+  .vbox.good h4 { color:var(--ok); }
+  .vbox.bad h4 { color:var(--danger); }
+  .vbox ul { margin:0; padding-left:16px; font-size:13.5px; }
+  .vbox li { margin-bottom:4px; }
+  .vbox li::marker { color:var(--faint); }
+
+  footer.note { margin-top:36px; padding-top:18px; border-top:1px solid var(--line);
+                font-size:13px; color:var(--muted); max-width:76ch; }
+
+  @media (max-width:900px) {
+    .app { grid-template-columns:1fr; }
+    .nav { border-right:none; border-bottom:1px solid var(--line); }
+    .panes.split, .panes.three { grid-template-columns:1fr; }
+    .pane { border-right:none; border-bottom:1px solid var(--line); }
+    .verdict { grid-template-columns:1fr; }
+  }
+  @media (prefers-reduced-motion:reduce) { * { transition:none !important; } }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <p class="eyebrow">Zavi · front door · v2 — Ravi's shape</p>
+    <h1>The nav is domains. Zavi sits on the right of every one of them.</h1>
+    <p class="lede">
+      Not "one chat box and nothing else", and not "dashboards summoned by conversation". The nav lists the
+      <strong>things you run</strong> — Ads, Disputes, Your Website. Each opens its surface, and Zavi is
+      already there on the right, <em>knowing what you're looking at</em>. Today's
+      <code>[ roster | dashboard | chat ]</code> split survives — the roster pane dies, the chat pane becomes Zavi.
+    </p>
+  </header>
+
+  <div class="switch" role="tablist" aria-label="Views">
+    <button role="tab" data-opt="today" aria-selected="false">TODAY — agent-shaped</button>
+    <button role="tab" data-opt="v2" aria-selected="true">RAVI'S SHAPE — domain-shaped</button>
+  </div>
+
+  <div class="summary">
+    <span class="tag" id="sumTag">What you are looking at</span>
+    <p id="sumText"></p>
+  </div>
+  <p class="hint" id="hint"></p>
+
+  <div class="app">
+    <nav class="nav" id="nav" aria-label="Workspace navigation"></nav>
+    <div class="stage">
+      <div class="panehead" id="panehead"></div>
+      <div class="panes" id="panes"></div>
+    </div>
+  </div>
+
+  <div class="verdict">
+    <div class="vbox good"><h4>What this gets right</h4><ul id="pros"></ul></div>
+    <div class="vbox bad"><h4>Open questions this raises</h4><ul id="cons"></ul></div>
+  </div>
+
+  <footer class="note">
+    Teal = Zavi. Ochre = new nav doors. Grey = ships today.
+    The <code>Your Website</code> row is <strong>not</strong> an existing agent dashboard — it's a new surface,
+    which is the one thing here that isn't just a re-labelling of what exists.
+  </footer>
+</div>
+
+<script>
+const FLEET = ["operator","engineer","pm","performance-marketer","growth-lead","support-lead",
+               "dispute-response","qa","research","chief-of-staff","advisor"];
+
+const adsBody = `
+  <div class="cards">
+    <div class="card"><div class="k">Spend · 7d</div><div class="v">$4,182 <span class="delta bad">+14%</span></div>
+      <svg class="spark" width="100%" height="24" viewBox="0 0 120 24" preserveAspectRatio="none" aria-hidden="true">
+        <polyline points="0,19 20,17 40,18 60,13 80,11 100,6 120,3" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".6"/>
+        <circle cx="120" cy="3" r="2.5" fill="currentColor"/></svg></div>
+    <div class="card"><div class="k">CPA</div><div class="v">$38.40 <span class="delta bad">+9%</span></div></div>
+    <div class="card"><div class="k">MER</div><div class="v">2.7×</div></div>
+  </div>
+  <div class="rows">
+    <div class="row"><span>Advantage+ · Retarget</span><span class="s warn">CPA $51</span></div>
+    <div class="row"><span>Prospecting · Broad</span><span class="s">CPA $33</span></div>
+    <div class="row"><span>Brand · Search</span><span class="s">CPA $12</span></div>
+  </div>`;
+
+const dispBody = `
+  <div class="cards">
+    <div class="card"><div class="k">Open</div><div class="v">3</div></div>
+    <div class="card"><div class="k">Due &lt; 48h</div><div class="v">1</div></div>
+    <div class="card"><div class="k">Won · 30d</div><div class="v">7 / 9</div></div>
+  </div>
+  <div class="rows">
+    <div class="row"><span>ch_3Qm… · $340</span><span class="s warn">evidence due 41h</span></div>
+    <div class="row"><span>ch_3Ql… · $128</span><span class="s">submitted</span></div>
+    <div class="row"><span>ch_3Qk… · $92</span><span class="s">under review</span></div>
+  </div>`;
+
+const siteBody = `
+  <div class="cards">
+    <div class="card"><div class="k">Uptime · 30d</div><div class="v">99.94%</div></div>
+    <div class="card"><div class="k">LCP</div><div class="v">2.4s <span class="delta bad">slow</span></div></div>
+    <div class="card"><div class="k">Signups · 7d</div><div class="v">61 <span class="delta">+8%</span></div></div>
+  </div>
+  <div class="rows">
+    <div class="row"><span>/pricing</span><span class="s warn">bounce 71%</span></div>
+    <div class="row"><span>/</span><span class="s">bounce 44%</span></div>
+    <div class="row"><span>/signup</span><span class="s">drop-off 38%</span></div>
+  </div>`;
+
+// Zavi's chat, contextual to the surface you're on.
+const zaviChat = (ctx, ask, reply) => `
+  <div class="panelabel"><span class="dot"></span>Zavi</div>
+  <div class="ctx">looking at: ${ctx}</div>
+  <div class="bubble me">${ask}</div>
+  <div class="bubble ai"><div class="who">Zavi</div>${reply}</div>
+  <div class="composer">Ask Zavi anything…</div>`;
+
+const CHAT = {
+  Ads: zaviChat("Ads · last 7 days",
+    "why is CPA up?",
+    "Advantage+ Retarget is the whole increase — it's at $51 CPA against a $33 blended. It stopped finding new people about four days ago. I can cap it and shift the budget to Broad; that needs your approval because it moves money."),
+  Disputes: zaviChat("Disputes · 3 open",
+    "handle the $340 one",
+    "That's the one with 41 hours left. I've pulled the delivery receipt, the chat log, and the signed handover photo. I'll draft the evidence packet for you to look at before anything is submitted to Stripe."),
+  "Your Website": zaviChat("Your Website · /pricing",
+    "why is pricing bouncing at 71%?",
+    "LCP on /pricing is 2.4s and the plan table is below the fold on a laptop. Both are fixable. Want me to open a PR that inlines the table and lazy-loads the hero image?"),
+  Home: zaviChat("nothing in particular",
+    "our checkout is broken",
+    "Looking at it now. Three failed Stripe webhooks in the last hour, all on the same handler. I'll trace it and come back with a cause, not a guess."),
+  Approvals: zaviChat("Approvals · 2 pending",
+    "what's waiting on me?",
+    "Two things. A Meta budget shift ($400/day → Broad), and a PR that changes the pricing page. Neither moves without you."),
+};
+
+const VIEWS = {
+  today: {
+    sum: "The nav is a list of <strong>agents</strong>. The customer must know that <code>performance-marketer</code> is the thing that owns ad spend before they can look at ad spend. The chat is bound to whichever agent they picked.",
+    hint: "Click any agent. Note the left pane is a roster of the other ten — you're navigating a fleet.",
+    nav: [
+      {t:"row", label:"Home"},
+      {t:"head", label:"AGENTS", count:"11"},
+      ...FLEET.map(s => ({t:"agent", label:s})),
+      {t:"rule"},
+      {t:"row", label:"Autopilot"},{t:"row", label:"Approvals"},{t:"row", label:"Brain"},
+      {t:"row", label:"Competitor Intel"},{t:"row", label:"Integration"},
+    ],
+    sel: "performance-marketer",
+    pros: ["Every panel has a home — on its agent.","This is what ships today."],
+    cons: ["You must know which of 11 agents owns the thing you want.",
+           "The chat is that agent, not Zavi. Ask the ads agent about a bug and it can't help.",
+           "This is the confusion."]
+  },
+  v2: {
+    sum: "The nav is a list of <strong>things you run</strong>. Click Ads, you get Ads — no agent in the way. And Zavi is already sitting on the right, <em>with the page as context</em>, so you can just say “why is CPA up?” without explaining what you're looking at. Same Zavi on every surface.",
+    hint: "Click Ads, Disputes, Your Website — watch the right pane. Zavi is always there and always knows which page you're on.",
+    nav: [
+      {t:"row", label:"Home", zavi:true},
+      {t:"rule"},
+      {t:"row", label:"Ads", isNew:true},
+      {t:"row", label:"Disputes", isNew:true, badge:"3"},
+      {t:"row", label:"Your Website", isNew:true},
+      {t:"rule"},
+      {t:"row", label:"Approvals", badge:"2"},{t:"row", label:"Brain"},
+      {t:"row", label:"Competitor Intel"},{t:"row", label:"Integration"},
+    ],
+    sel: "Ads",
+    pros: ["Nav is domains, not agents — nobody learns the org chart.",
+           "Ads and Disputes get real, bookmarkable homes.",
+           "Zavi is context-aware: “why is CPA up?” works without saying <em>where</em>.",
+           "Smallest code change of any option — the split layout already exists in AgentTab.tsx. Delete the roster pane, bind the chat to operator."],
+    cons: ["<strong>“Your Website” is a new surface</strong> — no agent dashboard backs it today. Real build.",
+           "What's the full nav list? Ads / Disputes / Website / … what else?",
+           "Does Zavi's context come from the page, or does the classifier still have to guess? (Page context should win — it's free signal.)",
+           "The other 15 agent dashboards (Engineer, PM, QA, Research…) have no domain door. Do they die, or do they get one?"]
+  }
+};
+
+let cur = "v2", sel = VIEWS.v2.sel;
+
+function stage(view, sel) {
+  if (view === "today") {
+    if (!FLEET.includes(sel))
+      return { cls:"one", head:sel, html:`<div class="pane"><div class="panelabel">${sel}</div><div class="ctx" style="border-color:var(--faint);color:var(--faint)">no Zavi here — this is a static page today</div></div>` };
+    const d = sel === "performance-marketer" ? adsBody
+            : sel === "dispute-response" ? dispBody
+            : `<div class="panelabel">${sel}</div>`;
+    return { cls:"three", head:`${sel} — roster | dashboard | chat`,
+      html:`<div class="pane"><div class="panelabel">Roster</div>${FLEET.map(s=>`<div class="rosterrow ${s===sel?"on":""}">${s}</div>`).join("")}</div>
+            <div class="pane"><div class="panelabel">${sel} · dashboard</div>${d}</div>
+            <div class="pane chat" style="background:var(--chrome)">
+              <div class="panelabel" style="color:var(--faint)">Chat — bound to ${sel}</div>
+              <div class="bubble me">why is CPA up?</div>
+              <div class="bubble ai"><div class="who" style="color:var(--faint)">${sel}</div>Advantage+ Retarget is at $51 CPA.</div>
+              <div class="composer">Ask ${sel}…</div></div>` };
+  }
+  const body = sel === "Ads" ? adsBody
+             : sel === "Disputes" ? dispBody
+             : sel === "Your Website" ? siteBody
+             : sel === "Home" ? `<div class="panelabel">Home</div><div class="cards">
+                  <div class="card"><div class="k">Runs today</div><div class="v">14</div></div>
+                  <div class="card"><div class="k">Needs you</div><div class="v">2</div></div>
+                  <div class="card"><div class="k">Spend · today</div><div class="v">$612</div></div></div>`
+             : `<div class="panelabel">${sel}</div><div class="ctx" style="border-color:var(--faint);color:var(--faint)">${sel} surface</div>`;
+  const chat = CHAT[sel] || zaviChat(sel, "what should I know here?", "Nothing urgent on this surface right now.");
+  return { cls:"split", head:`${sel} — surface | Zavi`,
+    html:`<div class="pane">${body}</div><div class="pane chat">${chat}</div>` };
+}
+
+function render() {
+  const v = VIEWS[cur];
+  document.getElementById("sumText").innerHTML = v.sum;
+  document.getElementById("hint").textContent = v.hint;
+
+  const nav = document.getElementById("nav");
+  nav.innerHTML = v.nav.map(r => {
+    if (r.t === "rule") return `<div class="navrule"></div>`;
+    if (r.t === "head") return `<div class="navhead"><span>${r.label}</span><span>${r.count}</span></div>`;
+    const cls = ["navrow", r.t==="agent"?"indent":"", r.isNew?"is-new":"", r.zavi?"zavi":""].join(" ");
+    const badge = r.badge ? `<span class="badge">${r.badge}</span>` : "";
+    return `<button class="${cls}" data-sel="${r.label}" aria-current="${r.label===sel}"><span class="dot"></span>${r.label}${badge}</button>`;
+  }).join("");
+  nav.querySelectorAll(".navrow").forEach(b =>
+    b.addEventListener("click", () => { sel = b.dataset.sel; render(); }));
+
+  const st = stage(cur, sel);
+  document.getElementById("panehead").textContent = st.head;
+  const panes = document.getElementById("panes");
+  panes.className = "panes " + st.cls;
+  panes.innerHTML = st.html;
+
+  document.getElementById("pros").innerHTML = v.pros.map(p=>`<li>${p}</li>`).join("");
+  document.getElementById("cons").innerHTML = v.cons.map(p=>`<li>${p}</li>`).join("");
+}
+
+document.querySelectorAll(".switch button").forEach(btn =>
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".switch button").forEach(b=>b.setAttribute("aria-selected","false"));
+    btn.setAttribute("aria-selected","true");
+    cur = btn.dataset.opt; sel = VIEWS[cur].sel; render();
+  }));
+
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+name = "${ZAVI_FN_TAIL_WORKER_NAME}"
+main = "src/tail.ts"
+compatibility_date = "2026-09-01"
+workers_dev = false
+
+[vars]
+FN_LOG_INGEST_URL = "${ZAVI_API_ORIGIN}/api/webhooks/site-functions/logs"
+

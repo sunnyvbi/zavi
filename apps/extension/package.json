@@ -1,0 +1,31 @@
+{
+  "name": "@zavi/extension",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Zavi Chrome extension \u2014 a side-panel chat thread about the page you are looking at.",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "build:watch": "node scripts/build.mjs --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "package": "node scripts/build.mjs && node scripts/package.mjs",
+    "e2e:local": "node e2e/run.mjs",
+    "e2e:loop": "node e2e/loop.mjs",
+    "e2e:sites": "node e2e/sites.mjs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.105.4",
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.287",
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.7",
+    "esbuild": "^0.24.0",
+    "jsdom": "^24.1.3",
+    "typescript": "5.5.4",
+    "vitest": "^1.6.0"
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "ts": "2026-06-30T00:36:02.173Z",
+  "mode": "hermetic",
+  "live_case_limit": null,
+  "k_searched": 8,
+  "recall_at": 3,
+  "results": [
+    {
+      "dataset": "longmemeval-oracle",
+      "license": "MIT",
+      "committed": true,
+      "corpus_notes": 126,
+      "conversations": 72,
+      "questions": 72,
+      "recall_at_3": 0.75,
+      "mrr": 0.6561,
+      "by_type": {
+        "knowledge-update": {
+          "n": 12,
+          "recall": 0.8333
+        },
+        "multi-session": {
+          "n": 12,
+          "recall": 0.8333
+        },
+        "single-session-assistant": {
+          "n": 12,
+          "recall": 1
+        },
+        "single-session-preference": {
+          "n": 12,
+          "recall": 0.25
+        },
+        "single-session-user": {
+          "n": 12,
+          "recall": 0.75
+        },
+        "temporal-reasoning": {
+          "n": 12,
+          "recall": 0.8333
+        }
+      },
+      "source_sha256": "821a2034d219ab45846873dd14c14f12cfe7776e73527a483f9dac095d38620c"
+    }
+  ]
+}

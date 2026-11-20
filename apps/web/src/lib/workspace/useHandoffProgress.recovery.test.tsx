@@ -1,0 +1,85 @@
+// @vitest-environment jsdom
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { act, cleanup, renderHook } from "@testing-library/react";
+const api = vi.hoisted(() => vi.fn());
+vi.mock("@/lib/api", () => ({ apiFetch: api }));
+import { useHandoffProgress } from "./useHandoffProgress";
+const running = { run_id: "child", agent_slug: "seo", status: "running", panel: { state: "running" } };
+const done = { ...running, status: "success", panel: { state: "done" } };
+const response = (runs: unknown[]) => ({ ok: true, json: async () => ({ runs }) });
+const advance = async (ms: number) => { await act(async () => { await vi.advanceTimersByTimeAsync(ms); }); };
+describe("handoff progress recovery", () => {
+  beforeEach(() => { vi.useFakeTimers(); api.mockReset(); Object.defineProperty(document, "visibilityState", { configurable: true, value: "visible" }); });
+  afterEach(() => { cleanup(); vi.useRealTimers(); });
+  it("recovers a failed poll after the watch window and stops after completion", async () => {
+    api.mockResolvedValue(response([running]));
+    const { result } = renderHook(() => useHandoffProgress("thread", 1));
+    await advance(46000);
+    api.mockResolvedValueOnce({ ok: false });
+    await advance(2000);
+    expect(result.current[0]?.status).toBe("running");
+    api.mockResolvedValue(response([done]));
+    await advance(4000);
+    expect(result.current[0]?.status).toBe("success");
+    const calls = api.mock.calls.length;
+    await advance(60000);
+    expect(api).toHaveBeenCalledTimes(calls);
+  });
+  it.each(["fetch", "body"])("bounds a hanging %s and ignores its late result", async (where) => {
+    let release!: (value: unknown) => void;
+    const pending = new Promise(resolve => { release = resolve; });
+    api.mockResolvedValue(response([done]));
+    if (where === "fetch") api.mockReturnValueOnce(pending);
+    else api.mockResolvedValueOnce({ ok: true, json: () => pending });
+    const { result } = renderHook(() => useHandoffProgress("thread", 1));
+    await advance(7000);
+    expect(api.mock.calls[0][1].signal.aborted).toBe(true);
+    expect(result.current[0]?.status).toBe("success");
+    await act(async () => { release(where === "fetch" ? response([running]) : { runs: [running] }); });
+    expect(result.current[0]?.status).toBe("success");
+  });
+  it("retries malformed or rejected reads without inventing an empty result", async () => {
+    api.mockResolvedValue(response([running]));
+    const { result } = renderHook(() => useHandoffProgress("thread", 1));
+    await advance(46000);
+    api.mockResolvedValueOnce({ ok: true, json: async () => ({ error: "unavailable" }) });
+    await advance(2000);
+    expect(result.current[0]?.status).toBe("running");
+    api.mockRejectedValueOnce(new Error("offline"));
+    await advance(2000);
+    api.mockResolvedValue(response([done]));
+    await advance(4000);
+    expect(result.current[0]?.status).toBe("success");
+  });
+  it("aborts on thread change and ignores old responses", async () => {
+    let release!: (value: unknown) => void;
+    api.mockReturnValueOnce(new Promise(resolve => { release = resolve; })).mockResolvedValue(response([done]));
+    const { result, rerender, unmount } = renderHook(({ id }) => useHandoffProgress(id, 1), { initialProps: { id: "old" } });
+    await advance(0);
+    rerender({ id: "new" });
+    await advance(0);
+    expect(api.mock.calls[0][1].signal.aborted).toBe(true);
+    await act(async () => { release(response([running])); });
+    expect(result.current[0]?.status).toBe("success");
+    unmount();
+    const calls = api.mock.calls.length;
+    await advance(60000);
+    expect(api).toHaveBeenCalledTimes(calls);
+  });
+  it("backs off failures and resumes one chain when visible", async () => {
+    api.mockRejectedValue(new Error("offline"));
+    const { result } = renderHook(() => useHandoffProgress("thread", 1));
+    await advance(120000);
+    expect(api.mock.calls.length).toBeLessThan(12);
+    Object.defineProperty(document, "visibilityState", { configurable: true, value: "hidden" });
+    await advance(60000);
+    const calls = api.mock.calls.length;
+    await advance(60000);
+    expect(api).toHaveBeenCalledTimes(calls);
+    api.mockResolvedValue(response([done]));
+    Object.defineProperty(document, "visibilityState", { configurable: true, value: "visible" });
+    await act(async () => { document.dispatchEvent(new Event("visibilitychange")); document.dispatchEvent(new Event("visibilitychange")); });
+    expect(api).toHaveBeenCalledTimes(calls + 1);
+    expect(result.current[0]?.status).toBe("success");
+  });
+});

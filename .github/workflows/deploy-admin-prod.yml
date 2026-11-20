@@ -1,0 +1,28 @@
+name: deploy-admin-prod
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deployment-admin-prod
+  cancel-in-progress: false
+
+jobs:
+  deploy-admin:
+    environment: production
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Amplify build (admin main)
+        env:
+          WEBHOOK_URL: ${{ secrets.AMPLIFY_WEBHOOK_ADMIN_MAIN }}
+        run: |
+          if [ -z "$WEBHOOK_URL" ]; then
+            echo "::error::AMPLIFY_WEBHOOK_ADMIN_MAIN secret is not set"
+            exit 1
+          fi
+          curl -fsS -X POST -d '{}' -H 'Content-Type: application/json' "$WEBHOOK_URL"
+          echo
+          echo "Amplify build queued for admin main. Watch it in the Amplify console."

@@ -1,0 +1,17 @@
+name = "${ZAVI_STATIC_WORKER_NAME}"
+main = "src/worker.ts"
+compatibility_date = "2026-09-01"
+workers_dev = false
+
+[[r2_buckets]]
+binding = "SITES"
+bucket_name = "${ZAVI_STATIC_R2_BUCKET}"
+
+[[kv_namespaces]]
+binding = "HOSTS"
+id = "${ZAVI_STATIC_KV_NAMESPACE_ID}"
+
+[vars]
+ZAVI_API = "${ZAVI_API_ORIGIN}"
+PREVIEW_DOMAIN = "${SITE_PREVIEW_DOMAIN}"
+

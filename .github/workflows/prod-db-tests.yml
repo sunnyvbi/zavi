@@ -1,0 +1,30 @@
+
+name: prod-db-tests
+
+on:
+  workflow_call:
+
+jobs:
+  prod-db-tests:
+    environment: production
+    runs-on: ubuntu-latest
+    name: prod-db tests (slack_summary_budget_increment + slack_channels RLS)
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - name: vitest run (prod-gated db suites)
+        working-directory: apps/backend
+        env:
+          RUN_DB_TESTS_AGAINST_PROD: '1'
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          QA_TEST_EMAIL: ${{ secrets.QA_TEST_EMAIL }}
+          QA_TEST_PASSWORD: ${{ secrets.QA_TEST_PASSWORD }}
+          QA_PRIVATE_TEST_PASSWORD: ${{ secrets.QA_PRIVATE_TEST_PASSWORD }}
+          QA_APNA_TEST_PASSWORD: ${{ secrets.QA_APNA_TEST_PASSWORD }}
+        run: npx vitest run src/__tests__/db/

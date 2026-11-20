@@ -1,0 +1,934 @@
+{
+ "$comment": "Flat credit price per job type. ONE place to read and change what a founder pays for each kind of work. Models and effort can change behind the scenes; these prices do not. Rules are checked top to bottom and the FIRST match wins, so specific rules come before general ones. credits = median real cost of successful runs over 30 days x 400 credits per USD, rounded to the nearest 10 (prod 2026-09-10..2026-10-10, test tenants excluded; two independent audits, scratchpad jobs-inventory/auditor-A.md + auditor-B.md). NOT WIRED INTO BILLING YET: today finalize_run_credits still charges real cost. Free runs (no reserve today) stay free by the existing waivers; free: true marks them here for completeness.",
+ "version": 1,
+ "credits_per_usd": 400,
+ "jobs": [
+  {
+   "id": "ads-cron-record",
+   "label": "Ad spend record (no model run)",
+   "credits": 0,
+   "free": true,
+   "match": {
+    "agent": [
+     "meta_ads",
+     "google_ads"
+    ],
+    "trigger": [
+     "cron"
+    ],
+    "payload": {
+     "stage": "cgo_ad_orders"
+    }
+   },
+   "basis": {
+    "median_usd": 0,
+    "runs_30d": 215,
+    "note": "hourly anchor row, no model call"
+   }
+  },
+  {
+   "id": "channel-signup-preview",
+   "label": "Channel preview at signup",
+   "credits": 0,
+   "free": true,
+   "match": {
+    "agent_group": "channels",
+    "trigger": [
+     "channel_recipe"
+    ],
+    "dedupe_key_prefix": "first-run-preview"
+   },
+   "basis": {
+    "median_usd": 0.502,
+    "runs_30d": 440,
+    "note": "free today (no reserve); Zavi pays"
+   }
+  },
+  {
+   "id": "channel-done-for-you",
+   "label": "Free task Zavi does for a Free workspace",
+   "credits": 0,
+   "free": true,
+   "match": {
+    "agent_group": "channels",
+    "trigger": [
+     "channel_recipe"
+    ],
+    "dedupe_key_prefix": "done-for-you"
+   },
+   "basis": {
+    "median_usd": 0,
+    "runs_30d": 0,
+    "note": "new 2026-10-29; free (no reserve); Zavi pays, model spend capped at 1,000 credits a run"
+   }
+  },
+  {
+   "id": "cgo-goal-review-alarm",
+   "label": "Growth review (alarm)",
+   "credits": 450,
+   "match": {
+    "agent": [
+     "cgo"
+    ],
+    "payload": {
+     "stage": "own_goals",
+     "note_kind": "alarm"
+    }
+   },
+   "basis": {
+    "median_usd": 1.124,
+    "p90_usd": 1.943,
+    "runs_30d": 146
+   }
+  },
+  {
+   "id": "cgo-goal-review-scheduled",
+   "label": "Growth check-in (scheduled)",
+   "credits": 220,
+   "match": {
+    "agent": [
+     "cgo"
+    ],
+    "payload": {
+     "stage": "own_goals",
+     "note_kind": "scheduled"
+    }
+   },
+   "basis": {
+    "median_usd": 0.554,
+    "p90_usd": 0.744,
+    "runs_30d": 214,
+    "note": "A 0.530 / B 0.577; first one per tenant is free today"
+   }
+  },
+  {
+   "id": "cgo-goal-review-founder",
+   "label": "Growth review (you asked)",
+   "credits": 240,
+   "match": {
+    "agent": [
+     "cgo"
+    ],
+    "payload": {
+     "stage": "own_goals"
+    }
+   },
+   "basis": {
+    "median_usd": 0.612,
+    "p90_usd": 1.587,
+    "runs_30d": 24,
+    "note": "note_kind founder or anything else (goal-owner.ts maps it to founder)"
+   }
+  },
+  {
+   "id": "cgo-growth-plan-setup",
+   "label": "Growth plan (signup draft)",
+   "credits": 290,
+   "match": {
+    "agent": [
+     "cgo"
+    ],
+    "payload": {
+     "stage": "draft_strategy",
+     "origin": "setup_draft"
+    }
+   },
+   "basis": {
+    "median_usd": 0.734,
+    "runs_30d": 106,
+    "note": "charged then refunded today (setup draft is free to the founder)"
+   }
+  },
+  {
+   "id": "cgo-growth-plan",
+   "label": "Growth plan",
+   "credits": 490,
+   "match": {
+    "agent": [
+     "cgo"
+    ],
+    "payload": {
+     "stage": "draft_strategy"
+    }
+   },
+   "basis": {
+    "median_usd": 1.221,
+    "p90_usd": 2.075,
+    "runs_30d": 133
+   }
+  },
+  {
+   "id": "cgo-chat",
+   "label": "Growth chat",
+   "credits": 260,
+   "match": {
+    "agent": [
+     "cgo"
+    ]
+   },
+   "basis": {
+    "median_usd": 0.653,
+    "p90_usd": 0.919,
+    "runs_30d": 66,
+    "note": "chat, slack, email, handoff"
+   }
+  },
+  {
+   "id": "research-for-growth",
+   "label": "Research (ordered by growth)",
+   "credits": 600,
+   "match": {
+    "agent": [
+     "research"
+    ],
+    "trigger": [
+     "a2a"
+    ]
+   },
+   "basis": {
+    "median_usd": 1.494,
+    "p90_usd": 2.35,
+    "runs_30d": 23
+   }
+  },
+  {
+   "id": "research",
+   "label": "Research",
+   "credits": 300,
+   "match": {
+    "agent": [
+     "research"
+    ]
+   },
+   "basis": {
+    "median_usd": 0.754,
+    "runs_30d": 9,
+    "note": "cron, manual, chat; thin"
+   }
+  },
+  {
+   "id": "build-scaffold",
+   "label": "Build: set up the app",
+   "credits": 1720,
+   "match": {
+    "agent": [
+     "engineer"
+    ],
+    "trigger": [
+     "a2a"
+    ],
+    "payload": {
+     "stage": "scaffold"
+    },
+    "payload_absent": [
+     "repair_mode"
+    ]
+   },
+   "basis": {
+    "median_usd": 4.306,
+    "p90_usd": 6.343,
+    "runs_30d": 53
+   }
+  },
+  {
+   "id": "build-repair",
+   "label": "Build: repair pass",
+   "credits": 490,
+   "match": {
+    "agent": [
+     "engineer"
+    ],
+    "payload": {
+     "repair_mode": "true"
+    }
+   },
+   "basis": {
+    "median_usd": 1.23,
+    "p90_usd": 3.803,
+    "runs_30d": 78
+   }
+  },
+  {
+   "id": "build-refine",
+   "label": "Edit a built site or app",
+   "credits": 370,
+   "match": {
+    "agent": [
+     "engineer"
+    ],
+    "payload": {
+     "stage": "build",
+     "refine_mode": "true"
+    }
+   },
+   "basis": {
+    "median_usd": 0.918,
+    "p90_usd": 2.619,
+    "runs_30d": 34,
+    "note": "free tier: first 2 edits free today"
+   }
+  },
+  {
+   "id": "build-build",
+   "label": "Build: write the code",
+   "credits": 750,
+   "match": {
+    "agent": [
+     "engineer"
+    ],
+    "payload": {
+     "stage": "build"
+    }
+   },
+   "basis": {
+    "median_usd": 1.871,
+    "p90_usd": 5.015,
+    "runs_30d": 90
+   }
+  },
+  {
+   "id": "build-spec",
+   "label": "Build: plan the app",
+   "credits": 270,
+   "match": {
+    "agent": [
+     "pm"
+    ],
+    "trigger": [
+     "a2a"
+    ],
+    "payload": {
+     "stage": "spec"
+    }
+   },
+   "basis": {
+    "median_usd": 0.67,
+    "p90_usd": 1.211,
+    "runs_30d": 63
+   }
+  },
+  {
+   "id": "build-qa",
+   "label": "Build: check the result",
+   "credits": 450,
+   "match": {
+    "agent": [
+     "qa"
+    ],
+    "trigger": [
+     "a2a"
+    ],
+    "payload": {
+     "stage": [
+      "qa",
+      "refine_gate"
+     ]
+    }
+   },
+   "basis": {
+    "median_usd": 1.135,
+    "p90_usd": 1.481,
+    "runs_30d": 23
+   }
+  },
+  {
+   "id": "engineer-chat",
+   "label": "Engineer chat",
+   "credits": 200,
+   "match": {
+    "agent": [
+     "engineer"
+    ],
+    "trigger": [
+     "chat"
+    ]
+   },
+   "basis": {
+    "median_usd": 0.493,
+    "runs_30d": 53,
+    "note": "A 0.559 / B 0.427"
+   }
+  },
+  {
+   "id": "engineer-code-task",
+   "label": "Engineer code change",
+   "credits": 870,
+   "match": {
+    "agent": [
+     "engineer"
+    ]
+   },
+   "basis": {
+    "median_usd": 2.177,
+    "p90_usd": 7.144,
+    "runs_30d": 29,
+    "note": "slack, handoff, a2a outside a build; wide spread"
+   }
+  },
+  {
+   "id": "channel-subtask-growth",
+   "label": "Channel task (asked by growth)",
+   "credits": 190,
+   "match": {
+    "agent_group": "channels",
+    "trigger": [
+     "a2a"
+    ],
+    "payload": {
+     "source_agent_slug": "cgo"
+    }
+   },
+   "basis": {
+    "median_usd": 0.471,
+    "runs_30d": 32
+   }
+  },
+  {
+   "id": "channel-subtask",
+   "label": "Channel task (from chat)",
+   "credits": 100,
+   "match": {
+    "agent_group": "channels",
+    "trigger": [
+     "handoff",
+     "a2a",
+     "chat",
+     "slack",
+     "manual"
+    ]
+   },
+   "basis": {
+    "median_usd": 0.25,
+    "p90_usd": 0.568,
+    "runs_30d": 169,
+    "note": "A 0.233 / B 0.270"
+   }
+  },
+  {
+   "id": "channel-run-reddit_organic",
+   "label": "Reddit run",
+   "credits": 580,
+   "match": {
+    "agent": [
+     "reddit_organic"
+    ],
+    "trigger": [
+     "channel_recipe"
+    ]
+   },
+   "basis": {
+    "median_usd": 1.45,
+    "runs_30d": 36
+   }
+  },
+  {
+   "id": "channel-run-instagram_organic",
+   "label": "Instagram run",
+   "credits": 510,
+   "match": {
+    "agent": [
+     "instagram_organic"
+    ],
+    "trigger": [
+     "channel_recipe"
+    ]
+   },
+   "basis": {
+    "median_usd": 1.281,
+    "runs_30d": 18
+   }
+  },
+  {
+   "id": "channel-run-linkedin_organic",
+   "label": "LinkedIn run",
+   "credits": 510,
+   "match": {
+    "agent": [
+     "linkedin_organic"
+    ],
+    "trigger": [
+     "channel_recipe"
+    ]
+   },
+   "basis": {
+    "median_usd": 1.271,
+    "runs_30d": 16
+   }
+  },
+  {
+   "id": "channel-run-tiktok_organic",
+   "label": "TikTok run",
+   "credits": 510,
+   "match": {
+    "agent": [
+     "tiktok_organic"
+    ],
+    "trigger": [
+     "channel_recipe"
+    ]
+   },
+   "basis": {
+    "median_usd": 1.267,
+    "runs_30d": 11
+   }
+  },
+  {
+   "id": "channel-run-youtube_organic",
+   "label": "YouTube run",
+   "credits": 510,
+   "match": {
+    "agent": [
+     "youtube_organic"
+    ],
+    "trigger": [
+     "channel_recipe"
+    ]
+   },
+   "basis": {
+    "median_usd": 1.272,
+    "runs_30d": 11
+   }
+  },
+  {
+   "id": "channel-run-tiktok_ads",
+   "label": "TikTok ads run",
+   "credits": 480,
+   "match": {
+    "agent": [
+     "tiktok_ads"
+    ],
+    "trigger": [
+     "channel_recipe"
+    ]
+   },
+   "basis": {
+    "median_usd": 1.203,
+    "runs_30d": 13
+   }
+  },
+  {
+   "id": "channel-run-youtube_ads",
+   "label": "YouTube ads run",
+   "credits": 360,
+   "match": {
+    "agent": [
+     "youtube_ads"
+    ],
+    "trigger": [
+     "channel_recipe"
+    ]
+   },
+   "basis": {
+    "median_usd": 0.902,
+    "runs_30d": 12
+   }
+  },
+  {
+   "id": "channel-run-pinterest_organic",
+   "label": "Pinterest run",
+   "credits": 200,
+   "match": {
+    "agent": [
+     "pinterest_organic"
+    ],
+    "trigger": [
+     "channel_recipe"
+    ]
+   },
+   "basis": {
+    "median_usd": 0.508,
+    "runs_30d": 5
+   }
+  },
+  {
+   "id": "channel-run-generated_video",
+   "label": "Video run (plus each video made)",
+   "credits": 200,
+   "match": {
+    "agent": [
+     "generated_video"
+    ],
+    "trigger": [
+     "channel_recipe"
+    ]
+   },
+   "basis": {
+    "median_usd": 0.493,
+    "runs_30d": 3,
+    "note": "media charged separately per item"
+   }
+  },
+  {
+   "id": "channel-run",
+   "label": "Channel run",
+   "credits": 460,
+   "match": {
+    "agent_group": "channels",
+    "trigger": [
+     "channel_recipe"
+    ]
+   },
+   "basis": {
+    "median_usd": 1.15,
+    "p90_usd": 1.583,
+    "runs_30d": 305,
+    "note": "every other channel; medians 0.94-1.61 (seo 1.13, geo 1.15, x_organic 1.12, meta_ads 1.13, google_ads 1.07, reddit_ads 1.11, chatgpt_ads 1.08, linkedin_ads 1.06, ugc 1.09, blog 1.17, sms 0.94, email_marketing 0.97); x_ads 0 runs"
+   }
+  },
+  {
+   "id": "operator-scheduled",
+   "label": "Zavi scheduled task",
+   "credits": 260,
+   "match": {
+    "agent": [
+     "operator"
+    ],
+    "trigger": [
+     "cron"
+    ]
+   },
+   "basis": {
+    "median_usd": 0.651,
+    "runs_30d": 6
+   }
+  },
+  {
+   "id": "operator-chat",
+   "label": "Zavi chat",
+   "credits": 110,
+   "match": {
+    "agent": [
+     "operator"
+    ]
+   },
+   "basis": {
+    "median_usd": 0.276,
+    "p90_usd": 0.673,
+    "runs_30d": 1647,
+    "note": "all chat surfaces; B splits web 0.235 / Slack 0.424 (under 2x, one price)"
+   }
+  },
+  {
+   "id": "custom-agent",
+   "label": "Custom agent run",
+   "credits": 130,
+   "match": {
+    "agent_prefix": "c-"
+   },
+   "basis": {
+    "median_usd": 0.33,
+    "p90_usd": 0.471,
+    "runs_30d": 89
+   }
+  },
+  {
+   "id": "pm",
+   "label": "Product manager",
+   "credits": 220,
+   "match": {
+    "agent": [
+     "pm"
+    ]
+   },
+   "basis": {
+    "median_usd": 0.56,
+    "runs_30d": 14
+   }
+  },
+  {
+   "id": "fundraising",
+   "label": "Fundraising",
+   "credits": 710,
+   "match": {
+    "agent": [
+     "fundraising"
+    ]
+   },
+   "basis": {
+    "median_usd": 1.786,
+    "runs_30d": 11
+   }
+  },
+  {
+   "id": "qa",
+   "label": "QA",
+   "credits": 140,
+   "match": {
+    "agent": [
+     "qa"
+    ]
+   },
+   "basis": {
+    "median_usd": 0.344,
+    "runs_30d": 1,
+    "note": "thin"
+   }
+  },
+  {
+   "id": "chief-of-staff",
+   "label": "Chief of staff",
+   "credits": 170,
+   "match": {
+    "agent": [
+     "chief-of-staff"
+    ]
+   },
+   "basis": {
+    "median_usd": 0.423,
+    "runs_60d": 16,
+    "note": "thin; 60-day median"
+   }
+  },
+  {
+   "id": "advisor",
+   "label": "Advisor",
+   "credits": 110,
+   "match": {
+    "agent": [
+     "advisor"
+    ]
+   },
+   "basis": {
+    "median_usd": 0.273,
+    "runs_60d": 3,
+    "note": "thin"
+   }
+  },
+  {
+   "id": "performance-marketer",
+   "label": "Performance marketer",
+   "credits": 120,
+   "match": {
+    "agent": [
+     "performance-marketer"
+    ]
+   },
+   "basis": {
+    "median_usd": 0.297,
+    "runs_60d": 23
+   }
+  },
+  {
+   "id": "content-design",
+   "label": "Content design",
+   "credits": 630,
+   "match": {
+    "agent": [
+     "content-design"
+    ]
+   },
+   "basis": {
+    "median_usd": 1.587,
+    "runs_30d": 1,
+    "note": "thin"
+   }
+  },
+  {
+   "id": "supply-demand-balancer",
+   "label": "Supply and demand",
+   "credits": 440,
+   "match": {
+    "agent": [
+     "supply-demand-balancer"
+    ]
+   },
+   "basis": {
+    "median_usd": 1.106,
+    "runs_90d": 1,
+    "note": "one run; revisit after more"
+   }
+  },
+  {
+   "id": "dispute-response",
+   "label": "Dispute response",
+   "credits": 120,
+   "match": {
+    "agent": [
+     "dispute-response"
+    ]
+   },
+   "basis": {
+    "median_usd": 0.305,
+    "runs_90d": 82
+   }
+  },
+  {
+   "id": "support-lead",
+   "label": "Support lead",
+   "credits": 460,
+   "match": {
+    "agent": [
+     "support-lead"
+    ]
+   },
+   "basis": {
+    "median_usd": 1.141,
+    "runs_90d": 24
+   }
+  },
+  {
+   "id": "growth-lead",
+   "label": "Growth lead (older agent)",
+   "credits": 330,
+   "match": {
+    "agent": [
+     "growth-lead"
+    ]
+   },
+   "basis": {
+    "median_usd": 0.836,
+    "runs_90d": 193,
+    "note": "no runs in the last 30 days; cgo replaced it"
+   }
+  },
+  {
+   "id": "onboarding-discovery",
+   "label": "Onboarding discovery",
+   "credits": 110,
+   "match": {
+    "agent": [
+     "onboarding-discovery"
+    ]
+   },
+   "basis": {
+    "median_usd": 0.283,
+    "runs_90d": 896,
+    "note": "no runs in the last 30 days; check whether it is free today before wiring"
+   }
+  },
+  {
+   "id": "browser-operator",
+   "label": "Browser operator (retired)",
+   "credits": 120,
+   "match": {
+    "agent": [
+     "browser-operator"
+    ]
+   },
+   "basis": {
+    "median_usd": 0.309,
+    "runs_90d": 1
+   }
+  },
+  {
+   "id": "material-news",
+   "label": "Material news",
+   "credits": 200,
+   "match": {
+    "agent": [
+     "material-news"
+    ]
+   },
+   "basis": {
+    "median_usd": null,
+    "runs_90d": 0,
+    "note": "no prod runs; placeholder"
+   }
+  },
+  {
+   "id": "seo-geo",
+   "label": "SEO and GEO (older agent)",
+   "credits": 200,
+   "match": {
+    "agent": [
+     "seo-geo"
+    ]
+   },
+   "basis": {
+    "median_usd": null,
+    "runs_90d": 0,
+    "note": "no prod runs; placeholder"
+   }
+  },
+  {
+   "id": "social",
+   "label": "Social (older agent)",
+   "credits": 200,
+   "match": {
+    "agent": [
+     "social"
+    ]
+   },
+   "basis": {
+    "median_usd": null,
+    "runs_90d": 0,
+    "note": "no prod runs; placeholder"
+   }
+  }
+ ],
+ "media": [
+  {
+   "id": "media-image",
+   "label": "Image",
+   "credits": 30,
+   "tasks": [
+    "image.photo",
+    "image.plate",
+    "image.hero",
+    "image.text",
+    "image.edit",
+    "image.vector",
+    "image.draft"
+   ],
+   "basis": {
+    "median_usd": 0.068,
+    "items": 25
+   }
+  },
+  {
+   "id": "media-video-cinematic",
+   "label": "Cinematic video clip",
+   "credits": 1510,
+   "tasks": [
+    "video.cinematic",
+    "video.broll",
+    "video.social",
+    "video.animate",
+    "video.edit"
+   ],
+   "basis": {
+    "median_usd": 3.784,
+    "items": 3,
+    "note": "thin; vendor price table is the anchor"
+   }
+  },
+  {
+   "id": "media-video-talking-head",
+   "label": "Talking-head video",
+   "credits": 820,
+   "tasks": [
+    "video.talking_head",
+    "video.talking_head_long"
+   ],
+   "basis": {
+    "median_usd": 2.039,
+    "items": 2
+   }
+  },
+  {
+   "id": "media-video-talking-head-standard",
+   "label": "Talking-head video (standard)",
+   "credits": 410,
+   "tasks": [
+    "video.talking_head_standard"
+   ],
+   "basis": {
+    "median_usd": 1.02,
+    "items": 0,
+    "note": "half of media-video-talking-head; Kling Avatar v2 Standard is $0.0562/s vs Pro $0.115/s (fal, 2026-10-14)"
+   }
+  },
+  {
+   "id": "media-voiceover",
+   "label": "Voiceover",
+   "credits": 10,
+   "tasks": [
+    "audio.voiceover"
+   ],
+   "basis": {
+    "median_usd": 0.02,
+    "items": 2
+   }
+  }
+ ]
+}

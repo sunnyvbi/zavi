@@ -1,0 +1,68 @@
+import { NextResponse } from "next/server";
+import {
+  ADMIN_PAGE,
+  LIMITS,
+  LOGIN_PAGE,
+  clientIp,
+  forbidden,
+  isCrossSiteRequest,
+  isInviteToken,
+  magicLogin,
+  redirectWithError,
+  redirectWithSession,
+  tooManyAttempts,
+} from "@/lib/auth";
+
+export const dynamic = "force-dynamic";
+
+// strict-origin, not no-referrer: under no-referrer the form POST sends Origin: null and
+// isCrossSiteRequest refuses it. strict-origin never sends the path or query (the token).
+const PAGE_HEADERS = {
+  "Content-Type": "text/html; charset=utf-8",
+  "Cache-Control": "no-store",
+  "Referrer-Policy": "strict-origin",
+  "X-Frame-Options": "DENY",
+  "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'",
+};
+
+function escapeHtml(s: string): string {
+  return s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+}
+
+function siteHost(req: Request): string {
+  const host = (req.headers.get("x-forwarded-host") ?? req.headers.get("host") ?? "").split(",")[0].trim();
+  return host.slice(0, 253) || "your site";
+}
+
+export async function GET(req: Request): Promise<NextResponse> {
+  const token = new URL(req.url).searchParams.get("token") ?? "";
+  if (!isInviteToken(token)) return redirectWithError(LOGIN_PAGE, "magic");
+  const site = escapeHtml(siteHost(req));
+  const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><title>Log in to ${site} admin</title></head><body style="font-family:system-ui,sans-serif;display:flex;min-height:100vh;align-items:center;justify-content:center;margin:0"><form method="post" action="/api/auth/magic" style="text-align:center;padding:24px"><h1 style="font-size:20px">Log in to ${site} admin</h1><input type="hidden" name="token" value="${escapeHtml(token)}"><button type="submit" style="font-size:16px;padding:10px 20px;cursor:pointer">Log in to ${site} admin</button></form></body></html>`;
+  return new NextResponse(html, { status: 200, headers: PAGE_HEADERS });
+}
+
+async function readToken(req: Request): Promise<string> {
+  try {
+    const form = await req.formData();
+    return String(form.get("token") ?? "").slice(0, 200);
+  } catch {
+    return "";
+  }
+}
+
+export async function POST(req: Request): Promise<NextResponse> {
+  if (isCrossSiteRequest(req)) return forbidden();
+  if (tooManyAttempts([{ key: `magic:ip:${clientIp(req)}`, limit: LIMITS.ip }])) {
+    return redirectWithError(LOGIN_PAGE, "too_many");
+  }
+  const token = await readToken(req);
+  try {
+    const out = await magicLogin(token);
+    if (!out.ok) return redirectWithError(LOGIN_PAGE, out.error);
+    return redirectWithSession(ADMIN_PAGE, out.session);
+  } catch (e) {
+    console.error("[magic] failed", (e as { code?: string })?.code ?? "unknown");
+    return redirectWithError(LOGIN_PAGE, "server");
+  }
+}

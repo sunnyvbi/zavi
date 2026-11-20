@@ -1,0 +1,548 @@
+{
+  "about": "Round 2 (kernel v2). Each real idea re-expressed as a schemaVersion 2 manifest (sites/NN/zavi-site.json). verdict: pooled = the core user story runs on the pooled backend with every privacy boundary it needs; dedicated = the manifest declares a dedicated capability (payments, compute, interval overlap, ...) so the build must graduate it to a dedicated project; not_expressible = neither. This is EXPRESSIBILITY only. The kill-test bar is >= 18/20 sites WORKING in prod (journeys pass for pooled; dedicated build live and graduated) and every access-rule test enforced. See RUNBOOK.md.",
+  "manifest_validation": "validate-manifests.mjs -> results/manifest-validation.json. Until K3's v2 validator lands, verdicts are 'pending_k3_validator' (real v1 validator on a v1 projection + the kit's contract lint).",
+  "round1_review": "Round 1 rated 16 sites expressible, each with caveats that made them work-but-broken (double booking, unmoderated guestbook, client-side totals, no organisers...). round1_issue_status records, per site, whether v2 fixes each one.",
+  "summary": {
+    "pooled": 18,
+    "dedicated": 2,
+    "not_expressible": 0,
+    "expressible_total": 20,
+    "bar": "18/20 working in prod",
+    "round1_issues": {
+      "fixed": 16,
+      "partial": 1,
+      "not_fixed": 5
+    },
+    "remaining_gaps": [
+      "Group/team membership is not a principal (01).",
+      "Files have no recipient: a counterparty cannot open an attached file (04 CVs).",
+      "Aggregates are admin/role only, so public averages are curated (09).",
+      "Arrays are not indexable (19).",
+      "A unique row blocks its slot even after cancellation unless deleted (02, 20).",
+      "Payments/compute/interval overlap need a dedicated project (07, 15): those two count only if graduation works in prod.",
+      "Aggregate filters are equality-only (no date ranges): month totals need a month key, overdue counts come from a list (18)."
+    ]
+  },
+  "sites": [
+    {
+      "n": "01",
+      "verdict": "pooled",
+      "core": "puzzle catalog (answer read-masked to admin), groups (share link = group id), plays with a cascade from group and a unique (group, puzzle, player) score row.",
+      "v2_features": [
+        "references cascade/nullify",
+        "unique",
+        "aggregates"
+      ],
+      "round1": {
+        "expressible": true,
+        "caveats": [
+          "Any signed-in player can list every play record (scores) of every group: group membership is not a principal. Low sensitivity for a game.",
+          "Online turn-taking is polling; there is no realtime channel.",
+          "Offline 'same device' mode needs no backend."
+        ]
+      },
+      "round1_issue_status": [
+        {
+          "issue": "any signed-in player can list every group's plays",
+          "v2_fixes": false,
+          "why": "group membership is still not a principal; recipient only reaches the group's organizer, not its other players. Low sensitivity for a game; kept as a caveat."
+        },
+        {
+          "issue": "deleting a group left orphan plays",
+          "v2_fixes": true,
+          "why": "plays.group_id references groups on_delete cascade."
+        }
+      ],
+      "caveats": [
+        "Scores of other groups are visible to signed-in players (no group-membership principal).",
+        "Turn-taking is polling, no realtime."
+      ]
+    },
+    {
+      "n": "02",
+      "verdict": "pooled",
+      "core": "services catalog; anonymous bookings with a unique slot_start (one groomer), customer fields read-masked to admin, status as a state machine the admin moves.",
+      "v2_features": [
+        "unique",
+        "states",
+        "references restrict",
+        "aggregates"
+      ],
+      "round1": {
+        "expressible": true,
+        "caveats": [
+          "No unique (slot) constraint: two visitors can book the same slot; the admin resolves it."
+        ]
+      },
+      "round1_issue_status": [
+        {
+          "issue": "two visitors could book the same slot",
+          "v2_fixes": true,
+          "why": "unique [slot_start] (nulls distinct): the second create returns unique_conflict (409)."
+        }
+      ],
+      "caveats": [
+        "A cancelled booking keeps its slot until the admin deletes it (uniqueness is on the row, not on the active state)."
+      ]
+    },
+    {
+      "n": "03",
+      "verdict": "pooled",
+      "core": "anonymous early-access sign-ups with a multi-choice array; admin-only read and a signup count aggregate.",
+      "v2_features": [
+        "aggregates"
+      ],
+      "round1": {
+        "expressible": true
+      },
+      "round1_issue_status": [],
+      "caveats": []
+    },
+    {
+      "n": "04",
+      "verdict": "pooled",
+      "core": "profiles (signed-in directory, admin-only verified flag), jobs posted by role:recruiter with open/closed states, applications addressed to the job's poster (recipient), connection requests and direct messages addressed to a profile's owner (recipient), CV files.",
+      "v2_features": [
+        "roles",
+        "recipient",
+        "states",
+        "references cascade",
+        "aggregates"
+      ],
+      "round1": {
+        "expressible": false,
+        "reasons": [
+          "needs relational (counterparty) access: a recruiter/hospital must read the applications sent to ITS job, but an application is readable only by its creator (owner) or a site-wide principal; 'role:recruiter' would expose every application to every recruiter.",
+          "needs per-pair records: connections and direct messages between two professionals require a record readable by both named users (no participant principal).",
+          "role:recruiter cannot be granted: there is no member-role API except the founder's admin."
+        ]
+      },
+      "round1_issue_status": [
+        {
+          "issue": "a recruiter could not read applications to ITS job",
+          "v2_fixes": true,
+          "why": "applications.recipient = job_id: the job owner (and only it) reads and shortlists/rejects them."
+        },
+        {
+          "issue": "no per-pair records for connections/messages",
+          "v2_fixes": true,
+          "why": "connections and messages reference a profile; recipient = that profile's owner, so exactly the two parties (and admin) read them."
+        },
+        {
+          "issue": "role:recruiter could not be granted",
+          "v2_fixes": true,
+          "why": "members API: the admin invites or set-roles a member to recruiter (manifest role allowlist)."
+        }
+      ],
+      "caveats": [
+        "A recruiter cannot open an applicant's CV FILE (files have no recipient); the applicant pastes the CV into applications.cv_text.",
+        "Hospitals/universities as organisations are modelled as recruiter members, not separate org accounts."
+      ]
+    },
+    {
+      "n": "05",
+      "verdict": "pooled",
+      "core": "menu catalog; anonymous custom-cake orders; admin moves order status through a state machine.",
+      "v2_features": [
+        "states",
+        "aggregates"
+      ],
+      "round1": {
+        "expressible": true
+      },
+      "round1_issue_status": [],
+      "caveats": []
+    },
+    {
+      "n": "06",
+      "verdict": "pooled",
+      "core": "anonymous RSVPs (admin-read, attending-guests sum), public guestbook moderated by state (pending/approved/hidden, only approved readable by visitors), public gallery.",
+      "v2_features": [
+        "states with read",
+        "aggregates"
+      ],
+      "round1": {
+        "expressible": true,
+        "caveats": [
+          "Unapproved guestbook entries are still readable through the API (the UI filters approved=true); a read mask cannot hide whole records."
+        ]
+      },
+      "round1_issue_status": [
+        {
+          "issue": "unapproved guestbook entries were readable through the API",
+          "v2_fixes": true,
+          "why": "states.read: pending and hidden are admin-only; the server filters them out of anonymous list/get."
+        }
+      ],
+      "caveats": []
+    },
+    {
+      "n": "07",
+      "verdict": "dedicated",
+      "core": "car listings, booking requests addressed to the car's host (recipient) with accept/decline, car photos; payments and date blocking go to a dedicated project.",
+      "v2_features": [
+        "recipient",
+        "states",
+        "capabilities"
+      ],
+      "round1": {
+        "expressible": false,
+        "reasons": [
+          "needs relational (counterparty) access: the car's host must see and accept booking requests for their car; a request is readable only by the renter who made it or by the site admin.",
+          "needs transactions across collections / uniqueness: an accepted booking must block the same dates for that car atomically.",
+          "needs server-side payments and payouts (no site compute)."
+        ]
+      },
+      "capabilities": [
+        "payments",
+        "payouts",
+        "interval_overlap"
+      ],
+      "reasons": [
+        "needs payments and payouts (capabilities payments, payouts)",
+        "needs interval-overlap booking (capability interval_overlap)"
+      ],
+      "round1_issue_status": [
+        {
+          "issue": "the host could not see requests for their car",
+          "v2_fixes": true,
+          "why": "booking_requests.recipient = car_id."
+        },
+        {
+          "issue": "an accepted booking must block the dates atomically",
+          "v2_fixes": false,
+          "why": "interval overlap is not a pooled primitive by design: declared capability interval_overlap -> dedicated project."
+        },
+        {
+          "issue": "payments and payouts",
+          "v2_fixes": false,
+          "why": "no site compute in the pooled backend by design: capabilities payments, payouts -> dedicated project."
+        }
+      ],
+      "caveats": [
+        "Counts toward the bar only if the build graduates it to a dedicated project at build time and that site works."
+      ]
+    },
+    {
+      "n": "08",
+      "verdict": "pooled",
+      "core": "anonymous inquiries with a status state machine (admin), public portfolio.",
+      "v2_features": [
+        "states"
+      ],
+      "round1": {
+        "expressible": true
+      },
+      "round1_issue_status": [],
+      "caveats": []
+    },
+    {
+      "n": "09",
+      "verdict": "pooled",
+      "core": "admin movie catalog (date/rating sorts, title prefix), public posters, signed-in reviews that cascade with their movie, admin average-stars aggregate.",
+      "v2_features": [
+        "references cascade",
+        "aggregates"
+      ],
+      "round1": {
+        "expressible": true,
+        "caveats": [
+          "Average star rating per movie is computed client-side (no aggregation) or curated as the catalog's rating field.",
+          "'Watch or stream' is an outbound link; licensed streaming is out of scope for any site backend."
+        ]
+      },
+      "round1_issue_status": [
+        {
+          "issue": "average star rating computed client-side",
+          "v2_fixes": "partial",
+          "why": "aggregate avg_stars works for the admin; aggregate principals may only be admin or roles, so the PUBLIC average still has to be curated into movies.rating by the admin."
+        }
+      ],
+      "caveats": [
+        "Public average rating is curated (aggregate is admin-only by contract).",
+        "Streaming is an outbound link."
+      ]
+    },
+    {
+      "n": "10",
+      "verdict": "pooled",
+      "core": "listings by the founder or role:landlord members (available/let/withdrawn states), anonymous inquiries addressed to the listing's owner (recipient), photos.",
+      "v2_features": [
+        "roles",
+        "recipient",
+        "states",
+        "references cascade"
+      ],
+      "round1": {
+        "expressible": true,
+        "caveats": [
+          "If the founder meant a multi-landlord marketplace it fails like 07 (landlords cannot read inquiries about their homes)."
+        ]
+      },
+      "round1_issue_status": [
+        {
+          "issue": "a multi-landlord site would fail like 07 (landlords cannot read inquiries about their homes)",
+          "v2_fixes": true,
+          "why": "inquiries.recipient = listing_id; landlords are granted via the members API."
+        }
+      ],
+      "caveats": [
+        "Listing photos are writable by any landlord (files have no per-listing owner check beyond owner)."
+      ]
+    },
+    {
+      "n": "11",
+      "verdict": "pooled",
+      "core": "shoe catalog with in_stock and a server-owned rented_count; renting is an action that increments the counter (bounded by in_stock) and creates the rental in one transaction; release is its inverse.",
+      "v2_features": [
+        "actions with inverse",
+        "states",
+        "references restrict",
+        "aggregates"
+      ],
+      "round1": {
+        "expressible": true,
+        "caveats": [
+          "in_stock cannot be decremented atomically on a rental; the admin confirms availability by hand."
+        ]
+      },
+      "round1_issue_status": [
+        {
+          "issue": "in_stock could not be decremented atomically",
+          "v2_fixes": true,
+          "why": "action rent_shoe: counter rented_count bounded by maxField in_stock; the (in_stock+1)th concurrent rent returns action_bound (409)."
+        }
+      ],
+      "caveats": []
+    },
+    {
+      "n": "12",
+      "verdict": "pooled",
+      "core": "members-only runs created by the admin or role:organiser members, per-member RSVPs that cascade with their run, going-count aggregate for organisers.",
+      "v2_features": [
+        "roles",
+        "references cascade",
+        "aggregates"
+      ],
+      "round1": {
+        "expressible": true,
+        "caveats": [
+          "'admins can add and edit runs': only the founder is admin; there is no way to make another member an organiser today."
+        ]
+      },
+      "round1_issue_status": [
+        {
+          "issue": "no way to make another member an organiser",
+          "v2_fixes": true,
+          "why": "roles [organiser] + members set-role."
+        }
+      ],
+      "caveats": []
+    },
+    {
+      "n": "13",
+      "verdict": "pooled",
+      "core": "donor profiles (own + admin), public slots with capacity and a server-owned booked_count, booking a slot is an action (bounded by capacity) that creates the appointment; cancellation is its inverse.",
+      "v2_features": [
+        "actions with inverse",
+        "unique",
+        "states",
+        "references restrict",
+        "aggregates"
+      ],
+      "round1": {
+        "expressible": true,
+        "caveats": [
+          "Slot capacity is not enforced: no count constraint or atomic counter."
+        ]
+      },
+      "round1_issue_status": [
+        {
+          "issue": "slot capacity not enforced",
+          "v2_fixes": true,
+          "why": "action book_slot bounds booked_count by maxField capacity."
+        }
+      ],
+      "caveats": []
+    },
+    {
+      "n": "14",
+      "verdict": "pooled",
+      "core": "private per-member recipes and recipe photos (owner + admin).",
+      "v2_features": [],
+      "round1": {
+        "expressible": true
+      },
+      "round1_issue_status": [],
+      "caveats": []
+    },
+    {
+      "n": "15",
+      "verdict": "dedicated",
+      "core": "marketing waitlist + reports; the product itself (an agent that runs SEO/ads/social) needs compute, schedules and third-party secrets -> dedicated project.",
+      "v2_features": [
+        "capabilities"
+      ],
+      "round1": {
+        "expressible": false,
+        "reasons": [
+          "needs server-side compute: an agent that runs SEO, ads and social work needs scheduled jobs, LLM calls and third-party OAuth/API secrets; the pooled backend stores records and files only. This is a graduation case, not a data-model gap."
+        ]
+      },
+      "capabilities": [
+        "server_compute",
+        "jobs",
+        "secrets"
+      ],
+      "reasons": [
+        "needs server compute, scheduled jobs and third-party secrets"
+      ],
+      "round1_issue_status": [
+        {
+          "issue": "needs server-side compute, jobs and secrets",
+          "v2_fixes": false,
+          "why": "by design: capabilities server_compute, jobs, secrets -> dedicated project at build time."
+        }
+      ],
+      "caveats": [
+        "Counts toward the bar only if the build graduates it and the dedicated site works; the AI agent product itself is beyond any site backend (graduation case)."
+      ]
+    },
+    {
+      "n": "16",
+      "verdict": "pooled",
+      "core": "public events and prayer times (unique day), anonymous contact messages with a new/handled state.",
+      "v2_features": [
+        "unique",
+        "states"
+      ],
+      "round1": {
+        "expressible": true,
+        "caveats": [
+          "Donations go through an external payment link (no site compute)."
+        ]
+      },
+      "round1_issue_status": [],
+      "caveats": [
+        "Donations go through an external payment link."
+      ]
+    },
+    {
+      "n": "17",
+      "verdict": "pooled",
+      "core": "signed-in sellers list phones (available/sold/removed states, phone read-masked to signed-in), buyer-to-seller messages addressed to the listing's owner (recipient), photos, abuse reports with a state.",
+      "v2_features": [
+        "recipient",
+        "states with read",
+        "references cascade"
+      ],
+      "round1": {
+        "expressible": true,
+        "caveats": [
+          "No in-app buyer-to-seller messaging (same counterparty gap as 07/19); buyers contact the seller by phone."
+        ]
+      },
+      "round1_issue_status": [
+        {
+          "issue": "no in-app buyer-to-seller messaging",
+          "v2_fixes": true,
+          "why": "messages.recipient = listing_id."
+        }
+      ],
+      "caveats": []
+    },
+    {
+      "n": "18",
+      "verdict": "pooled",
+      "core": "the freelancer (admin) keeps clients and invoices; invoices reference clients (restrict), unique invoice number, unpaid/paid state; dashboard totals are admin aggregates; overdue = a due_date range list sorted by lateness.",
+      "v2_features": [
+        "references restrict",
+        "unique",
+        "states",
+        "aggregates"
+      ],
+      "round1": {
+        "expressible": true,
+        "caveats": [
+          "Totals outstanding/paid this month are summed client-side.",
+          "No referential integrity: deleting a client leaves its invoices."
+        ]
+      },
+      "round1_issue_status": [
+        {
+          "issue": "totals summed client-side",
+          "v2_fixes": true,
+          "why": "aggregates total_outstanding (sum, status=unpaid) and paid_in_month (sum, status=paid + paid_month='YYYY-MM' set when marking paid). Aggregate filters are equality-only, so 'this month' is a month key, not a date range."
+        },
+        {
+          "issue": "deleting a client left its invoices",
+          "v2_fixes": true,
+          "why": "invoices.client_id references clients on_delete restrict."
+        }
+      ],
+      "caveats": [
+        "Aggregate filters are equality-only: 'paid this month' needs a paid_month key written when the invoice is marked paid, and the overdue COUNT is the length of the overdue list (due_date < today, sorted), not an aggregate."
+      ]
+    },
+    {
+      "n": "19",
+      "verdict": "pooled",
+      "core": "bakers list cakes (filter by city + one occasion), buyers send order requests addressed to the cake's baker (recipient), who accepts or declines through states.",
+      "v2_features": [
+        "recipient",
+        "states",
+        "references restrict"
+      ],
+      "round1": {
+        "expressible": false,
+        "reasons": [
+          "needs relational (counterparty) access: 'bakers see the requests they received and can accept or decline' requires the listing's owner to read and update an order created by a different user.",
+          "role:baker cannot be granted, and a baker role would expose every baker's orders to every baker.",
+          "filter by occasion over a multi-valued field is not indexable (arrays have no index); modelled as one occasion per listing."
+        ]
+      },
+      "round1_issue_status": [
+        {
+          "issue": "bakers could not see the requests they received",
+          "v2_fixes": true,
+          "why": "order_requests.recipient = cake_id; transitions pending->accepted/declined by recipient."
+        },
+        {
+          "issue": "filter by any of several occasions (multi-valued) not indexable",
+          "v2_fixes": false,
+          "why": "arrays still have no index; one occasion per listing."
+        }
+      ],
+      "caveats": [
+        "One occasion per cake listing (arrays are not indexable)."
+      ]
+    },
+    {
+      "n": "20",
+      "verdict": "pooled",
+      "core": "public barbers + services, anonymous appointments unique per (barber, slot), names/phones read-masked to admin, today's list = slot_start range sorted, admin marks done/no-show via states.",
+      "v2_features": [
+        "unique",
+        "states",
+        "references restrict",
+        "aggregates"
+      ],
+      "round1": {
+        "expressible": true,
+        "caveats": [
+          "No unique (barber, slot) constraint: double booking possible."
+        ]
+      },
+      "round1_issue_status": [
+        {
+          "issue": "double booking of a (barber, slot)",
+          "v2_fixes": true,
+          "why": "unique [barber_id, slot_start]."
+        }
+      ],
+      "caveats": [
+        "A cancelled appointment keeps the slot until the admin deletes it."
+      ]
+    }
+  ]
+}

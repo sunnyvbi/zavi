@@ -1,0 +1,1480 @@
+{
+  "captchaResult": "CAPTCHA_NOT_NEEDED",
+  "kind": "pagespeedonline#result",
+  "id": "https://www.upcar.ai/",
+  "loadingExperience": {
+    "id": "https://www.upcar.ai/",
+    "overall_category": "SLOW",
+    "metrics": {
+      "CUMULATIVE_LAYOUT_SHIFT_SCORE": {
+        "percentile": 34,
+        "category": "SLOW"
+      },
+      "EXPERIMENTAL_TIME_TO_FIRST_BYTE": {
+        "percentile": 1686,
+        "category": "AVERAGE"
+      },
+      "FIRST_CONTENTFUL_PAINT_MS": {
+        "percentile": 2663,
+        "category": "AVERAGE"
+      },
+      "INTERACTION_TO_NEXT_PAINT": {
+        "percentile": 389,
+        "category": "AVERAGE"
+      },
+      "LARGEST_CONTENTFUL_PAINT_MS": {
+        "percentile": 3566,
+        "category": "AVERAGE"
+      }
+    }
+  },
+  "lighthouseResult": {
+    "requestedUrl": "https://www.upcar.ai/",
+    "finalUrl": "https://www.upcar.ai/",
+    "finalDisplayedUrl": "https://www.upcar.ai/?deeplink=rental_landing",
+    "lighthouseVersion": "13.4.1",
+    "fetchTime": "2026-09-14T23:38:24.910Z",
+    "categories": {
+      "performance": {
+        "id": "performance",
+        "title": "Performance",
+        "score": 0.42,
+        "auditRefs": [
+          {
+            "id": "first-contentful-paint",
+            "weight": 10,
+            "group": "metrics"
+          },
+          {
+            "id": "largest-contentful-paint",
+            "weight": 25,
+            "group": "metrics"
+          },
+          {
+            "id": "total-blocking-time",
+            "weight": 30,
+            "group": "metrics"
+          },
+          {
+            "id": "cumulative-layout-shift",
+            "weight": 25,
+            "group": "metrics"
+          }
+        ]
+      },
+      "accessibility": {
+        "id": "accessibility",
+        "title": "Accessibility",
+        "score": 0.91,
+        "auditRefs": [
+          {
+            "id": "accesskeys",
+            "weight": 0,
+            "group": "a11y-navigation"
+          },
+          {
+            "id": "aria-allowed-attr",
+            "weight": 10,
+            "group": "a11y-aria"
+          },
+          {
+            "id": "aria-command-name",
+            "weight": 0,
+            "group": "a11y-aria"
+          },
+          {
+            "id": "aria-conditional-attr",
+            "weight": 7,
+            "group": "a11y-aria"
+          }
+        ]
+      },
+      "best-practices": {
+        "id": "best-practices",
+        "title": "Best Practices",
+        "score": 1,
+        "auditRefs": [
+          {
+            "id": "is-on-https",
+            "weight": 5,
+            "group": "best-practices-trust-safety"
+          },
+          {
+            "id": "redirects-http",
+            "weight": 0,
+            "group": "best-practices-trust-safety"
+          },
+          {
+            "id": "geolocation-on-start",
+            "weight": 1,
+            "group": "best-practices-trust-safety"
+          },
+          {
+            "id": "notification-on-start",
+            "weight": 1,
+            "group": "best-practices-trust-safety"
+          }
+        ]
+      },
+      "seo": {
+        "id": "seo",
+        "title": "SEO",
+        "score": 0.92,
+        "auditRefs": [
+          {
+            "id": "is-crawlable",
+            "weight": 4.043478260869565,
+            "group": "seo-crawl"
+          },
+          {
+            "id": "document-title",
+            "weight": 1,
+            "group": "seo-content"
+          },
+          {
+            "id": "meta-description",
+            "weight": 1,
+            "group": "seo-content"
+          },
+          {
+            "id": "http-status-code",
+            "weight": 1,
+            "group": "seo-crawl"
+          }
+        ]
+      }
+    },
+    "audits": {
+      "unused-javascript": {
+        "id": "unused-javascript",
+        "title": "Reduce unused JavaScript",
+        "score": 0.5,
+        "scoreDisplayMode": "metricSavings",
+        "metricSavings": {
+          "LCP": 0,
+          "FCP": 0
+        },
+        "numericValue": 0,
+        "details": {
+          "overallSavingsMs": 0,
+          "overallSavingsBytes": 413973,
+          "items": [
+            {
+              "url": "https://www.googletagmanager.com/gtag/js?id=G-HM2Q35YQZX&cx=c&gtm=4e69b1",
+              "totalBytes": 194661,
+              "wastedBytes": 127498
+            },
+            {
+              "url": "https://www.googletagmanager.com/gtag/js?id=G-HM2Q35YQZX",
+              "totalBytes": 194660,
+              "wastedBytes": 70894
+            },
+            {
+              "url": "https://www.googletagmanager.com/gtm.js?id=GTM-WDKQ4PHR",
+              "totalBytes": 152001,
+              "wastedBytes": 69235
+            },
+            {
+              "url": "https://www.googletagmanager.com/gtag/js?id=AW-17090274121&cx=c&gtm=4e69b1",
+              "totalBytes": 161254,
+              "wastedBytes": 62354
+            },
+            {
+              "url": "https://www.upcar.ai/r-Hg5x3K/static/posthog-recorder.js?v=1.391.9",
+              "totalBytes": 66537,
+              "wastedBytes": 31830,
+              "subItems": {
+                "type": "subitems",
+                "items": [
+                  {},
+                  {},
+                  {},
+                  {},
+                  {}
+                ]
+              }
+            },
+            {
+              "url": "https://www.upcar.ai/_next/static/chunks/cd24890f.33aa14408e335cae.js",
+              "totalBytes": 65412,
+              "wastedBytes": 31650
+            },
+            {
+              "url": "https://www.upcar.ai/_next/static/chunks/app/layout-224757a2029ca44e.js",
+              "totalBytes": 48473,
+              "wastedBytes": 20512
+            }
+          ]
+        }
+      },
+      "unused-css-rules": {
+        "id": "unused-css-rules",
+        "title": "Reduce unused CSS",
+        "score": 0,
+        "scoreDisplayMode": "metricSavings",
+        "metricSavings": {
+          "LCP": 150,
+          "FCP": 250
+        },
+        "numericValue": 150,
+        "details": {
+          "overallSavingsMs": 150,
+          "overallSavingsBytes": 39032,
+          "items": [
+            {
+              "url": "https://www.upcar.ai/_next/static/css/90e93c2cafffa7a4.css",
+              "totalBytes": 41531,
+              "wastedBytes": 39032
+            }
+          ]
+        }
+      },
+      "layout-shifts": {
+        "id": "layout-shifts",
+        "title": "Avoid large layout shifts",
+        "score": 0,
+        "scoreDisplayMode": "metricSavings",
+        "metricSavings": {
+          "CLS": 0.318
+        },
+        "details": {
+          "items": [
+            {
+              "score": 0.3007223963539137,
+              "node": {
+                "type": "node",
+                "selector": "body > div.overflow-visible > div > div.main-container",
+                "nodeLabel": "Available in Orlando\nExplore More\nToyota Corolla 2018\nOrlando, FL • 4 trips\n$50…",
+                "snippet": "<div class=\"main-container !max-w-[1760px] !px-0 md:!px-10 lg:!px-14 flex flex-col gap…\">"
+              }
+            },
+            {
+              "score": 0.01750404899243942,
+              "node": {
+                "type": "node",
+                "selector": "body > div.overflow-visible",
+                "nodeLabel": "Available in Bay Area\nExplore More\nBMW 430i 2018\n5.0\nPleasant Hill, California …",
+                "snippet": "<div class=\"overflow-visible md:overflow-auto pb-8 md:pb-16\" style=\"position: relative;\">"
+              }
+            }
+          ]
+        }
+      },
+      "long-tasks": {
+        "id": "long-tasks",
+        "title": "Avoid long main-thread tasks",
+        "score": 1,
+        "scoreDisplayMode": "informative",
+        "metricSavings": {
+          "TBT": 1150
+        },
+        "details": {
+          "items": [
+            {
+              "url": "https://www.upcar.ai/_next/static/chunks/60286-17829337074827a7.js",
+              "duration": 305
+            },
+            {
+              "url": "https://www.upcar.ai/_next/static/chunks/60286-17829337074827a7.js",
+              "duration": 273
+            },
+            {
+              "url": "https://www.upcar.ai/_next/static/chunks/60286-17829337074827a7.js",
+              "duration": 267.0000000000018
+            },
+            {
+              "url": "https://www.googletagmanager.com/gtag/js?id=AW-17090274121&cx=c&gtm=4e69b1",
+              "duration": 202
+            },
+            {
+              "url": "https://www.googletagmanager.com/gtag/js?id=G-HM2Q35YQZX",
+              "duration": 153
+            },
+            {
+              "url": "https://www.upcar.ai/_next/static/chunks/60286-17829337074827a7.js",
+              "duration": 120
+            },
+            {
+              "url": "https://www.googletagmanager.com/gtag/js?id=G-HM2Q35YQZX",
+              "duration": 104
+            },
+            {
+              "url": "https://www.upcar.ai/_next/static/chunks/60286-17829337074827a7.js",
+              "duration": 101
+            },
+            {
+              "url": "https://www.upcar.ai/_next/static/chunks/60286-17829337074827a7.js",
+              "duration": 97
+            },
+            {
+              "url": "https://www.googletagmanager.com/gtag/js?id=G-HM2Q35YQZX&cx=c&gtm=4e69b1",
+              "duration": 97
+            },
+            {
+              "url": "https://www.upcar.ai/",
+              "duration": 92
+            },
+            {
+              "url": "https://www.upcar.ai/r-Hg5x3K/static/posthog-recorder.js?v=1.391.9",
+              "duration": 88
+            },
+            {
+              "url": "https://www.googletagmanager.com/gtm.js?id=GTM-WDKQ4PHR",
+              "duration": 85
+            },
+            {
+              "url": "https://www.upcar.ai/_next/static/chunks/1dd3208c-71f4ca59e37e6aec.js",
+              "duration": 78
+            },
+            {
+              "url": "https://www.upcar.ai/",
+              "duration": 61
+            }
+          ]
+        }
+      },
+      "mainthread-work-breakdown": {
+        "id": "mainthread-work-breakdown",
+        "title": "Minimize main-thread work",
+        "score": 0,
+        "scoreDisplayMode": "metricSavings",
+        "metricSavings": {
+          "TBT": 1150
+        },
+        "numericValue": 4708.3715999999295,
+        "details": {
+          "items": [
+            {
+              "groupLabel": "Script Evaluation",
+              "duration": 2668.783199999918
+            },
+            {
+              "groupLabel": "Other",
+              "duration": 634.53239999999
+            },
+            {
+              "groupLabel": "Script Parsing & Compilation",
+              "duration": 442.4519999999998
+            },
+            {
+              "groupLabel": "Style & Layout",
+              "duration": 407.5499999999998
+            },
+            {
+              "groupLabel": "Garbage Collection",
+              "duration": 302.1012000000001
+            },
+            {
+              "groupLabel": "Rendering",
+              "duration": 215.32440000002114
+            },
+            {
+              "groupLabel": "Parse HTML & CSS",
+              "duration": 37.62839999999998
+            }
+          ]
+        }
+      },
+      "bootup-time": {
+        "id": "bootup-time",
+        "title": "Reduce JavaScript execution time",
+        "score": 0,
+        "scoreDisplayMode": "metricSavings",
+        "metricSavings": {
+          "TBT": 1100
+        },
+        "numericValue": 2997.4715999999903,
+        "details": {
+          "items": [
+            {
+              "url": "https://www.upcar.ai/_next/static/chunks/60286-17829337074827a7.js",
+              "total": 1275.2255999999975,
+              "scripting": 1005.6683999999974
+            },
+            {
+              "url": "https://www.upcar.ai/",
+              "total": 842.7324000000193,
+              "scripting": 28.423199999999955
+            },
+            {
+              "url": "https://www.upcar.ai/r-Hg5x3K/static/posthog-recorder.js?v=1.391.9",
+              "total": 566.4767999999998,
+              "scripting": 409.04879999999974
+            },
+            {
+              "url": "Unattributable",
+              "total": 565.269599999995,
+              "scripting": 285.49559999999985
+            },
+            {
+              "url": "https://www.upcar.ai/_next/static/chunks/1dd3208c-71f4ca59e37e6aec.js",
+              "total": 356.46479999999355,
+              "scripting": 277.31519999999364
+            },
+            {
+              "url": "https://www.googletagmanager.com/gtag/js?id=G-HM2Q35YQZX",
+              "total": 261.81839999999926,
+              "scripting": 190.95599999999928
+            },
+            {
+              "url": "https://www.upcar.ai/_next/static/chunks/cd24890f.33aa14408e335cae.js",
+              "total": 221.3771999999999,
+              "scripting": 201.4307999999999
+            },
+            {
+              "url": "https://www.googletagmanager.com/gtag/js?id=AW-17090274121&cx=c&gtm=4e69b1",
+              "total": 202.77000000000032,
+              "scripting": 145.4940000000003
+            },
+            {
+              "url": "https://www.googletagmanager.com/gtm.js?id=GTM-WDKQ4PHR",
+              "total": 137.41080000000002,
+              "scripting": 80.73240000000003
+            },
+            {
+              "url": "https://www.googletagmanager.com/gtag/js?id=G-HM2Q35YQZX&cx=c&gtm=4e69b1",
+              "total": 96.54719999999998,
+              "scripting": 18.605999999999995
+            }
+          ]
+        }
+      },
+      "image-delivery-insight": {
+        "id": "image-delivery-insight",
+        "title": "Improve image delivery",
+        "score": 0,
+        "scoreDisplayMode": "metricSavings",
+        "metricSavings": {
+          "LCP": 1100,
+          "FCP": 0
+        },
+        "details": {
+          "items": [
+            {
+              "url": "https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1778922196784-001_2026050507.avif&w=448&q=75",
+              "totalBytes": 150795,
+              "wastedBytes": 128190,
+              "subItems": {
+                "type": "subitems",
+                "items": [
+                  {
+                    "wastedBytes": 128120,
+                    "reason": "This image file is larger than it needs to be (1200x752) for its displayed dimensions (425x319). Use responsive images to reduce the image download size."
+                  }
+                ]
+              }
+            },
+            {
+              "url": "https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1783455154077-HN7mySMESH6hp_lsrHbCIA.avif&w=448&q=75",
+              "totalBytes": 61614,
+              "wastedBytes": 53450,
+              "node": {
+                "type": "node",
+                "selector": "div.relative > a.cursor-pointer > div.relative > img.object-center",
+                "nodeLabel": "Mazda CX-5 2023",
+                "snippet": "<img alt=\"Mazda CX-5 2023\" loading=\"lazy\" decoding=\"async\" data-nimg=\"fill\" class=\"object-center object-cover rounded-t-xl sm:rounded-t-2xl\" sizes=\"(max-width: 767px) 245px, (max-width: 1023px) 33vw, (max-width: 1279px) 25…\" srcset=\"/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1783455154077-HN7m…\" src=\"https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%…\" style=\"position: absolute; height: 100%; width: 100%; inset: 0px;\">"
+              },
+              "subItems": {
+                "type": "subitems",
+                "items": [
+                  {
+                    "wastedBytes": 53450,
+                    "reason": "This image file is larger than it needs to be (1193x745) for its displayed dimensions (443x266). Use responsive images to reduce the image download size."
+                  }
+                ]
+              }
+            },
+            {
+              "url": "https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1782393555644-40BF98FE-917D-4591-8C54-EAD882AB45BC.jpeg&w=448&q=75",
+              "totalBytes": 72165,
+              "wastedBytes": 51253,
+              "node": {
+                "type": "node",
+                "selector": "div.relative > a.cursor-pointer > div.relative > img.object-center",
+                "nodeLabel": "Toyota Corolla 2018",
+                "snippet": "<img alt=\"Toyota Corolla 2018\" decoding=\"async\" data-nimg=\"fill\" class=\"object-center object-cover rounded-t-xl sm:rounded-t-2xl\" sizes=\"(max-width: 767px) 245px, (max-width: 1023px) 33vw, (max-width: 1279px) 25…\" srcset=\"/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1782393555644-40BF…\" src=\"https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%…\" fetchpriority=\"high\" style=\"position: absolute; height: 100%; width: 100%; inset: 0px;\">"
+              },
+              "subItems": {
+                "type": "subitems",
+                "items": [
+                  {
+                    "wastedBytes": 51253,
+                    "reason": "Increasing the image compression factor could improve this image's download size."
+                  }
+                ]
+              }
+            },
+            {
+              "url": "https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1789339843804-D3B463E3-28BC-4406-A9E9-4F455C7F54B9.jpeg&w=448&q=75",
+              "totalBytes": 62060,
+              "wastedBytes": 41148,
+              "node": {
+                "type": "node",
+                "selector": "div.relative > a.cursor-pointer > div.relative > img.object-center",
+                "nodeLabel": "Kia Cadenza 2015",
+                "snippet": "<img alt=\"Kia Cadenza 2015\" loading=\"lazy\" decoding=\"async\" data-nimg=\"fill\" class=\"object-center object-cover rounded-t-xl sm:rounded-t-2xl\" sizes=\"(max-width: 767px) 245px, (max-width: 1023px) 33vw, (max-width: 1279px) 25…\" srcset=\"/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1789339843804-D3B4…\" src=\"https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%…\" style=\"position: absolute; height: 100%; width: 100%; inset: 0px;\">"
+              },
+              "subItems": {
+                "type": "subitems",
+                "items": [
+                  {
+                    "wastedBytes": 41148,
+                    "reason": "Increasing the image compression factor could improve this image's download size."
+                  }
+                ]
+              }
+            },
+            {
+              "url": "https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1775522775382-DSLyqQOtQESHu3CJpvHANg.avif&w=448&q=75",
+              "totalBytes": 37486,
+              "wastedBytes": 30920,
+              "node": {
+                "type": "node",
+                "selector": "div.relative > a.cursor-pointer > div.relative > img.object-center",
+                "nodeLabel": "Toyota RAV4 2025",
+                "snippet": "<img alt=\"Toyota RAV4 2025\" loading=\"lazy\" decoding=\"async\" data-nimg=\"fill\" class=\"object-center object-cover rounded-t-xl sm:rounded-t-2xl\" sizes=\"(max-width: 767px) 245px, (max-width: 1023px) 33vw, (max-width: 1279px) 25…\" srcset=\"/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1775522775382-DSLy…\" src=\"https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%…\" style=\"position: absolute; height: 100%; width: 100%; inset: 0px;\">"
+              },
+              "subItems": {
+                "type": "subitems",
+                "items": [
+                  {
+                    "wastedBytes": 30920,
+                    "reason": "This image file is larger than it needs to be (1037x648) for its displayed dimensions (443x266). Use responsive images to reduce the image download size."
+                  }
+                ]
+              }
+            },
+            {
+              "url": "https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1768613899057-665515EF-711D-4E31-8A1A-F82A73CD2BB7.jpeg&w=448&q=75",
+              "totalBytes": 50969,
+              "wastedBytes": 30081,
+              "node": {
+                "type": "node",
+                "selector": "div.relative > a.cursor-pointer > div.relative > img.object-center",
+                "nodeLabel": "Kia Rio 2016",
+                "snippet": "<img alt=\"Kia Rio 2016\" loading=\"lazy\" decoding=\"async\" data-nimg=\"fill\" class=\"object-center object-cover rounded-t-xl sm:rounded-t-2xl\" sizes=\"(max-width: 767px) 245px, (max-width: 1023px) 33vw, (max-width: 1279px) 25…\" srcset=\"/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1768613899057-6655…\" src=\"https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%…\" style=\"position: absolute; height: 100%; width: 100%; inset: 0px;\">"
+              },
+              "subItems": {
+                "type": "subitems",
+                "items": [
+                  {
+                    "wastedBytes": 30081,
+                    "reason": "Increasing the image compression factor could improve this image's download size."
+                  }
+                ]
+              }
+            },
+            {
+              "url": "https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1775521874797-Y-yvV9PcQ2W5Z8mZiawaUA.avif&w=448&q=75",
+              "totalBytes": 35920,
+              "wastedBytes": 29629,
+              "node": {
+                "type": "node",
+                "selector": "div.relative > a.cursor-pointer > div.relative > img.object-center",
+                "nodeLabel": "Mazda CX-90 2024",
+                "snippet": "<img alt=\"Mazda CX-90 2024\" loading=\"lazy\" decoding=\"async\" data-nimg=\"fill\" class=\"object-center object-cover rounded-t-xl sm:rounded-t-2xl\" sizes=\"(max-width: 767px) 245px, (max-width: 1023px) 33vw, (max-width: 1279px) 25…\" srcset=\"/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1775521874797-Y-yv…\" src=\"https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%…\" style=\"position: absolute; height: 100%; width: 100%; inset: 0px;\">"
+              },
+              "subItems": {
+                "type": "subitems",
+                "items": [
+                  {
+                    "wastedBytes": 29629,
+                    "reason": "This image file is larger than it needs to be (1037x648) for its displayed dimensions (443x266). Use responsive images to reduce the image download size."
+                  }
+                ]
+              }
+            },
+            {
+              "url": "https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1776738691397-1C8572DE-1D20-468F-9203-D754DB86E95E.jpeg&w=448&q=75",
+              "totalBytes": 49701,
+              "wastedBytes": 28789,
+              "node": {
+                "type": "node",
+                "selector": "div.relative > a.cursor-pointer > div.relative > img.object-center",
+                "nodeLabel": "Dodge Challenger 2018",
+                "snippet": "<img alt=\"Dodge Challenger 2018\" loading=\"lazy\" decoding=\"async\" data-nimg=\"fill\" class=\"object-center object-cover rounded-t-xl sm:rounded-t-2xl\" sizes=\"(max-width: 767px) 245px, (max-width: 1023px) 33vw, (max-width: 1279px) 25…\" srcset=\"/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1776738691397-1C85…\" src=\"https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%…\" style=\"position: absolute; height: 100%; width: 100%; inset: 0px;\">"
+              },
+              "subItems": {
+                "type": "subitems",
+                "items": [
+                  {
+                    "wastedBytes": 28789,
+                    "reason": "Increasing the image compression factor could improve this image's download size."
+                  }
+                ]
+              }
+            },
+            {
+              "url": "https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1787085107505-9F21151E-001C-40AD-9472-7A4392A32EE5.jpeg&w=448&q=75",
+              "totalBytes": 47866,
+              "wastedBytes": 26954,
+              "node": {
+                "type": "node",
+                "selector": "div.relative > a.cursor-pointer > div.relative > img.object-center",
+                "nodeLabel": "Chevrolet Trax 2024",
+                "snippet": "<img alt=\"Chevrolet Trax 2024\" loading=\"lazy\" decoding=\"async\" data-nimg=\"fill\" class=\"object-center object-cover rounded-t-xl sm:rounded-t-2xl\" sizes=\"(max-width: 767px) 245px, (max-width: 1023px) 33vw, (max-width: 1279px) 25…\" srcset=\"/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1787085107505-9F21…\" src=\"https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%…\" style=\"position: absolute; height: 100%; width: 100%; inset: 0px;\">"
+              },
+              "subItems": {
+                "type": "subitems",
+                "items": [
+                  {
+                    "wastedBytes": 26954,
+                    "reason": "Increasing the image compression factor could improve this image's download size."
+                  }
+                ]
+              }
+            },
+            {
+              "url": "https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1783984027844-76CB9EC8-2C14-4D3A-AAC2-5AE96EA78989.jpeg&w=448&q=75",
+              "totalBytes": 46123,
+              "wastedBytes": 25211,
+              "node": {
+                "type": "node",
+                "selector": "div.relative > a.cursor-pointer > div.relative > img.object-center",
+                "nodeLabel": "Fiat 500e 2024",
+                "snippet": "<img alt=\"Fiat 500e 2024\" loading=\"lazy\" decoding=\"async\" data-nimg=\"fill\" class=\"object-center object-cover rounded-t-xl sm:rounded-t-2xl\" sizes=\"(max-width: 767px) 245px, (max-width: 1023px) 33vw, (max-width: 1279px) 25…\" srcset=\"/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1783984027844-76CB…\" src=\"https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%…\" style=\"position: absolute; height: 100%; width: 100%; inset: 0px;\">"
+              },
+              "subItems": {
+                "type": "subitems",
+                "items": [
+                  {
+                    "wastedBytes": 25211,
+                    "reason": "Increasing the image compression factor could improve this image's download size."
+                  }
+                ]
+              }
+            },
+            {
+              "url": "https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1787000161658-CE028FC6-F201-4332-93D4-599E849D27CC.jpeg&w=448&q=75",
+              "totalBytes": 43178,
+              "wastedBytes": 22266,
+              "node": {
+                "type": "node",
+                "selector": "div.relative > a.cursor-pointer > div.relative > img.object-center",
+                "nodeLabel": "Hyundai Sonata 2016",
+                "snippet": "<img alt=\"Hyundai Sonata 2016\" loading=\"lazy\" decoding=\"async\" data-nimg=\"fill\" class=\"object-center object-cover rounded-t-xl sm:rounded-t-2xl\" sizes=\"(max-width: 767px) 245px, (max-width: 1023px) 33vw, (max-width: 1279px) 25…\" srcset=\"/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1787000161658-CE02…\" src=\"https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%…\" style=\"position: absolute; height: 100%; width: 100%; inset: 0px;\">"
+              },
+              "subItems": {
+                "type": "subitems",
+                "items": [
+                  {
+                    "wastedBytes": 22266,
+                    "reason": "Increasing the image compression factor could improve this image's download size."
+                  }
+                ]
+              }
+            },
+            {
+              "url": "https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1776702241105-8DA547EE-6BD5-416D-AE15-516E3C6DBC8A.jpeg&w=448&q=75",
+              "totalBytes": 41398,
+              "wastedBytes": 20486,
+              "node": {
+                "type": "node",
+                "selector": "div.relative > a.cursor-pointer > div.relative > img.object-center",
+                "nodeLabel": "Chevrolet Traverse 2018",
+                "snippet": "<img alt=\"Chevrolet Traverse 2018\" loading=\"lazy\" decoding=\"async\" data-nimg=\"fill\" class=\"object-center object-cover rounded-t-xl sm:rounded-t-2xl\" sizes=\"(max-width: 767px) 245px, (max-width: 1023px) 33vw, (max-width: 1279px) 25…\" srcset=\"/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1776702241105-8DA5…\" src=\"https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%…\" style=\"position: absolute; height: 100%; width: 100%; inset: 0px;\">"
+              },
+              "subItems": {
+                "type": "subitems",
+                "items": [
+                  {
+                    "wastedBytes": 20486,
+                    "reason": "Increasing the image compression factor could improve this image's download size."
+                  }
+                ]
+              }
+            },
+            {
+              "url": "https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1775080145490-8EAAFD2F-DF43-4FB6-ADEF-E559A4F8EC74.jpeg&w=448&q=75",
+              "totalBytes": 41103,
+              "wastedBytes": 20191,
+              "node": {
+                "type": "node",
+                "selector": "div.relative > a.cursor-pointer > div.relative > img.object-center",
+                "nodeLabel": "BMW 530i 2020",
+                "snippet": "<img alt=\"BMW 530i 2020\" loading=\"lazy\" decoding=\"async\" data-nimg=\"fill\" class=\"object-center object-cover rounded-t-xl sm:rounded-t-2xl\" sizes=\"(max-width: 767px) 245px, (max-width: 1023px) 33vw, (max-width: 1279px) 25…\" srcset=\"/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1775080145490-8EAA…\" src=\"https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%…\" style=\"position: absolute; height: 100%; width: 100%; inset: 0px;\">"
+              },
+              "subItems": {
+                "type": "subitems",
+                "items": [
+                  {
+                    "wastedBytes": 20191,
+                    "reason": "Increasing the image compression factor could improve this image's download size."
+                  }
+                ]
+              }
+            },
+            {
+              "url": "https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1776974750465-0AD9D185-CABE-42CC-A662-A2E413C0E7BA.jpeg&w=448&q=75",
+              "totalBytes": 39749,
+              "wastedBytes": 18837,
+              "node": {
+                "type": "node",
+                "selector": "div.relative > a.cursor-pointer > div.relative > img.object-center",
+                "nodeLabel": "Mazda CX-90 2024",
+                "snippet": "<img alt=\"Mazda CX-90 2024\" loading=\"lazy\" decoding=\"async\" data-nimg=\"fill\" class=\"object-center object-cover rounded-t-xl sm:rounded-t-2xl\" sizes=\"(max-width: 767px) 245px, (max-width: 1023px) 33vw, (max-width: 1279px) 25…\" srcset=\"/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1776974750465-0AD9…\" src=\"https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%…\" style=\"position: absolute; height: 100%; width: 100%; inset: 0px;\">"
+              },
+              "subItems": {
+                "type": "subitems",
+                "items": [
+                  {
+                    "wastedBytes": 18837,
+                    "reason": "Increasing the image compression factor could improve this image's download size."
+                  }
+                ]
+              }
+            },
+            {
+              "url": "https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1784740161028-BCA509D6-FF5E-4587-A94A-4334BB3E3065.jpeg&w=448&q=75",
+              "totalBytes": 39329,
+              "wastedBytes": 18390,
+              "node": {
+                "type": "node",
+                "selector": "div.relative > a.cursor-pointer > div.relative > img.object-center",
+                "nodeLabel": "Tesla Model Y 2026",
+                "snippet": "<img alt=\"Tesla Model Y 2026\" loading=\"lazy\" decoding=\"async\" data-nimg=\"fill\" class=\"object-center object-cover rounded-t-xl sm:rounded-t-2xl\" sizes=\"(max-width: 767px) 245px, (max-width: 1023px) 33vw, (max-width: 1279px) 25…\" srcset=\"/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1784740161028-BCA5…\" src=\"https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%…\" style=\"position: absolute; height: 100%; width: 100%; inset: 0px;\">"
+              },
+              "subItems": {
+                "type": "subitems",
+                "items": [
+                  {
+                    "wastedBytes": 18390,
+                    "reason": "Increasing the image compression factor could improve this image's download size."
+                  }
+                ]
+              }
+            },
+            {
+              "url": "https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1784407485396-IMG_3733.JPG&w=448&q=75",
+              "totalBytes": 34877,
+              "wastedBytes": 13965,
+              "node": {
+                "type": "node",
+                "selector": "div.relative > a.cursor-pointer > div.relative > img.object-center",
+                "nodeLabel": "Nissan Sentra 2018",
+                "snippet": "<img alt=\"Nissan Sentra 2018\" loading=\"lazy\" decoding=\"async\" data-nimg=\"fill\" class=\"object-center object-cover rounded-t-xl sm:rounded-t-2xl\" sizes=\"(max-width: 767px) 245px, (max-width: 1023px) 33vw, (max-width: 1279px) 25…\" srcset=\"/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1784407485396-IMG_…\" src=\"https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%…\" style=\"position: absolute; height: 100%; width: 100%; inset: 0px;\">"
+              },
+              "subItems": {
+                "type": "subitems",
+                "items": [
+                  {
+                    "wastedBytes": 13965,
+                    "reason": "Increasing the image compression factor could improve this image's download size."
+                  }
+                ]
+              }
+            },
+            {
+              "url": "https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1788217789483-IMG_6416.jpeg&w=448&q=75",
+              "totalBytes": 33237,
+              "wastedBytes": 12325,
+              "node": {
+                "type": "node",
+                "selector": "div.relative > a.cursor-pointer > div.relative > img.object-center",
+                "nodeLabel": "BMW X5 2013",
+                "snippet": "<img alt=\"BMW X5 2013\" loading=\"lazy\" decoding=\"async\" data-nimg=\"fill\" class=\"object-center object-cover rounded-t-xl sm:rounded-t-2xl\" sizes=\"(max-width: 767px) 245px, (max-width: 1023px) 33vw, (max-width: 1279px) 25…\" srcset=\"/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1788217789483-IMG_…\" src=\"https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%…\" style=\"position: absolute; height: 100%; width: 100%; inset: 0px;\">"
+              },
+              "subItems": {
+                "type": "subitems",
+                "items": [
+                  {
+                    "wastedBytes": 12325,
+                    "reason": "Increasing the image compression factor could improve this image's download size."
+                  }
+                ]
+              }
+            },
+            {
+              "url": "https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1785171809163-4AD23D71-480A-4E78-8FC3-33A45CA00DB2.jpeg&w=448&q=75",
+              "totalBytes": 31261,
+              "wastedBytes": 10349,
+              "node": {
+                "type": "node",
+                "selector": "div.relative > a.cursor-pointer > div.relative > img.object-center",
+                "nodeLabel": "Land Rover Range Rover Sport 2019",
+                "snippet": "<img alt=\"Land Rover Range Rover Sport 2019\" loading=\"lazy\" decoding=\"async\" data-nimg=\"fill\" class=\"object-center object-cover rounded-t-xl sm:rounded-t-2xl\" sizes=\"(max-width: 767px) 245px, (max-width: 1023px) 33vw, (max-width: 1279px) 25…\" srcset=\"/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1785171809163-4AD2…\" src=\"https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%…\" style=\"position: absolute; height: 100%; width: 100%; inset: 0px;\">"
+              },
+              "subItems": {
+                "type": "subitems",
+                "items": [
+                  {
+                    "wastedBytes": 10349,
+                    "reason": "Increasing the image compression factor could improve this image's download size."
+                  }
+                ]
+              }
+            },
+            {
+              "url": "https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1776137382488-A9B6E6A5-9444-4371-8883-8F4DBD8D740A.jpeg&w=448&q=75",
+              "totalBytes": 29685,
+              "wastedBytes": 8761,
+              "node": {
+                "type": "node",
+                "selector": "div.relative > a.cursor-pointer > div.relative > img.object-center",
+                "nodeLabel": "Hyundai Sonata 2016",
+                "snippet": "<img alt=\"Hyundai Sonata 2016\" loading=\"lazy\" decoding=\"async\" data-nimg=\"fill\" class=\"object-center object-cover rounded-t-xl sm:rounded-t-2xl\" sizes=\"(max-width: 767px) 245px, (max-width: 1023px) 33vw, (max-width: 1279px) 25…\" srcset=\"/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1776137382488-A9B6…\" src=\"https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%…\" style=\"position: absolute; height: 100%; width: 100%; inset: 0px;\">"
+              },
+              "subItems": {
+                "type": "subitems",
+                "items": [
+                  {
+                    "wastedBytes": 8761,
+                    "reason": "Increasing the image compression factor could improve this image's download size."
+                  }
+                ]
+              }
+            },
+            {
+              "url": "https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1788193018275-9048F99F-83EB-4FA6-82B9-7257C1D2F8AF.jpeg&w=448&q=75",
+              "totalBytes": 29698,
+              "wastedBytes": 8745,
+              "node": {
+                "type": "node",
+                "selector": "div.relative > a.cursor-pointer > div.relative > img.object-center",
+                "nodeLabel": "Jeep Wrangler 2020",
+                "snippet": "<img alt=\"Jeep Wrangler 2020\" loading=\"lazy\" decoding=\"async\" data-nimg=\"fill\" class=\"object-center object-cover rounded-t-xl sm:rounded-t-2xl\" sizes=\"(max-width: 767px) 245px, (max-width: 1023px) 33vw, (max-width: 1279px) 25…\" srcset=\"/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1788193018275-9048…\" src=\"https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%…\" style=\"position: absolute; height: 100%; width: 100%; inset: 0px;\">"
+              },
+              "subItems": {
+                "type": "subitems",
+                "items": [
+                  {
+                    "wastedBytes": 8745,
+                    "reason": "Increasing the image compression factor could improve this image's download size."
+                  }
+                ]
+              }
+            },
+            {
+              "url": "https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1786838031045-IMG_0519.jpeg&w=448&q=75",
+              "totalBytes": 28374,
+              "wastedBytes": 7421,
+              "node": {
+                "type": "node",
+                "selector": "div.relative > a.cursor-pointer > div.relative > img.object-center",
+                "nodeLabel": "Nissan Pathfinder 2020",
+                "snippet": "<img alt=\"Nissan Pathfinder 2020\" loading=\"lazy\" decoding=\"async\" data-nimg=\"fill\" class=\"object-center object-cover rounded-t-xl sm:rounded-t-2xl\" sizes=\"(max-width: 767px) 245px, (max-width: 1023px) 33vw, (max-width: 1279px) 25…\" srcset=\"/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1786838031045-IMG_…\" src=\"https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%…\" style=\"position: absolute; height: 100%; width: 100%; inset: 0px;\">"
+              },
+              "subItems": {
+                "type": "subitems",
+                "items": [
+                  {
+                    "wastedBytes": 7421,
+                    "reason": "Increasing the image compression factor could improve this image's download size."
+                  }
+                ]
+              }
+            },
+            {
+              "url": "https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1784661006300-1.jpeg&w=448&q=75",
+              "totalBytes": 27962,
+              "wastedBytes": 7009,
+              "node": {
+                "type": "node",
+                "selector": "div.relative > a.cursor-pointer > div.relative > img.object-center",
+                "nodeLabel": "Toyota Corolla 2018",
+                "snippet": "<img alt=\"Toyota Corolla 2018\" loading=\"lazy\" decoding=\"async\" data-nimg=\"fill\" class=\"object-center object-cover rounded-t-xl sm:rounded-t-2xl\" sizes=\"(max-width: 767px) 245px, (max-width: 1023px) 33vw, (max-width: 1279px) 25…\" srcset=\"/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1784661006300-1.jp…\" src=\"https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%…\" style=\"position: absolute; height: 100%; width: 100%; inset: 0px;\">"
+              },
+              "subItems": {
+                "type": "subitems",
+                "items": [
+                  {
+                    "wastedBytes": 7009,
+                    "reason": "Increasing the image compression factor could improve this image's download size."
+                  }
+                ]
+              }
+            },
+            {
+              "url": "https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1775499998682-photo_5467669809815746249_y.jpg&w=448&q=75",
+              "totalBytes": 27591,
+              "wastedBytes": 6638,
+              "node": {
+                "type": "node",
+                "selector": "div.relative > a.cursor-pointer > div.relative > img.object-center",
+                "nodeLabel": "BMW Z4 2025",
+                "snippet": "<img alt=\"BMW Z4 2025\" loading=\"lazy\" decoding=\"async\" data-nimg=\"fill\" class=\"object-center object-cover rounded-t-xl sm:rounded-t-2xl\" sizes=\"(max-width: 767px) 245px, (max-width: 1023px) 33vw, (max-width: 1279px) 25…\" srcset=\"/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1775499998682-phot…\" src=\"https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%…\" style=\"position: absolute; height: 100%; width: 100%; inset: 0px;\">"
+              },
+              "subItems": {
+                "type": "subitems",
+                "items": [
+                  {
+                    "wastedBytes": 6638,
+                    "reason": "Increasing the image compression factor could improve this image's download size."
+                  }
+                ]
+              }
+            },
+            {
+              "url": "https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1763635117587-FE0F1E55-7C6D-4A0E-88DD-3C0B469218A8.jpeg&w=448&q=75",
+              "totalBytes": 27381,
+              "wastedBytes": 6428,
+              "subItems": {
+                "type": "subitems",
+                "items": [
+                  {
+                    "wastedBytes": 6428,
+                    "reason": "Increasing the image compression factor could improve this image's download size."
+                  }
+                ]
+              }
+            },
+            {
+              "url": "https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1787788799569-79C1A7AB-3853-4E8D-875E-89A2390D0E36.jpeg&w=448&q=75",
+              "totalBytes": 26464,
+              "wastedBytes": 5511,
+              "node": {
+                "type": "node",
+                "selector": "div.relative > a.cursor-pointer > div.relative > img.object-center",
+                "nodeLabel": "Hyundai Elantra 2024",
+                "snippet": "<img alt=\"Hyundai Elantra 2024\" loading=\"lazy\" decoding=\"async\" data-nimg=\"fill\" class=\"object-center object-cover rounded-t-xl sm:rounded-t-2xl\" sizes=\"(max-width: 767px) 245px, (max-width: 1023px) 33vw, (max-width: 1279px) 25…\" srcset=\"/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1787788799569-79C1…\" src=\"https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%…\" style=\"position: absolute; height: 100%; width: 100%; inset: 0px;\">"
+              },
+              "subItems": {
+                "type": "subitems",
+                "items": [
+                  {
+                    "wastedBytes": 5511,
+                    "reason": "Increasing the image compression factor could improve this image's download size."
+                  }
+                ]
+              }
+            },
+            {
+              "url": "https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1775088220957-1000359991.jpg&w=448&q=75",
+              "totalBytes": 26422,
+              "wastedBytes": 5433,
+              "node": {
+                "type": "node",
+                "selector": "div.relative > a.cursor-pointer > div.relative > img.object-center",
+                "nodeLabel": "Toyota Camry 2023",
+                "snippet": "<img alt=\"Toyota Camry 2023\" loading=\"lazy\" decoding=\"async\" data-nimg=\"fill\" class=\"object-center object-cover rounded-t-xl sm:rounded-t-2xl\" sizes=\"(max-width: 767px) 245px, (max-width: 1023px) 33vw, (max-width: 1279px) 25…\" srcset=\"/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1775088220957-1000…\" src=\"https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%…\" style=\"position: absolute; height: 100%; width: 100%; inset: 0px;\">"
+              },
+              "subItems": {
+                "type": "subitems",
+                "items": [
+                  {
+                    "wastedBytes": 5433,
+                    "reason": "Increasing the image compression factor could improve this image's download size."
+                  }
+                ]
+              }
+            },
+            {
+              "url": "https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1779212212361-1FB9AB9A-3EE7-4628-996E-1B128FA3EB35.jpeg&w=448&q=75",
+              "totalBytes": 26251,
+              "wastedBytes": 5422,
+              "node": {
+                "type": "node",
+                "selector": "div.relative > a.cursor-pointer > div.relative > img.object-center",
+                "nodeLabel": "Hyundai Venue 2024",
+                "snippet": "<img alt=\"Hyundai Venue 2024\" loading=\"lazy\" decoding=\"async\" data-nimg=\"fill\" class=\"object-center object-cover rounded-t-xl sm:rounded-t-2xl\" sizes=\"(max-width: 767px) 245px, (max-width: 1023px) 33vw, (max-width: 1279px) 25…\" srcset=\"/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1779212212361-1FB9…\" src=\"https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%…\" style=\"position: absolute; height: 100%; width: 100%; inset: 0px;\">"
+              },
+              "subItems": {
+                "type": "subitems",
+                "items": [
+                  {
+                    "wastedBytes": 5422,
+                    "reason": "Increasing the image compression factor could improve this image's download size."
+                  }
+                ]
+              }
+            },
+            {
+              "url": "https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1775454002852-B10BDB15-4974-4970-B197-BE42D0DE887B.jpeg&w=448&q=75",
+              "totalBytes": 25898,
+              "wastedBytes": 4945,
+              "node": {
+                "type": "node",
+                "selector": "div.relative > a.cursor-pointer > div.relative > img.object-center",
+                "nodeLabel": "Chevrolet Trailblazer 2025",
+                "snippet": "<img alt=\"Chevrolet Trailblazer 2025\" loading=\"lazy\" decoding=\"async\" data-nimg=\"fill\" class=\"object-center object-cover rounded-t-xl sm:rounded-t-2xl\" sizes=\"(max-width: 767px) 245px, (max-width: 1023px) 33vw, (max-width: 1279px) 25…\" srcset=\"/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1775454002852-B10B…\" src=\"https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%…\" style=\"position: absolute; height: 100%; width: 100%; inset: 0px;\">"
+              },
+              "subItems": {
+                "type": "subitems",
+                "items": [
+                  {
+                    "wastedBytes": 4945,
+                    "reason": "Increasing the image compression factor could improve this image's download size."
+                  }
+                ]
+              }
+            },
+            {
+              "url": "https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1782610345345-24CB9612-A50B-4A62-8C69-DA7EFEFAB128.jpeg&w=448&q=75",
+              "totalBytes": 25671,
+              "wastedBytes": 4759,
+              "node": {
+                "type": "node",
+                "selector": "div.relative > a.cursor-pointer > div.relative > img.object-center",
+                "nodeLabel": "Ford Fiesta 2018",
+                "snippet": "<img alt=\"Ford Fiesta 2018\" loading=\"lazy\" decoding=\"async\" data-nimg=\"fill\" class=\"object-center object-cover rounded-t-xl sm:rounded-t-2xl\" sizes=\"(max-width: 767px) 245px, (max-width: 1023px) 33vw, (max-width: 1279px) 25…\" srcset=\"/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1782610345345-24CB…\" src=\"https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%…\" style=\"position: absolute; height: 100%; width: 100%; inset: 0px;\">"
+              },
+              "subItems": {
+                "type": "subitems",
+                "items": [
+                  {
+                    "wastedBytes": 4759,
+                    "reason": "Increasing the image compression factor could improve this image's download size."
+                  }
+                ]
+              }
+            },
+            {
+              "url": "https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1778789278140-42e0e9b9-e0b9-4759-a611-6882cdf76e30.JPG&w=448&q=75",
+              "totalBytes": 25389,
+              "wastedBytes": 4436,
+              "node": {
+                "type": "node",
+                "selector": "div.relative > a.cursor-pointer > div.relative > img.object-center",
+                "nodeLabel": "Ford Maverick 2024",
+                "snippet": "<img alt=\"Ford Maverick 2024\" loading=\"lazy\" decoding=\"async\" data-nimg=\"fill\" class=\"object-center object-cover rounded-t-xl sm:rounded-t-2xl\" sizes=\"(max-width: 767px) 245px, (max-width: 1023px) 33vw, (max-width: 1279px) 25…\" srcset=\"/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1778789278140-42e0…\" src=\"https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%…\" style=\"position: absolute; height: 100%; width: 100%; inset: 0px;\">"
+              },
+              "subItems": {
+                "type": "subitems",
+                "items": [
+                  {
+                    "wastedBytes": 4436,
+                    "reason": "Increasing the image compression factor could improve this image's download size."
+                  }
+                ]
+              }
+            },
+            {
+              "url": "https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1763408758290-alfa.jpg&w=448&q=75",
+              "totalBytes": 25329,
+              "wastedBytes": 4304,
+              "subItems": {
+                "type": "subitems",
+                "items": [
+                  {
+                    "wastedBytes": 4304,
+                    "reason": "Increasing the image compression factor could improve this image's download size."
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "render-blocking-insight": {
+        "id": "render-blocking-insight",
+        "title": "Render-blocking requests",
+        "score": 0,
+        "scoreDisplayMode": "metricSavings",
+        "metricSavings": {
+          "LCP": 900,
+          "FCP": 900
+        },
+        "details": {
+          "items": [
+            {
+              "url": "https://www.upcar.ai/_next/static/css/90e93c2cafffa7a4.css",
+              "totalBytes": 42080,
+              "wastedMs": 971
+            },
+            {
+              "url": "https://www.upcar.ai/_next/static/css/ff1e1494cc7d6af9.css",
+              "totalBytes": 3942,
+              "wastedMs": 487
+            },
+            {
+              "url": "https://www.upcar.ai/_next/static/css/abd36df2892242bc.css",
+              "totalBytes": 706,
+              "wastedMs": 487
+            },
+            {
+              "url": "https://www.upcar.ai/_next/static/css/542fbefa3ccf1ac7.css",
+              "totalBytes": 3461,
+              "wastedMs": 164
+            }
+          ]
+        }
+      },
+      "cache-insight": {
+        "id": "cache-insight",
+        "title": "Use efficient cache lifetimes",
+        "score": 0,
+        "scoreDisplayMode": "metricSavings",
+        "metricSavings": {
+          "LCP": 800,
+          "FCP": 0
+        },
+        "details": {
+          "items": [
+            {
+              "url": "https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1778922196784-001_2026050507.avif&w=448&q=75",
+              "totalBytes": 151412,
+              "wastedBytes": 151412,
+              "cacheLifetimeMs": 0
+            },
+            {
+              "url": "https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1783455154077-HN7mySMESH6hp_lsrHbCIA.avif&w=448&q=75",
+              "totalBytes": 62231,
+              "wastedBytes": 62231,
+              "cacheLifetimeMs": 0
+            },
+            {
+              "url": "https://www.upcar.ai/assets/img/uppy/uppy-40.webp",
+              "totalBytes": 49829,
+              "wastedBytes": 49794.396527777775,
+              "cacheLifetimeMs": 5000
+            },
+            {
+              "url": "https://www.upcar.ai/r-Hg5x3K/static/posthog-recorder.js?v=1.391.9",
+              "totalBytes": 67389,
+              "wastedBytes": 45824.52,
+              "cacheLifetimeMs": 14400000
+            },
+            {
+              "url": "https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1775522775382-DSLyqQOtQESHu3CJpvHANg.avif&w=448&q=75",
+              "totalBytes": 38103,
+              "wastedBytes": 38103,
+              "cacheLifetimeMs": 0
+            },
+            {
+              "url": "https://www.upcar.ai/_next/image?url=https%3A%2F%2Fimages.upcar.ai%2Fprod%2F1775521874797-Y-yvV9PcQ2W5Z8mZiawaUA.avif&w=448&q=75",
+              "totalBytes": 36537,
+              "wastedBytes": 36537,
+              "cacheLifetimeMs": 0
+            },
+            {
+              "url": "https://www.upcar.ai/r-Hg5x3K/static/exception-autocapture.js?v=1.391.9",
+              "totalBytes": 6878,
+              "wastedBytes": 4677.04,
+              "cacheLifetimeMs": 14400000
+            },
+            {
+              "url": "https://www.upcar.ai/assets/img/upcar.svg",
+              "totalBytes": 3541,
+              "wastedBytes": 3538.540972222222,
+              "cacheLifetimeMs": 5000
+            },
+            {
+              "url": "https://www.upcar.ai/r-Hg5x3K/static/web-vitals.js?v=1.391.9",
+              "totalBytes": 4886,
+              "wastedBytes": 3322.4799999999996,
+              "cacheLifetimeMs": 14400000
+            },
+            {
+              "url": "https://www.upcar.ai/assets/img/header/subscription-tab.svg",
+              "totalBytes": 2585,
+              "wastedBytes": 2583.2048611111113,
+              "cacheLifetimeMs": 5000
+            },
+            {
+              "url": "https://www.upcar.ai/assets/img/header/mobile-logo.svg",
+              "totalBytes": 2484,
+              "wastedBytes": 2482.275,
+              "cacheLifetimeMs": 5000
+            },
+            {
+              "url": "https://www.upcar.ai/assets/img/header/gig-rental-tab.svg",
+              "totalBytes": 2326,
+              "wastedBytes": 2324.384722222222,
+              "cacheLifetimeMs": 5000
+            },
+            {
+              "url": "https://www.upcar.ai/assets/img/header/contact-us.svg",
+              "totalBytes": 2316,
+              "wastedBytes": 2314.391666666667,
+              "cacheLifetimeMs": 5000
+            },
+            {
+              "url": "https://www.upcar.ai/assets/img/header/aboutus.svg",
+              "totalBytes": 2082,
+              "wastedBytes": 2080.554166666667,
+              "cacheLifetimeMs": 5000
+            },
+            {
+              "url": "https://www.upcar.ai/assets/img/header/rental-tab.svg",
+              "totalBytes": 2046,
+              "wastedBytes": 2044.5791666666667,
+              "cacheLifetimeMs": 5000
+            },
+            {
+              "url": "https://www.upcar.ai/assets/img/home/list-car.svg",
+              "totalBytes": 1954,
+              "wastedBytes": 1952.6430555555555,
+              "cacheLifetimeMs": 5000
+            },
+            {
+              "url": "https://www.upcar.ai/assets/img/header/customer-support.svg",
+              "totalBytes": 1705,
+              "wastedBytes": 1703.8159722222222,
+              "cacheLifetimeMs": 5000
+            },
+            {
+              "url": "https://www.upcar.ai/assets/img/header/claims.svg",
+              "totalBytes": 1527,
+              "wastedBytes": 1525.9395833333333,
+              "cacheLifetimeMs": 5000
+            },
+            {
+              "url": "https://www.upcar.ai/assets/img/home/location.svg",
+              "totalBytes": 1482,
+              "wastedBytes": 1480.9708333333333,
+              "cacheLifetimeMs": 5000
+            },
+            {
+              "url": "https://www.upcar.ai/assets/img/header/terms.svg",
+              "totalBytes": 1475,
+              "wastedBytes": 1473.9756944444443,
+              "cacheLifetimeMs": 5000
+            },
+            {
+              "url": "https://www.upcar.ai/r-Hg5x3K/array/phc_vhkigSWkWxNeDivk3Hmwn6Tpo72eEECj53ZRmZUrYqbf/config.js",
+              "totalBytes": 1232,
+              "wastedBytes": 1180.6666666666667,
+              "cacheLifetimeMs": 300000
+            },
+            {
+              "url": "https://www.upcar.ai/assets/img/header/x-icon.svg",
+              "totalBytes": 1172,
+              "wastedBytes": 1171.1861111111111,
+              "cacheLifetimeMs": 5000
+            },
+            {
+              "url": "https://www.upcar.ai/assets/img/home/search2.svg",
+              "totalBytes": 1108,
+              "wastedBytes": 1107.2305555555556,
+              "cacheLifetimeMs": 5000
+            },
+            {
+              "url": "https://www.upcar.ai/assets/img/home/Star.svg",
+              "totalBytes": 768,
+              "wastedBytes": 767.4666666666667,
+              "cacheLifetimeMs": 5000
+            }
+          ]
+        }
+      },
+      "duplicated-javascript-insight": {
+        "id": "duplicated-javascript-insight",
+        "title": "Duplicated JavaScript",
+        "score": 0.5,
+        "scoreDisplayMode": "metricSavings",
+        "metricSavings": {
+          "LCP": 0,
+          "FCP": 0
+        },
+        "details": {
+          "items": [
+            {
+              "wastedBytes": 1104,
+              "subItems": {
+                "type": "subitems",
+                "items": [
+                  {},
+                  {}
+                ]
+              }
+            },
+            {
+              "wastedBytes": 847,
+              "subItems": {
+                "type": "subitems",
+                "items": [
+                  {},
+                  {}
+                ]
+              }
+            },
+            {
+              "wastedBytes": 821,
+              "subItems": {
+                "type": "subitems",
+                "items": [
+                  {},
+                  {}
+                ]
+              }
+            },
+            {
+              "wastedBytes": 532,
+              "subItems": {
+                "type": "subitems",
+                "items": [
+                  {},
+                  {}
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "legacy-javascript-insight": {
+        "id": "legacy-javascript-insight",
+        "title": "Legacy JavaScript",
+        "score": 0.5,
+        "scoreDisplayMode": "metricSavings",
+        "metricSavings": {
+          "LCP": 0,
+          "FCP": 0
+        },
+        "details": {
+          "items": [
+            {
+              "url": "https://www.upcar.ai/r-Hg5x3K/static/web-vitals.js?v=1.391.9",
+              "wastedBytes": 13314,
+              "subItems": {
+                "type": "subitems",
+                "items": [
+                  {}
+                ]
+              }
+            },
+            {
+              "url": "https://www.upcar.ai/_next/static/chunks/60286-17829337074827a7.js",
+              "wastedBytes": 10983,
+              "subItems": {
+                "type": "subitems",
+                "items": [
+                  {},
+                  {},
+                  {},
+                  {},
+                  {},
+                  {},
+                  {}
+                ]
+              }
+            },
+            {
+              "url": "https://www.upcar.ai/r-Hg5x3K/static/posthog-recorder.js?v=1.391.9",
+              "wastedBytes": 10903,
+              "subItems": {
+                "type": "subitems",
+                "items": [
+                  {},
+                  {}
+                ]
+              }
+            },
+            {
+              "url": "https://www.upcar.ai/_next/static/chunks/cd24890f.33aa14408e335cae.js",
+              "wastedBytes": 8134,
+              "subItems": {
+                "type": "subitems",
+                "items": [
+                  {}
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "server-response-time": {
+        "id": "server-response-time",
+        "title": "Initial server response time was short",
+        "score": 1,
+        "scoreDisplayMode": "metricSavings",
+        "metricSavings": {
+          "LCP": 0,
+          "FCP": 0
+        },
+        "numericValue": 23,
+        "details": {
+          "overallSavingsMs": 0,
+          "items": [
+            {
+              "url": "https://www.upcar.ai/",
+              "responseTime": 23
+            }
+          ]
+        }
+      },
+      "font-display-insight": {
+        "id": "font-display-insight",
+        "title": "Font display",
+        "score": 1,
+        "scoreDisplayMode": "metricSavings",
+        "metricSavings": {
+          "INP": 0
+        },
+        "details": {
+          "items": []
+        }
+      },
+      "aria-meter-name": {
+        "id": "aria-meter-name",
+        "title": "ARIA `meter` elements have accessible names",
+        "score": null,
+        "scoreDisplayMode": "notApplicable"
+      },
+      "custom-controls-roles": {
+        "id": "custom-controls-roles",
+        "title": "Custom controls have ARIA roles",
+        "score": null,
+        "scoreDisplayMode": "manual"
+      },
+      "is-crawlable": {
+        "id": "is-crawlable",
+        "title": "Page isn’t blocked from indexing",
+        "score": 1,
+        "scoreDisplayMode": "binary",
+        "details": {
+          "items": []
+        }
+      },
+      "redirects": {
+        "id": "redirects",
+        "title": "Avoid multiple page redirects",
+        "score": 1,
+        "scoreDisplayMode": "metricSavings",
+        "metricSavings": {
+          "LCP": 0,
+          "FCP": 0
+        },
+        "numericValue": 0,
+        "details": {
+          "overallSavingsMs": 0,
+          "items": []
+        }
+      },
+      "interactive": {
+        "id": "interactive",
+        "title": "Time to Interactive",
+        "score": 0.07,
+        "scoreDisplayMode": "numeric",
+        "numericValue": 15200.724381020722
+      },
+      "resource-summary": {
+        "id": "resource-summary",
+        "title": "Resources Summary",
+        "score": 1,
+        "scoreDisplayMode": "informative",
+        "details": {
+          "items": [
+            {
+              "transferSize": 4115098
+            },
+            {
+              "transferSize": 2645932
+            },
+            {
+              "transferSize": 1202310
+            },
+            {
+              "transferSize": 100932
+            },
+            {
+              "transferSize": 87993
+            },
+            {
+              "transferSize": 50189
+            },
+            {
+              "transferSize": 27742
+            },
+            {
+              "transferSize": 0
+            },
+            {
+              "transferSize": 718350
+            }
+          ]
+        }
+      }
+    }
+  },
+  "analysisUTCTimestamp": "2026-09-14T23:38:24.910Z"
+}

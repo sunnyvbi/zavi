@@ -1,0 +1,794 @@
+{
+ "generated_from": {
+  "migrations": [
+   "0001_core.sql",
+   "0002_api.sql",
+   "0003_storage.sql",
+   "0004_membership_slots_perf.sql",
+   "0005_contracts_archive_reindex.sql",
+   "0006_contract_v2.sql",
+   "0007_relational_slots_rls.sql",
+   "0008_relational_api.sql"
+  ],
+  "sha256": "36372f25557c899f92118589e74a24a05f559511bbe30fed1ccec8d4abbb52ac"
+ },
+ "steps": [
+  {
+   "ok": true,
+   "value": {
+    "ref": "#0",
+    "replayed": false
+   }
+  },
+  {
+   "ok": false,
+   "code": "not_allowed",
+   "reason": "field_not_writable: status"
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#2",
+    "replayed": false
+   }
+  },
+  {
+   "ok": true,
+   "value": null
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [],
+    "has_next": false
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#0",
+    "data": {
+     "title": "Kayak",
+     "status": "draft"
+    },
+    "mine": true
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [
+     {
+      "ref": "#2",
+      "data": {
+       "title": "Honest",
+       "status": "draft"
+      },
+      "mine": true
+     },
+     {
+      "ref": "#0",
+      "data": {
+       "title": "Kayak",
+       "status": "draft"
+      },
+      "mine": true
+     }
+    ],
+    "has_next": false
+   }
+  },
+  {
+   "ok": false,
+   "code": "conflict",
+   "reason": "transition_conflict"
+  },
+  {
+   "ok": false,
+   "code": "not_found",
+   "reason": "not_found"
+  },
+  {
+   "ok": false,
+   "code": "not_found",
+   "reason": "not_found"
+  },
+  {
+   "ok": false,
+   "code": "not_found",
+   "reason": "not_found"
+  },
+  {
+   "ok": false,
+   "code": "not_found",
+   "reason": "not_found"
+  },
+  {
+   "ok": false,
+   "code": "not_found",
+   "reason": "not_found"
+  },
+  {
+   "ok": false,
+   "code": "not_found",
+   "reason": "not_found"
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#0",
+    "from": "draft",
+    "to": "published",
+    "transitioned": true
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#0",
+    "from": "published",
+    "to": "published",
+    "transitioned": false
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#0",
+    "data": {
+     "title": "Kayak",
+     "status": "published"
+    },
+    "mine": false
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [
+     {
+      "ref": "#0",
+      "data": {
+       "title": "Kayak",
+       "status": "published"
+      },
+      "mine": false
+     }
+    ],
+    "has_next": false
+   }
+  },
+  {
+   "ok": false,
+   "code": "not_found",
+   "reason": "not_found"
+  },
+  {
+   "ok": false,
+   "code": "not_allowed",
+   "reason": "field_not_writable: status"
+  },
+  {
+   "ok": false,
+   "code": "not_allowed",
+   "reason": "field_not_writable: status"
+  },
+  {
+   "ok": true,
+   "value": {
+    "updated": true
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#22",
+    "replayed": false
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#22",
+    "from": "draft",
+    "to": "published",
+    "transitioned": true
+   }
+  },
+  {
+   "ok": false,
+   "code": "not_allowed",
+   "reason": "rls"
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "idempotency_key_required"
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#26",
+    "replayed": false
+   }
+  },
+  {
+   "ok": false,
+   "code": "conflict",
+   "reason": "unique_conflict"
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#28",
+    "replayed": false
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#29",
+    "replayed": false
+   }
+  },
+  {
+   "ok": false,
+   "code": "conflict",
+   "reason": "unique_conflict"
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#31",
+    "replayed": false
+   }
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "invalid_reference"
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "invalid_reference"
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "invalid_reference"
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "invalid_reference"
+  },
+  {
+   "ok": false,
+   "code": "not_allowed",
+   "reason": "field_not_writable: status"
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "schema_violation: listing_id is required"
+  },
+  {
+   "ok": false,
+   "code": "not_allowed",
+   "reason": "rls"
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#31",
+    "data": {
+     "status": "pending",
+     "message": "Saturday?",
+     "listing_id": "#0"
+    },
+    "mine": false
+   }
+  },
+  {
+   "ok": true,
+   "value": null
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [
+     {
+      "ref": "#31",
+      "data": {
+       "status": "pending",
+       "message": "Saturday?",
+       "listing_id": "#0"
+      },
+      "mine": false
+     }
+    ],
+    "has_next": false
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [],
+    "has_next": false
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [
+     {
+      "ref": "#31",
+      "data": {
+       "status": "pending",
+       "message": "Saturday?",
+       "listing_id": "#0"
+      },
+      "mine": true
+     }
+    ],
+    "has_next": false
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [
+     {
+      "ref": "#31",
+      "data": {
+       "status": "pending",
+       "message": "Saturday?",
+       "listing_id": "#0"
+      },
+      "mine": false
+     }
+    ],
+    "has_next": false
+   }
+  },
+  {
+   "ok": false,
+   "code": "not_found",
+   "reason": "not_found"
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#31",
+    "from": "pending",
+    "to": "accepted",
+    "transitioned": true
+   }
+  },
+  {
+   "ok": false,
+   "code": "conflict",
+   "reason": "transition_conflict"
+  },
+  {
+   "ok": false,
+   "code": "not_allowed",
+   "reason": "field_not_writable: listing_id"
+  },
+  {
+   "ok": true,
+   "value": {
+    "updated": true
+   }
+  },
+  {
+   "ok": false,
+   "code": "not_found",
+   "reason": "not_found"
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#31",
+    "data": {
+     "status": "accepted",
+     "message": "Sunday then",
+     "listing_id": "#0"
+    },
+    "mine": false
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#52",
+    "replayed": false
+   }
+  },
+  {
+   "ok": false,
+   "code": "not_found",
+   "reason": "not_found"
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#52",
+    "from": "pending",
+    "to": "cancelled",
+    "transitioned": true
+   }
+  },
+  {
+   "ok": false,
+   "code": "not_found",
+   "reason": "not_found"
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#56",
+    "replayed": false
+   }
+  },
+  {
+   "ok": false,
+   "code": "conflict",
+   "reason": "unique_conflict"
+  },
+  {
+   "ok": false,
+   "code": "not_allowed",
+   "reason": "field_not_writable: booked_count"
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#59",
+    "replayed": false
+   }
+  },
+  {
+   "ok": false,
+   "code": "not_allowed",
+   "reason": "rls"
+  },
+  {
+   "ok": true,
+   "value": {
+    "action": "reserve_slot",
+    "target": "#56",
+    "record": "#61",
+    "counter": 1,
+    "replayed": false
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "action": "reserve_slot",
+    "target": "#56",
+    "record": "#61",
+    "counter": 1,
+    "replayed": true
+   }
+  },
+  {
+   "ok": false,
+   "code": "conflict",
+   "reason": "idempotency_conflict"
+  },
+  {
+   "ok": false,
+   "code": "conflict",
+   "reason": "idempotency_conflict"
+  },
+  {
+   "ok": false,
+   "code": "not_allowed",
+   "reason": "action_not_allowed"
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "invalid_idempotency_key"
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "idempotency_key_required"
+  },
+  {
+   "ok": false,
+   "code": "not_allowed",
+   "reason": "action_not_allowed"
+  },
+  {
+   "ok": false,
+   "code": "not_found",
+   "reason": "not_found"
+  },
+  {
+   "ok": false,
+   "code": "not_found",
+   "reason": "not_found"
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "invalid_action_input"
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "invalid_action_input"
+  },
+  {
+   "ok": false,
+   "code": "not_allowed",
+   "reason": "field_not_writable: status"
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "invalid_action_input"
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "schema_violation: unknown field extra"
+  },
+  {
+   "ok": true,
+   "value": {
+    "action": "reserve_slot",
+    "target": "#56",
+    "record": "#76",
+    "counter": 2,
+    "replayed": false
+   }
+  },
+  {
+   "ok": false,
+   "code": "conflict",
+   "reason": "action_bound"
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#56",
+    "data": {
+     "capacity": 2,
+     "starts_at": "2026-10-03T09:00:00Z",
+     "listing_id": "#0",
+     "booked_count": 2
+    },
+    "mine": false
+   }
+  },
+  {
+   "ok": false,
+   "code": "not_allowed",
+   "reason": "field_not_writable: booked_count"
+  },
+  {
+   "ok": false,
+   "code": "conflict",
+   "reason": "action_bound"
+  },
+  {
+   "ok": true,
+   "value": {
+    "updated": true
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [
+     {
+      "ref": "#61",
+      "data": {
+       "note": "two adults",
+       "status": "booked",
+       "slot_id": "#56"
+      },
+      "mine": true
+     }
+    ],
+    "has_next": false
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [],
+    "has_next": false
+   }
+  },
+  {
+   "ok": false,
+   "code": "not_found",
+   "reason": "not_found"
+  },
+  {
+   "ok": true,
+   "value": {
+    "action": "cancel_slot",
+    "target": "#56",
+    "record": "#61",
+    "counter": 1,
+    "replayed": false
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "action": "cancel_slot",
+    "target": "#56",
+    "record": "#61",
+    "counter": 1,
+    "replayed": true
+   }
+  },
+  {
+   "ok": false,
+   "code": "conflict",
+   "reason": "transition_conflict"
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#61",
+    "data": {
+     "note": "two adults",
+     "status": "cancelled",
+     "slot_id": "#56"
+    },
+    "mine": true
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#56",
+    "data": {
+     "capacity": 5,
+     "starts_at": "2026-10-03T09:00:00Z",
+     "listing_id": "#0",
+     "booked_count": 1
+    },
+    "mine": false
+   }
+  },
+  {
+   "ok": false,
+   "code": "not_allowed",
+   "reason": "aggregate_not_allowed"
+  },
+  {
+   "ok": false,
+   "code": "not_allowed",
+   "reason": "aggregate_not_allowed"
+  },
+  {
+   "ok": false,
+   "code": "not_allowed",
+   "reason": "aggregate_not_allowed"
+  },
+  {
+   "ok": true,
+   "value": {
+    "value": 2
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "value": 1
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "value": 1
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "value": 0
+   }
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "invalid_filter"
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "invalid_filter"
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "filter_not_allowed"
+  },
+  {
+   "ok": false,
+   "code": "conflict",
+   "reason": "reference_restricted"
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#101",
+    "replayed": false
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#102",
+    "replayed": false
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#103",
+    "replayed": false
+   }
+  },
+  {
+   "ok": false,
+   "code": "validation",
+   "reason": "invalid_reference"
+  },
+  {
+   "ok": true,
+   "value": {
+    "deleted": true
+   }
+  },
+  {
+   "ok": true,
+   "value": null
+  },
+  {
+   "ok": true,
+   "value": {
+    "deleted": true
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "ref": "#103",
+    "data": {
+     "text": "parking",
+     "slot_id": "#59"
+    },
+    "mine": true
+   }
+  },
+  {
+   "ok": true,
+   "value": {
+    "items": [
+     {
+      "ref": "#103",
+      "data": {
+       "text": "parking",
+       "slot_id": "#59"
+      },
+      "mine": false
+     }
+    ],
+    "has_next": false
+   }
+  }
+ ]
+}

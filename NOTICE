@@ -1,0 +1,60 @@
+Zavi (praxis)
+Copyright (c) Zavi
+
+This product includes software derived from third-party open-source projects.
+
+-------------------------------------------------------------------------------
+adport
+https://github.com/ynnickw/adport
+Copyright (c) adport contributors
+Licensed under the Apache License, Version 2.0.
+
+Portions of the Reddit Ads connector
+(apps/backend/src/services/connectors/reddit-ads/) are derived from adport's
+`packages/reddit` provider — specifically the Reddit Ads API v3 endpoint shapes,
+the `{ data, pagination }` response envelope, and the exact-`next_url`
+pagination contract.
+
+MODIFICATIONS: rewritten for multi-tenant use. Tokens are resolved per tenant
+through Zavi's Vault-backed getConnectorToken (with single-flight refresh)
+rather than adport's local file-backed credential store and in-client refresh
+loop; the write/mutation surface and the local policy engine were not ported;
+an off-host pagination guard was added; errors were converted to Zavi's
+ExpectedToolError contract.
+
+Portions of the TikTok Ads connector
+(apps/backend/src/services/connectors/tiktok-ads/) are derived from adport's
+`packages/tiktok` provider — the Business API v1.3 endpoint shapes and field
+names, and the three transport quirks (mandatory trailing slash, business
+errors returned as HTTP 200 with a non-zero envelope `code`, JSON-encoded array
+query params).
+
+MODIFICATIONS: rewritten for multi-tenant use, per-tenant Vault-backed tokens.
+The OAuth flow is NOT derived from adport, which has no OAuth implementation
+(its CLI has the operator paste a portal-minted token); oauth.ts is first-party,
+written against TikTok's published docs. The write/mutation surface was not
+ported.
+
+Portions of seven further ads connectors (2026-09-05) are derived from adport's
+provider packages — endpoint paths, response envelopes, pagination contracts and
+field names only:
+  linkedin-ads/   ← packages/linkedin  (incl. the Rest.li encoder `restli()`)
+  snapchat-ads/   ← packages/snapchat  (request_status / sub_request_status envelope)
+  spotify-ads/    ← packages/spotify
+  pinterest-ads/  ← packages/pinterest (bookmark pagination)
+  microsoft-ads/  ← packages/microsoft (REST v13 paths, fault-object error shape,
+                                        published sandbox developer token)
+  x-ads/          ← packages/x         (Ads API v12 paths). The OAuth 1.0a signing
+                                        in x-ads/oauth1.ts is first-party (node:crypto);
+                                        adport uses the `oauth-1.0a` package.
+  apple-ads/      ← packages/apple     (Platform API v1 paths, X-AP-Context header,
+                                        and the ES256 client-secret JWT recipe in jwt.ts)
+
+MODIFICATIONS, all seven: rewritten for multi-tenant use with per-tenant
+Vault-backed credentials; OAuth flows re-based on Zavi's generic connector
+scaffold (core/oauth2-authcode.ts) or bespoke routes; write/mutation surfaces
+and adport's local policy engine not ported; errors converted to Zavi's
+ExpectedToolError contract; vendor error bodies never echoed.
+
+A copy of the Apache License 2.0 is at third-party/adport/LICENSE.
+-------------------------------------------------------------------------------

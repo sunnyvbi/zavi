@@ -1,0 +1,14 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.zaviagent.app",
+      "sha256_cert_fingerprints": [
+        "FA:C6:17:45:DC:09:03:78:6F:B9:ED:E6:2A:96:2B:39:9F:73:48:F0:BB:6F:89:9B:83:32:66:75:91:03:3B:9C",
+        "95:8C:1F:60:0C:4A:16:0C:F6:A3:AE:EC:79:64:B2:53:5F:34:F5:3A:58:56:CC:F7:28:3C:18:4E:A6:A8:06:A7",
+        "7F:08:DD:5C:6F:11:EC:2D:00:4A:9C:FA:64:1A:E5:30:49:EC:F8:65:91:9A:72:67:57:F9:DB:8D:52:89:D1:EE"
+      ]
+    }
+  }
+]

@@ -1,0 +1,169 @@
+{
+  "schemaVersion": 2,
+  "roles": [
+    "organiser"
+  ],
+  "capabilities": [],
+  "actions": {},
+  "aggregates": {
+    "going_count": {
+      "collection": "rsvps",
+      "fn": "count",
+      "filters": [
+        "run_id",
+        "going"
+      ],
+      "principals": [
+        "admin",
+        "role:organiser"
+      ]
+    }
+  },
+  "collections": {
+    "runs": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "signed_in"
+        ],
+        "get": [
+          "signed_in"
+        ],
+        "create": [
+          "admin",
+          "role:organiser"
+        ],
+        "update": [
+          "owner",
+          "admin",
+          "role:organiser"
+        ],
+        "delete": [
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "starts_at": {
+            "type": "string",
+            "maxLength": 40,
+            "format": "date-time"
+          },
+          "meeting_point": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "distance_km": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "pace": {
+            "type": "string",
+            "maxLength": 6,
+            "enum": [
+              "easy",
+              "steady",
+              "tempo",
+              "long"
+            ]
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "title",
+          "starts_at",
+          "meeting_point",
+          "distance_km"
+        ]
+      },
+      "fields": {},
+      "indexes": {
+        "starts_at": {
+          "type": "timestamp",
+          "ops": [
+            "range"
+          ],
+          "sort": true
+        }
+      },
+      "unique": [],
+      "references": {}
+    },
+    "rsvps": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "signed_in"
+        ],
+        "get": [
+          "signed_in"
+        ],
+        "create": [
+          "signed_in"
+        ],
+        "update": [
+          "owner"
+        ],
+        "delete": [
+          "owner",
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "run_id": {
+            "type": "string",
+            "maxLength": 36,
+            "format": "uuid"
+          },
+          "display_name": {
+            "type": "string",
+            "maxLength": 60
+          },
+          "going": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "run_id",
+          "display_name",
+          "going"
+        ]
+      },
+      "fields": {},
+      "indexes": {
+        "run_id": {
+          "type": "text",
+          "ops": [
+            "eq"
+          ],
+          "sort": false
+        },
+        "going": {
+          "type": "text",
+          "ops": [
+            "eq"
+          ],
+          "sort": false
+        }
+      },
+      "unique": [],
+      "references": {
+        "run_id": {
+          "collection": "runs",
+          "on_delete": "cascade"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "product": {
+    "name": "Upcar",
+    "oneLiner": "There's a car parked near you.",
+    "url": "https://upcar.ai"
+  },
+  "brand": {
+    "primaryColor": "#288FFF",
+    "accentColor": "#5FB0FF",
+    "bgColor": "#0B0E14"
+  },
+  "audience": "people planning a July 4th road trip",
+  "tone": "bold",
+  "cta": {
+    "text": "Find a car near you",
+    "url": "https://upcar.ai"
+  },
+  "aspect": "9:16",
+  "beats": [
+    {
+      "kind": "hook",
+      "durationFrames": 120,
+      "headline": "Your July 4th ride is here.",
+      "sub": "Skip the rental counter this long weekend.",
+      "vo": { "srtText": "Your July 4th ride is here. Skip the rental counter this long weekend." }
+    },
+    {
+      "kind": "productui",
+      "durationFrames": 150,
+      "eyebrow": "Upcar",
+      "headline": "A car a few blocks away.",
+      "domain": "upcar.ai",
+      "header": { "title": "Cars near you", "searchPlaceholder": "Search cars in Austin, TX" },
+      "items": [
+        { "glyph": "car", "title": "Tesla Model 3", "chips": ["$61/day", "4.9 stars", "Austin TX"] },
+        { "glyph": "car", "title": "Jeep Wrangler", "chips": ["$74/day", "4.8 stars", "Phoenix AZ"] },
+        { "glyph": "car", "title": "Toyota Camry", "chips": ["$43/day", "5.0 stars", "Tampa FL"] }
+      ],
+      "vo": { "srtText": "Find a car from a local host a few blocks away, and book it in about two minutes." }
+    },
+    {
+      "kind": "cta",
+      "durationFrames": 160,
+      "headline": "$30 off your trip.",
+      "sub": "Book a car from a local host on Upcar.",
+      "chips": ["CODE: UPCARJULY4TH", "Ends July 25, 2026"],
+      "vo": { "srtText": "Get thirty dollars off your trip with code UPCAR JULY FOURTH. Ends July twenty fifth." }
+    }
+  ]
+}

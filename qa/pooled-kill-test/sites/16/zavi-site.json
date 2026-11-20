@@ -1,0 +1,240 @@
+{
+  "schemaVersion": 2,
+  "roles": [],
+  "capabilities": [],
+  "actions": {},
+  "aggregates": {},
+  "collections": {
+    "events": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "anyone"
+        ],
+        "get": [
+          "anyone"
+        ],
+        "create": [
+          "admin"
+        ],
+        "update": [
+          "admin"
+        ],
+        "delete": [
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "starts_at": {
+            "type": "string",
+            "maxLength": 40,
+            "format": "date-time"
+          },
+          "location": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "category": {
+            "type": "string",
+            "maxLength": 10,
+            "enum": [
+              "lecture",
+              "community",
+              "youth",
+              "fundraiser",
+              "eid",
+              "other"
+            ]
+          }
+        },
+        "required": [
+          "title",
+          "starts_at"
+        ]
+      },
+      "fields": {},
+      "indexes": {
+        "starts_at": {
+          "type": "timestamp",
+          "ops": [
+            "range"
+          ],
+          "sort": true
+        },
+        "category": {
+          "type": "text",
+          "ops": [
+            "eq"
+          ],
+          "sort": false
+        }
+      },
+      "unique": [],
+      "references": {}
+    },
+    "prayer_times": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "anyone"
+        ],
+        "get": [
+          "anyone"
+        ],
+        "create": [
+          "admin"
+        ],
+        "update": [
+          "admin"
+        ],
+        "delete": [
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "day": {
+            "type": "string",
+            "maxLength": 10,
+            "format": "date"
+          },
+          "fajr": {
+            "type": "string",
+            "maxLength": 5
+          },
+          "dhuhr": {
+            "type": "string",
+            "maxLength": 5
+          },
+          "asr": {
+            "type": "string",
+            "maxLength": 5
+          },
+          "maghrib": {
+            "type": "string",
+            "maxLength": 5
+          },
+          "isha": {
+            "type": "string",
+            "maxLength": 5
+          },
+          "jumuah": {
+            "type": "string",
+            "maxLength": 5
+          }
+        },
+        "required": [
+          "day",
+          "fajr",
+          "dhuhr",
+          "asr",
+          "maghrib",
+          "isha"
+        ]
+      },
+      "fields": {},
+      "indexes": {
+        "day": {
+          "type": "timestamp",
+          "ops": [
+            "eq",
+            "range"
+          ],
+          "sort": true
+        }
+      },
+      "unique": [
+        {
+          "fields": [
+            "day"
+          ],
+          "nulls": "distinct"
+        }
+      ],
+      "references": {}
+    },
+    "messages": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "admin"
+        ],
+        "get": [
+          "admin"
+        ],
+        "create": [
+          "anyone"
+        ],
+        "update": [
+          "admin"
+        ],
+        "delete": [
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "email": {
+            "type": "string",
+            "maxLength": 320,
+            "format": "email"
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "status": {
+            "type": "string",
+            "maxLength": 7,
+            "enum": [
+              "new",
+              "handled"
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "message",
+          "status"
+        ]
+      },
+      "fields": {},
+      "indexes": {},
+      "unique": [],
+      "references": {},
+      "states": {
+        "field": "status",
+        "values": [
+          "new",
+          "handled"
+        ],
+        "initial": "new",
+        "transitions": [
+          {
+            "from": "new",
+            "to": "handled",
+            "principals": [
+              "admin"
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

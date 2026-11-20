@@ -1,0 +1,11 @@
+{
+  "users": [
+    { "email": "admin@example.com", "password": "preview-admin-1", "role": "admin" },
+    { "email": "visitor@example.com", "password": "preview-user-1" }
+  ],
+  "records": {
+    "submissions": [
+      { "data": { "name": "Sample visitor", "email": "visitor@example.com", "body": "Hello! This message is preview data from dev-seed.json." } }
+    ]
+  }
+}

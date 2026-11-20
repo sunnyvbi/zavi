@@ -1,0 +1,18 @@
+
+name: main
+
+services:
+  praxis-backend:
+    extends:
+      file: ../main/docker-compose.yml
+      service: praxis-backend
+    environment:
+      - PRAXIS_ROLE=worker
+      - PRAXIS_SECRETS_OVERLAY_ID=zavi-prod-worker
+    mem_limit: 6g
+    memswap_limit: 7g
+    deploy:
+      resources:
+        limits:
+          memory: 6144m
+          cpus: "2.0"

@@ -1,0 +1,120 @@
+{
+  "schemaVersion": 2,
+  "roles": [],
+  "capabilities": [],
+  "actions": {},
+  "aggregates": {},
+  "collections": {
+    "recipes": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "owner",
+          "admin"
+        ],
+        "get": [
+          "owner",
+          "admin"
+        ],
+        "create": [
+          "signed_in"
+        ],
+        "update": [
+          "owner"
+        ],
+        "delete": [
+          "owner",
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "ingredients": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 200
+            },
+            "maxItems": 60
+          },
+          "steps": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 1000
+            },
+            "maxItems": 40
+          },
+          "cuisine": {
+            "type": "string",
+            "maxLength": 60
+          },
+          "favourite": {
+            "type": "boolean"
+          },
+          "prep_minutes": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1440
+          },
+          "photo_name": {
+            "type": "string",
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "title",
+          "ingredients",
+          "steps"
+        ]
+      },
+      "fields": {},
+      "indexes": {
+        "favourite": {
+          "type": "text",
+          "ops": [
+            "eq"
+          ],
+          "sort": false
+        },
+        "cuisine": {
+          "type": "text",
+          "ops": [
+            "eq"
+          ],
+          "sort": false
+        }
+      },
+      "unique": [],
+      "references": {}
+    },
+    "recipe_photos": {
+      "kind": "files",
+      "rules": {
+        "list": [
+          "owner",
+          "admin"
+        ],
+        "get": [
+          "owner",
+          "admin"
+        ],
+        "create": [
+          "signed_in"
+        ],
+        "update": [
+          "owner"
+        ],
+        "delete": [
+          "owner",
+          "admin"
+        ]
+      }
+    }
+  }
+}

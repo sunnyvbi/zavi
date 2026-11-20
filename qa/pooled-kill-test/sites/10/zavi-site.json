@@ -1,0 +1,272 @@
+{
+  "schemaVersion": 2,
+  "roles": [
+    "landlord"
+  ],
+  "capabilities": [],
+  "actions": {},
+  "aggregates": {},
+  "collections": {
+    "listings": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "anyone"
+        ],
+        "get": [
+          "anyone"
+        ],
+        "create": [
+          "admin",
+          "role:landlord"
+        ],
+        "update": [
+          "owner",
+          "admin"
+        ],
+        "delete": [
+          "owner",
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "area": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "bedrooms": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 20
+          },
+          "bathrooms": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 20
+          },
+          "monthly_rent_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100000000
+          },
+          "available_from": {
+            "type": "string",
+            "maxLength": 10,
+            "format": "date"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 4000
+          },
+          "pets_allowed": {
+            "type": "boolean"
+          },
+          "status": {
+            "type": "string",
+            "maxLength": 9,
+            "enum": [
+              "available",
+              "let",
+              "withdrawn"
+            ]
+          }
+        },
+        "required": [
+          "title",
+          "area",
+          "bedrooms",
+          "monthly_rent_cents",
+          "status"
+        ]
+      },
+      "fields": {},
+      "indexes": {
+        "monthly_rent_cents": {
+          "type": "number",
+          "ops": [
+            "range"
+          ],
+          "sort": true
+        },
+        "bedrooms": {
+          "type": "number",
+          "ops": [
+            "eq",
+            "range"
+          ],
+          "sort": false
+        },
+        "available_from": {
+          "type": "timestamp",
+          "ops": [
+            "range"
+          ],
+          "sort": true
+        }
+      },
+      "unique": [],
+      "references": {},
+      "states": {
+        "field": "status",
+        "values": [
+          "available",
+          "let",
+          "withdrawn"
+        ],
+        "initial": "available",
+        "read": {
+          "available": [
+            "anyone"
+          ],
+          "let": [
+            "anyone"
+          ],
+          "withdrawn": [
+            "owner",
+            "admin"
+          ]
+        },
+        "transitions": [
+          {
+            "from": "available",
+            "to": "let",
+            "principals": [
+              "owner",
+              "admin"
+            ]
+          },
+          {
+            "from": "available",
+            "to": "withdrawn",
+            "principals": [
+              "owner",
+              "admin"
+            ]
+          },
+          {
+            "from": "let",
+            "to": "available",
+            "principals": [
+              "owner",
+              "admin"
+            ]
+          },
+          {
+            "from": "withdrawn",
+            "to": "available",
+            "principals": [
+              "owner",
+              "admin"
+            ]
+          }
+        ]
+      }
+    },
+    "inquiries": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "recipient",
+          "admin"
+        ],
+        "get": [
+          "recipient",
+          "admin"
+        ],
+        "create": [
+          "anyone"
+        ],
+        "update": [],
+        "delete": [
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "listing_id": {
+            "type": "string",
+            "maxLength": 36,
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "email": {
+            "type": "string",
+            "maxLength": 320,
+            "format": "email"
+          },
+          "phone": {
+            "type": "string",
+            "maxLength": 30
+          },
+          "move_in": {
+            "type": "string",
+            "maxLength": 10,
+            "format": "date"
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 2000
+          }
+        },
+        "required": [
+          "listing_id",
+          "name",
+          "email"
+        ]
+      },
+      "fields": {},
+      "indexes": {
+        "listing_id": {
+          "type": "text",
+          "ops": [
+            "eq"
+          ],
+          "sort": false
+        }
+      },
+      "unique": [],
+      "references": {
+        "listing_id": {
+          "collection": "listings",
+          "on_delete": "cascade"
+        }
+      },
+      "recipient": {
+        "reference": "listing_id"
+      }
+    },
+    "listing_photos": {
+      "kind": "files",
+      "rules": {
+        "list": [
+          "anyone"
+        ],
+        "get": [
+          "anyone"
+        ],
+        "create": [
+          "admin",
+          "role:landlord"
+        ],
+        "update": [
+          "owner",
+          "admin"
+        ],
+        "delete": [
+          "owner",
+          "admin"
+        ]
+      }
+    }
+  }
+}

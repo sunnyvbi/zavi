@@ -1,0 +1,2130 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Zavi "Notion-emerald" tokens — trial 2026-05-14.
+ * Paper + near-black ink + emerald + marigold + mint.
+ */
+:root {
+  --c-cream: 247 246 243;
+  --c-cream-deep: 239 237 231;
+  --c-bone: 228 225 216;
+  --c-ink: 25 25 25;
+  --c-ink-soft: 43 42 40;
+  --c-ink-muted: 120 114 104;
+  --c-ink-light: 140 140 140;
+  --c-rule: 216 212 200;
+  /* The channel calendar's two event kinds (This week + Series): a one-off
+   * post and a series episode. Text colour + tint; dark values below. */
+  --c-plan-post: 30 92 138;
+  --c-plan-post-bg: 234 242 248;
+  --c-plan-series: 94 75 139;
+  --c-plan-series-bg: 241 237 248;
+  --cream: #f7f6f3;
+  --cream-deep: #efede7;
+  --bone: #e4e1d8;
+  --ink: #191919;
+  --ink-soft: #2b2a28;
+  --ink-muted: #787268;
+  /* De-violet 2026-05-18 — purple removed from product. Var names kept;
+   * values remap to ink-tones so existing `var(--violet)` callsites stop
+   * rendering purple. `--violet-soft` -> bone to preserve light-surface
+   * contrast (ink text on it stays readable). */
+  --violet: #191919;
+  --violet-deep: #2b2a28;
+  --violet-soft: #e4e1d8;
+  --marigold: #ffc93d;
+  --mint: #a3d9c0;
+  --coral: #ff6b6b;
+  --rule: #d8d4c8;
+
+  /* Legacy alias variables — kept so existing styles keep rendering */
+  --paper: #f7f6f3;
+  --paper-deep: #efede7;
+  --ash: #787268;
+  --brick: #191919;
+  --brick-dark: #2b2a28;
+}
+
+html,
+body {
+  background: var(--cream);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Page-level copies of the workspace dark tokens, for surfaces rendered outside
+ * .workspace-shell (portaled popovers, dialogs). Keep in step with the
+ * html.dark .workspace-shell block: surface = --c-cream-deep (card),
+ * hover = --c-bone (raised), border = --c-rule. */
+html.dark {
+  --c-dark-sunken: 16 16 16;
+  --c-dark-base: 20 20 20;
+  --c-dark-surface: 31 31 31;
+  --c-dark-border: 56 56 56;
+  --c-dark-hover: 43 43 43;
+  --c-dark-strong: 58 58 58;
+}
+
+html.dark,
+html.dark body {
+  background: rgb(var(--c-dark-base));
+  color-scheme: dark;
+}
+
+body {
+  font-feature-settings: "kern", "liga", "clig", "calt";
+  background-image: none;
+  background-attachment: fixed;
+}
+
+.paper-grain::before {
+  content: none;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* Fade-in for cycling status strings in MarketingFleetPreview (~3.6s ticks).
+ * Short duration so the line settles before the next tick replaces it. */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-in {
+  animation: fadeIn 280ms ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in {
+    animation: none;
+  }
+}
+
+.rule-thin {
+  border-color: rgba(25, 25, 25, 0.08);
+}
+.rule-thick {
+  border-color: rgba(25, 25, 25, 0.18);
+}
+
+/* SquareLoader — the onboarding loader cluster (Figma 108:34972). Each tilted
+ * square pulses; staggered delays around the ring make the cluster appear to
+ * spin. See src/components/SquareLoader.tsx. */
+@keyframes squareLoaderPulse {
+  0%,
+  100% {
+    opacity: 0.16;
+  }
+  40% {
+    opacity: 1;
+  }
+}
+
+.dropcap::first-letter {
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-size: 4.6rem;
+  line-height: 0.86;
+  float: left;
+  padding: 0.35rem 0.65rem 0 0;
+  color: var(--violet);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+/*
+ * ── Ramp-grammar primitives ──────────────────────────────────────────────
+ * Namespaced `rblock` (Ramp-block) — DO NOT use plain `.block` here, that
+ * collides with Tailwind's `block` utility (display: block) and would
+ * hijack every <label className="block ...">, <div className="block">,
+ * etc. in the app.
+ */
+.rblock {
+  border-radius: 28px;
+  box-shadow: 0 6px 0 rgba(25, 25, 25, 1);
+  border: 1.5px solid #0a1f3a;
+}
+.rblock-ink {
+  background: var(--ink);
+  color: var(--cream);
+}
+.rblock-cream {
+  background: var(--cream-deep);
+  color: var(--ink);
+}
+.rblock-violet {
+  background: var(--violet);
+  color: #ffffff;
+}
+.rblock-marigold {
+  background: var(--marigold);
+  color: var(--ink);
+}
+.rblock-mint {
+  background: var(--mint);
+  color: var(--ink);
+}
+.rblock-bone {
+  background: var(--bone);
+  color: var(--ink);
+}
+
+.rblock-card {
+  background: var(--cream);
+  color: var(--ink);
+  border-radius: 16px;
+  border: 1.5px solid var(--ink);
+  box-shadow: 0 2px 0 var(--ink);
+}
+
+/* Legacy glass cards — kept for non-landing pages, will be retired */
+.glass-card {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(25, 25, 25, 0.08);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.6) inset,
+    0 8px 24px -12px rgba(25, 25, 25, 0.1);
+  border-radius: 14px;
+}
+.glass-card-strong {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1.5px solid var(--ink);
+  box-shadow: 0 2px 0 var(--ink);
+  border-radius: 16px;
+}
+
+/* Kicker — small uppercase tracking-wide labels above headlines */
+.kicker {
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-size: 12.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+/* Big metric figure — chrome face, oversized, tabular */
+.metric-fig {
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums lining-nums;
+  letter-spacing: -0.04em;
+  line-height: 0.9;
+}
+
+/* Entrance anim */
+@keyframes riseIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.rise {
+  animation: riseIn 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.rise-d1 {
+  animation-delay: 0.04s;
+}
+.rise-d2 {
+  animation-delay: 0.1s;
+}
+.rise-d3 {
+  animation-delay: 0.18s;
+}
+.rise-d4 {
+  animation-delay: 0.26s;
+}
+.rise-d5 {
+  animation-delay: 0.34s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise {
+    animation: none;
+  }
+}
+
+@keyframes wipeIn {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+.wipe {
+  transform-origin: left;
+  animation: wipeIn 0.8s cubic-bezier(0.7, 0, 0.2, 1) 0.15s both;
+}
+
+@keyframes blinkCaret {
+  0%,
+  60% {
+    opacity: 1;
+  }
+  61%,
+  100% {
+    opacity: 0;
+  }
+}
+.caret {
+  animation: blinkCaret 1.1s steps(1) infinite;
+}
+
+@keyframes drift {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.marquee-track {
+  animation: drift 38s linear infinite;
+}
+
+a.lnk {
+  background-image: linear-gradient(
+    transparent calc(100% - 1px),
+    currentColor 1px
+  );
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  transition: background-size 0.3s cubic-bezier(0.65, 0, 0.35, 1);
+}
+a.lnk:hover {
+  background-size: 0 100%;
+  background-position: right;
+}
+
+::selection {
+  background: var(--ink);
+  color: var(--cream);
+}
+
+:where(
+  button,
+  a,
+  summary,
+  [role="button"],
+  [tabindex]:not([tabindex="-1"])
+):focus {
+  outline: none;
+}
+:where(
+  button,
+  a,
+  summary,
+  [role="button"],
+  [tabindex]:not([tabindex="-1"])
+):focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--cream),
+    0 0 0 4px var(--ink);
+  border-radius: 6px;
+}
+
+.skip-to-main {
+  position: absolute;
+  left: -9999px;
+  top: 8px;
+  z-index: 100;
+  background: var(--violet);
+  color: #fff;
+  padding: 0.5rem 0.875rem;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+}
+.skip-to-main:focus,
+.skip-to-main:focus-visible {
+  left: 8px;
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+ * Workspace shell — 2026-05-13 Claude-grammar overhaul.
+ *
+ * Default: 2 columns — Sidebar 280px · main 1fr. Inspector is a slide-in
+ * panel triggered by clicking a citation chip / entity (mounted absolutely
+ * over the right edge of main).
+ *
+ * vw < 1024px: Sidebar collapses to a drawer (Phase 4). Phase 1 ships >=1024px.
+ * ───────────────────────────────────────────────────────────────────── */
+/* Workspace surface color — WHITE per the 2026-06-02 figma redesign (was the
+ * cream #FAF7F2 paper). Scoped to .workspace-shell so marketing/landing pages
+ * (which also use `bg-cream` = #F7F6F3) are untouched. This whitens the main
+ * center, agent header, chat thread, and composer surface in one place. */
+.workspace-shell,
+.cookie-consent,
+.onboarding-light {
+  --c-cream: 255 255 255;
+  --c-cream-deep: 249 249 249;
+  --c-bone: 240 240 240;
+  --c-ink: 14 15 17;
+  --c-ink-soft: 31 31 31;
+  --c-ink-muted: 89 89 89;
+  --c-ink-light: 140 140 140;
+  --c-rule: 240 240 240;
+  --cream: #ffffff;
+  --ink: #0e0f11;
+  --ink-muted: #595959;
+}
+/* The setup overlay stays light in every theme, like /start and /login before
+ * it: its text is literal onboarding-* hex and its side panel a light gradient.
+ * The dark remaps read the tokens above, so resetting them here undoes them. */
+.onboarding-light {
+  color-scheme: light;
+}
+/* Dark surface palette: page #141414 (--c-cream), card #1f1f1f
+ * (--c-cream-deep), raised #2b2b2b (--c-bone). A dark surface uses one of these
+ * three tokens, never a literal. */
+html.dark .workspace-shell,
+html.dark .cookie-consent {
+  --c-cream: 20 20 20;
+  --c-cream-deep: 31 31 31;
+  --c-bone: 43 43 43;
+  --c-ink: 236 236 236;
+  --c-ink-soft: 212 212 212;
+  --c-ink-muted: 154 154 154;
+  --c-ink-light: 115 115 115;
+  /* Clear of the raised surface (43) so a border on a bg-bone card still shows. */
+  --c-rule: 56 56 56;
+  --c-plan-post: 140 186 226;
+  --c-plan-post-bg: 24 38 52;
+  --c-plan-series: 190 170 236;
+  --c-plan-series-bg: 40 32 58;
+  --cream: rgb(var(--c-dark-base));
+  --ink: #ececec;
+  --ink-muted: #9a9a9a;
+  color-scheme: dark;
+}
+html.dark .workspace-shell .ws-scroll {
+  scrollbar-color: rgb(var(--c-dark-strong)) transparent;
+}
+html.dark .workspace-shell .channel-chat-fab {
+  background-color: rgb(var(--c-cream-deep));
+  color: rgb(var(--c-ink)) !important;
+  box-shadow: 0 6px 20px rgb(0 0 0 / 0.45);
+  border: 1px solid rgb(var(--c-rule));
+}
+
+.hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+html.dark .workspace-shell .ws-scroll::-webkit-scrollbar-thumb {
+  background: rgb(var(--c-dark-strong));
+  background-clip: padding-box;
+}
+.workspace-shell .bg-cream {
+  background-color: rgb(var(--c-cream)) !important;
+}
+html.dark .workspace-shell aside.bg-cream {
+  background-color: rgb(var(--c-dark-sunken)) !important;
+}
+/* Account menu on dark. The rail behind it is rgb(16 16 16) and the popup's
+ * own --c-cream is rgb(20 20 20), so the panel had no edge at all: same value,
+ * a rule too faint to see, and a shadow that does nothing on black. It gets a
+ * lifted card surface (--c-cream-deep) and a dark-GREY rule instead. !important only because
+ * .workspace-shell .bg-cream above is itself !important. */
+html.dark .workspace-shell .account-menu {
+  background-color: rgb(var(--c-dark-surface)) !important;
+  border-color: rgb(var(--c-dark-strong));
+}
+/* Low-credits card (LowCreditsWarning), the band above the composer. Its own
+ * --c-cream on dark is rgb(20 20 20) — the SAME value as the chat surface it
+ * sits on — so `bg-cream` left it with no edge: identical fill, a rule too
+ * faint to see, and a shadow that does nothing on black. It gets the lifted
+ * surface + grey rule .account-menu gets, for the same reason. !important only
+ * because `.workspace-shell .bg-cream` above is itself !important.
+ * The gold glyph is the design's #946300, which is a 2.3:1 smudge on a dark
+ * card; the icon draws in currentColor so this one line can lift it. */
+html.dark .workspace-shell .credit-card {
+  background-color: rgb(var(--c-dark-surface)) !important;
+  border-color: rgb(var(--c-dark-strong));
+}
+html.dark .workspace-shell .credit-card-icon {
+  color: #e0a800;
+}
+/* The Build chat is a grey card in LIGHT mode only. On dark, grey would land on
+ * --c-bone (43 43 43), which is LIGHTER than the surface it sits on — the same
+ * inversion the credit meter track hit. Dark keeps the chat surface it always
+ * had. Element+class so these beat the generated workspace-dark.css remap of
+ * the hardcoded #f0f0f0, which is imported after this file. */
+html.dark .workspace-shell aside.build-chat-card,
+html.dark .workspace-shell section.build-chat-card {
+  background-color: rgb(var(--c-cream)) !important;
+  border-color: rgb(var(--c-rule));
+}
+/* …and with the grey gone, the hover that was picked to read against it has to
+ * go back too: cream on cream is no hover at all. */
+html.dark .workspace-shell .build-chat-hover:hover {
+  background-color: rgb(var(--c-bone)) !important;
+}
+.code-token {
+  color: var(--tok-light);
+}
+html.dark .workspace-shell .code-token {
+  color: var(--tok-dark);
+}
+html.dark .workspace-shell .theme-logo {
+  filter: invert(1);
+}
+/* Setup rail (FullscreenSetup): its pastel gradient stops are light-only
+ * literals, so on dark the rail runs card to page instead. */
+html.dark .workspace-shell .setup-rail {
+  background-image: linear-gradient(to bottom, rgb(var(--c-cream-deep)), rgb(var(--c-cream)));
+}
+html.dark .workspace-shell div.build-chat-composer > div {
+  background-color: rgb(var(--c-cream)) !important;
+}
+html.dark .workspace-shell .composer-surface {
+  background-color: rgb(var(--c-dark-surface)) !important;
+  border-color: rgb(var(--c-dark-strong));
+}
+html.dark .workspace-shell .raised-surface {
+  background-color: rgb(var(--c-dark-surface)) !important;
+  border-color: rgb(var(--c-dark-strong));
+}
+html.dark .date-range-pop {
+  background-color: rgb(var(--c-dark-surface));
+  border-color: rgb(var(--c-dark-strong));
+  box-shadow: 0 24px 56px -16px rgb(0 0 0 / 0.6);
+  color: #ececec;
+}
+html.dark .date-range-pop .border-\[\#f0f0f0\] {
+  border-color: rgb(var(--c-dark-border));
+}
+html.dark .date-range-pop .bg-white,
+html.dark .date-range-root .bg-white {
+  background-color: transparent;
+}
+html.dark .date-range-pop :is(.text-\[\#0e0f11\], .text-\[\#1f1f1f\]),
+html.dark .date-range-root :is(.text-\[\#0e0f11\], .text-\[\#1f1f1f\]) {
+  color: #ececec;
+}
+html.dark .date-range-pop .text-\[\#8c8c8c\] {
+  color: #8a8a8a;
+}
+html.dark .date-range-pop :is(.hover\:bg-\[\#f0f0f0\], .hover\:bg-\[\#fafafa\], .hover\:bg-\[\#e9e9e9\]):hover,
+html.dark .date-range-root :is(.hover\:bg-\[\#f0f0f0\], .hover\:bg-\[\#fafafa\]):hover {
+  background-color: rgb(var(--c-dark-hover));
+}
+html.dark .date-range-root .bg-\[\#f0f0f0\] {
+  background-color: rgb(var(--c-dark-hover));
+}
+html.dark .date-range-root :is(.border-\[\#f0f0f0\]) {
+  border-color: rgb(var(--c-dark-border));
+}
+html.dark .date-range-root .text-\[\#5c5c5c\] {
+  color: #9a9a9a;
+}
+html.dark .date-range-pop button[aria-pressed="false"].border-\[\#e5e5e5\] {
+  border-color: rgb(var(--c-dark-strong));
+  color: #d4d4d4;
+}
+html.dark .date-range-pop button[aria-pressed="true"].bg-\[\#0e0f11\] {
+  background-color: #ececec;
+  border-color: #ececec;
+  color: #141414;
+}
+html.dark .date-range-pop .bg-\[\#f0f0f0\] {
+  background-color: rgb(255 255 255 / 0.07);
+}
+html.dark .date-range-pop .bg-\[\#1f1f1f\] {
+  background-color: #ececec;
+  color: #141414;
+}
+html.dark .date-range-pop .border-\[\#d9d9d9\] {
+  border-color: rgb(var(--c-dark-strong));
+}
+html.dark .date-range-pop .border-\[\#0e0f11\] {
+  border-color: #ececec;
+  box-shadow: none;
+}
+html.dark .date-range-pop span.bg-\[\#0e0f11\] {
+  background-color: #ececec;
+}
+html.dark .date-range-pop .text-\[\#027bff\] {
+  color: #6aa8ff;
+}
+html.dark .date-range-pop button.bg-\[\#0e0f11\]:not([aria-pressed]) {
+  background-color: #ececec;
+  color: #141414;
+}
+html.dark .date-range-pop button.bg-white.border-\[\#f0f0f0\] {
+  border-color: rgb(var(--c-dark-strong));
+}
+html.dark .workspace-shell .site-theme-panel.raised-surface {
+  background-color: rgb(var(--c-dark-base)) !important;
+  border-color: rgb(var(--c-dark-border));
+}
+html.dark .workspace-shell .site-theme-panel .site-theme-tabs {
+  background-color: rgb(var(--c-dark-surface));
+  box-shadow: inset 0 0 0 1px rgb(var(--c-dark-border));
+}
+html.dark .workspace-shell .site-theme-panel .site-theme-tab[aria-selected="true"] {
+  color: rgb(var(--c-ink));
+}
+html.dark .workspace-shell .site-theme-panel .site-theme-indicator {
+  background-color: rgb(var(--c-dark-strong));
+  box-shadow: none;
+}
+html.dark .workspace-shell .site-theme-panel .site-theme-tab-dot {
+  background-color: rgb(var(--c-ink-muted));
+}
+html.dark .workspace-shell .site-theme-panel .bg-white,
+html.dark .workspace-shell .site-theme-panel .site-theme-field,
+html.dark .workspace-shell .site-theme-panel .site-theme-swatches {
+  background-color: rgb(var(--c-dark-surface));
+  border-color: rgb(var(--c-dark-border));
+}
+html.dark .workspace-shell .site-theme-panel .site-theme-field:focus {
+  border-color: rgb(var(--c-dark-strong));
+}
+html.dark .workspace-shell .site-theme-panel .site-theme-swatch {
+  border-color: rgb(var(--c-dark-surface));
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.18);
+}
+html.dark .workspace-shell .site-theme-panel .site-theme-chip {
+  background-color: rgb(var(--c-dark-surface));
+  border-color: rgb(var(--c-dark-border));
+}
+html.dark .workspace-shell .site-theme-panel .site-theme-chip:hover:not(:disabled),
+html.dark .workspace-shell .site-theme-panel .site-theme-secondary:hover:not(:disabled) {
+  background-color: rgb(var(--c-dark-hover));
+}
+html.dark .workspace-shell .site-theme-panel .site-theme-secondary {
+  background-color: rgb(var(--c-dark-surface));
+  border-color: rgb(var(--c-dark-border));
+}
+html.dark .workspace-shell .site-theme-panel .site-theme-note-ok {
+  background-color: rgb(var(--c-dark-hover));
+  color: rgb(var(--c-ink-soft));
+}
+html.dark .workspace-shell .site-theme-panel .site-theme-note-busy {
+  background-color: rgb(224 168 0 / 0.12);
+  color: #e8bb5a;
+}
+html.dark .workspace-shell .site-theme-panel .site-theme-note-error {
+  background-color: rgb(242 139 130 / 0.12);
+  color: #f28b82;
+}
+/* Credit meter track (Billing panel + account menu). On dark, `bg-[#f0f0f0]`
+ * and `bg-bone` both land on --c-bone (43 43 43), which is LIGHTER than the
+ * card it sits on (--c-cream-deep 31 31 31, also the account menu's surface).
+ * A track lighter than its card reads as a FULL bar, so an empty meter claimed
+ * the tenant had credits — and the depleted state paints fillPct 0 by design,
+ * meaning the lie was loudest exactly when the balance hit zero. Recess it
+ * below the card instead. !important because the generated workspace-dark.css
+ * is imported after this file and matches at the same specificity. */
+html.dark .workspace-shell .credit-meter-track {
+  background-color: rgb(var(--c-cream)) !important;
+}
+/* Dialog scrim — a plain veil, NO backdrop blur. Blurring the whole page behind
+ * a dialog smeared the text into mush at any radius worth having, so the dim is
+ * what does the work. A 20% veil is all the light theme needs, since the page
+ * behind it is white; on dark that same veil lands on a near-black page and
+ * disappears, so dark gets a far heavier one. */
+.dialog-scrim {
+  background-color: rgba(14, 15, 17, 0.2);
+}
+html.dark .dialog-scrim {
+  background-color: rgba(0, 0, 0, 0.66);
+}
+/* The same veil behind AdsDialog. Literal colours: ::backdrop doesn't inherit
+ * custom properties in every engine. */
+.ads-dialog::backdrop {
+  background-color: rgba(14, 15, 17, 0.2);
+}
+html.dark .ads-dialog::backdrop {
+  background-color: rgba(0, 0, 0, 0.66);
+}
+/* The centred campaign modal (AdsSheet) eases in. */
+@keyframes ads-modal-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes ads-modal-veil {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.ads-dialog-modal[open] {
+  animation: ads-modal-in 180ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+.ads-dialog-modal[open]::backdrop {
+  animation: ads-modal-veil 180ms ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ads-dialog-modal[open],
+  .ads-dialog-modal[open]::backdrop {
+    animation: none;
+  }
+}
+/* The campaign sheet's form (Figma "New campaign"): the two colours the
+ * workspace tokens don't carry — the placeholder grey and the notice's blue. */
+.ads-sheet-form ::placeholder {
+  color: #bfbfbf;
+}
+html.dark .ads-sheet-form ::placeholder {
+  color: rgb(115 115 115);
+}
+.ads-sheet-note {
+  background-color: #e6f2ff;
+  color: #454545;
+}
+html.dark .ads-sheet-note {
+  background-color: rgb(2 123 255 / 0.14);
+  color: rgb(212 212 212);
+}
+.workspace-shell .invite-primary-action:not(:disabled) {
+  background-color: #0e0f11 !important;
+  color: #ffffff !important;
+}
+.workspace-shell .invite-primary-action:not(:disabled):hover {
+  background-color: #2b2b2b !important;
+}
+html.dark .workspace-shell .invite-primary-action:not(:disabled) {
+  background-color: rgb(var(--c-dark-hover)) !important;
+  color: #f5f5f5 !important;
+}
+html.dark .workspace-shell .invite-primary-action:not(:disabled):hover {
+  background-color: rgb(var(--c-dark-strong)) !important;
+}
+.workspace-shell .team-primary-action:not(:disabled) {
+  background-color: #0e0f11 !important;
+  color: #ffffff !important;
+}
+.workspace-shell .team-primary-action:not(:disabled):hover {
+  background-color: #2b2b2b !important;
+}
+html.dark .workspace-shell .team-primary-action:not(:disabled) {
+  background-color: #f1f1f1 !important;
+  color: #151515 !important;
+}
+html.dark .workspace-shell .team-primary-action:not(:disabled):hover {
+  background-color: #ffffff !important;
+}
+.workspace-shell .team-role-owner {
+  background-color: #0e0f11 !important;
+  color: #ffffff !important;
+}
+html.dark .workspace-shell .team-role-owner {
+  background-color: #e9e9e9 !important;
+  color: #181818 !important;
+}
+/* Creator initials avatar (creators/kit.tsx): the pastel gradient is not
+ * remapped, but its ink letter is, so on dark it read light-on-light. */
+html.dark .workspace-shell .creator-avatar {
+  background-image: linear-gradient(to bottom right, rgb(112 26 117 / 0.6), rgb(120 53 15 / 0.6));
+}
+
+@keyframes team-surface-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes team-dialog-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes team-menu-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes team-radio-dot-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.team-surface-enter,
+.team-card-enter {
+  animation: team-surface-enter 220ms cubic-bezier(0.2, 0.8, 0.2, 1)
+    backwards;
+}
+.team-dialog-enter {
+  animation: team-dialog-enter 180ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.team-menu-enter {
+  transform-origin: top right;
+  animation: team-menu-enter 140ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.team-radio-dot {
+  animation: team-radio-dot-enter 140ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .team-surface-enter,
+  .team-card-enter,
+  .team-dialog-enter,
+  .team-menu-enter,
+  .team-radio-dot {
+    animation: none !important;
+  }
+}
+@media (max-width: 639px) {
+  html.dark .workspace-shell aside.bg-cream {
+    background-color: rgb(var(--c-cream)) !important;
+  }
+}
+.workspace-shell .ws-scroll {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #dcdcdc transparent;
+}
+.workspace-shell .ws-scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.workspace-shell .ws-scroll::-webkit-scrollbar-thumb {
+  background: #dcdcdc;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.workspace-shell .ws-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.workspace-shell .workspace-body {
+  grid-template-columns: 280px minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  /* Animate the Explorer column so the Lovable-style full-rail collapse slides
+   * open/shut instead of snapping. */
+  transition: grid-template-columns 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  /* Containing block for the absolutely-positioned .inspector-slide, and
+   * clip its closed-state translateX(100%) overhang. Without this the
+   * off-canvas 360px panel expands document scrollWidth and the whole page
+   * scrolls 360px horizontally. `clip` (not `hidden`) so the vertical
+   * chat-thread scroll and composer are untouched. */
+  position: relative;
+  overflow-x: clip;
+}
+
+/* Sidebar collapsed (Lovable-style) — the Explorer column shrinks to a narrow
+ * icon rail (64px) instead of hiding; ExplorerTree renders an icon-only rail at
+ * that width (company avatar · Home · agent avatars · icon menu · user avatar)
+ * with an expand toggle at the top. The nav's 1px border stays as the rail's
+ * right edge. */
+.workspace-shell.sidebar-collapsed .workspace-body {
+  grid-template-columns: 64px minmax(0, 1fr);
+}
+
+.workspace-shell .workspace-body > .inspector-slide {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 360px;
+  background: var(--cream);
+  border-left: 1px solid rgba(25, 25, 25, 0.08);
+  box-shadow: -8px 0 24px -16px rgba(25, 25, 25, 0.18);
+  transform: translateX(100%);
+  transition: transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  z-index: 30;
+  overflow-y: auto;
+}
+.workspace-shell.inspector-open .workspace-body > .inspector-slide {
+  transform: translateX(0);
+}
+
+@media (max-width: 1023px) {
+  .workspace-shell .workspace-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .workspace-shell .workspace-body > nav[aria-label="Explorer"] {
+    display: none;
+  }
+}
+
+/* Composer — Claude-grammar (white pill, 20px radius, soft shadow). */
+.composer-pill {
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow:
+    0 1px 3px rgba(25, 25, 25, 0.04),
+    0 8px 24px -12px rgba(25, 25, 25, 0.1);
+  border: 1px solid rgba(25, 25, 25, 0.06);
+  transition:
+    box-shadow 180ms ease,
+    border-color 180ms ease;
+}
+.composer-pill:focus-within {
+  /* De-violet 2026-05-18 — focus ring shifted from violet rgba to ink rgba. */
+  border-color: rgba(25, 25, 25, 0.3);
+  box-shadow:
+    0 1px 3px rgba(25, 25, 25, 0.06),
+    0 12px 32px -12px rgba(25, 25, 25, 0.14),
+    0 0 0 4px rgba(25, 25, 25, 0.1);
+}
+
+/*
+ * Global scrollbar default — slim, theme-tinted bar app-wide so no scroll pane
+ * (Home column, chat panels, agent dashboards) shows the fat default native
+ * bar. Firefox: `thin` + an ink-tinted thumb on a transparent track. WebKit:
+ * an 8px overlay thumb (rounded, padding-box inset so it reads ~5px) that
+ * darkens on hover; the track stays transparent so it never paints a grey
+ * gutter. The .scrollbar-clean / .scrollbar-none utilities below still override
+ * per-element where a hover-only or fully-hidden bar is wanted.
+ */
+* {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: rgba(25, 25, 25, 0.22) transparent;
+}
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(25, 25, 25, 0.22);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(25, 25, 25, 0.38);
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/*
+ * scrollbar-clean — no reserved track, thin overlay thumb that only shows
+ * while hovering the scroll area. Used by modals/lists that scroll only on
+ * overflow (e.g. InviteMemberModal) so the bar isn't a permanent fixture.
+ */
+.scrollbar-clean {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: transparent transparent;
+}
+.scrollbar-clean:hover {
+  scrollbar-color: rgba(25, 25, 25, 0.22) transparent; /* Firefox: thumb on hover */
+}
+.scrollbar-clean::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.scrollbar-clean::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-clean::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.scrollbar-clean:hover::-webkit-scrollbar-thumb {
+  background: rgba(25, 25, 25, 0.22);
+  background-clip: padding-box;
+}
+.scrollbar-clean::-webkit-scrollbar-thumb:hover {
+  background: rgba(25, 25, 25, 0.38);
+  background-clip: padding-box;
+}
+
+/* Dark workspace: the default thumb above is dark ink, which disappears on the
+ * near-black surfaces (a scrolling package list read as "no scrollbar until you
+ * hover it"). Light thumb instead. .scrollbar-clean keeps its hover-only bar. */
+html.dark .workspace-shell,
+html.dark .workspace-shell * {
+  scrollbar-color: rgba(255, 255, 255, 0.24) transparent;
+}
+html.dark .workspace-shell ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.24);
+  background-clip: padding-box;
+}
+html.dark .workspace-shell ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4);
+  background-clip: padding-box;
+}
+html.dark .workspace-shell .scrollbar-clean {
+  scrollbar-color: transparent transparent;
+}
+html.dark .workspace-shell .scrollbar-clean:hover {
+  scrollbar-color: rgba(255, 255, 255, 0.24) transparent;
+}
+html.dark .workspace-shell .scrollbar-clean::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+html.dark .workspace-shell .scrollbar-clean:hover::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.24);
+  background-clip: padding-box;
+}
+
+/* scrollbar-visible — a bar that is always painted, for a short list inside a
+ * card that scrolls (Find creators' packages). Chrome draws its overlay
+ * scrollbar, shown only on hover or scroll, whenever the standard
+ * scrollbar-color is set, and `*` above sets it everywhere. Resetting it to
+ * auto hands Chrome to the ::-webkit-scrollbar rules, which always paint.
+ * Firefox gets its native bar. */
+.scrollbar-visible,
+html.dark .workspace-shell .scrollbar-visible {
+  scrollbar-color: auto;
+  scrollbar-width: auto;
+}
+.scrollbar-visible::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.scrollbar-visible::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-visible::-webkit-scrollbar-thumb {
+  background: rgba(25, 25, 25, 0.28);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.scrollbar-visible::-webkit-scrollbar-thumb:hover {
+  background: rgba(25, 25, 25, 0.42);
+  background-clip: padding-box;
+}
+html.dark .workspace-shell .scrollbar-visible::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.28);
+  background-clip: padding-box;
+}
+html.dark .workspace-shell .scrollbar-visible::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.45);
+  background-clip: padding-box;
+}
+
+/* scrollbar-none — fully hidden scrollbar, no reserved gutter. For
+ * fixed-height chrome (tab strip) that scrolls but must not lose height. */
+.scrollbar-none {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/legacy Edge */
+}
+.scrollbar-none::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+/* Marquee — shared right→left auto-scroll for logo/name rows (home hero +
+ * login marketing panel). The row is duplicated in markup; translating the
+ * track by -50% loops seamlessly. Pauses on hover; honors reduced-motion. */
+@keyframes zavi-marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.zavi-marquee__track {
+  animation: zavi-marquee-scroll 18s linear infinite;
+}
+.zavi-marquee:hover .zavi-marquee__track {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .zavi-marquee__track {
+    animation: none;
+  }
+}
+
+/* liquid-glass — the growth home header's scrolled/open state: a frosted
+ * white pill with a soft top highlight. Kept as a plain class (not Tailwind
+ * utilities) because the ::before sheen needs its own layer. */
+.liquid-glass {
+  isolation: isolate;
+  -webkit-backdrop-filter: blur(28px) saturate(1.8);
+  backdrop-filter: blur(28px) saturate(1.8);
+  background: linear-gradient(
+    rgba(255, 255, 255, 0.78),
+    rgba(255, 255, 255, 0.5)
+  );
+  border-color: rgba(255, 255, 255, 0.75);
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, 0.95),
+    inset 0 -1px rgba(255, 255, 255, 0.4),
+    inset 0 0 0 1px rgba(14, 15, 17, 0.04),
+    0 12px 40px -12px rgba(16, 18, 20, 0.22);
+}
+.liquid-glass::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(
+    120% 90% at 50% -30%,
+    rgba(255, 255, 255, 0.9),
+    rgba(255, 255, 255, 0) 60%
+  );
+}
+
+/* Growth home hero — blinking typewriter caret + the slow, edge-faded logo
+ * marquee under the website box. Both stop for reduced-motion users. */
+@keyframes zavi-caret-blink {
+  0%,
+  45% {
+    opacity: 1;
+  }
+  50%,
+  95% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+.zavi-type-caret {
+  animation: zavi-caret-blink 1s step-end infinite;
+}
+.zavi-logo-marquee-track {
+  will-change: transform;
+  animation: zavi-marquee-scroll 30s linear infinite;
+}
+.zavi-logo-marquee:hover .zavi-logo-marquee-track {
+  animation-play-state: paused;
+}
+.zavi-logo-marquee-mask {
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent,
+    #000 12% 88%,
+    transparent
+  );
+  mask-image: linear-gradient(90deg, transparent, #000 12% 88%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .zavi-type-caret,
+  .zavi-logo-marquee-track {
+    animation: none;
+  }
+}
+
+/* Growth home "Step 1 — Research" document card: fades in on each tab switch
+ * (the panel is re-keyed, so the animation restarts). */
+@keyframes zavi-doc-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.zavi-doc-fade {
+  animation: zavi-doc-fade 250ms ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .zavi-doc-fade {
+    animation: none;
+  }
+}
+
+/* Growth home "Wall of Love" — two testimonial rows drifting in opposite
+ * directions (track is the row duplicated; -50% loops seamlessly). Hovering a
+ * row pauses it; reduced-motion users get static rows. Edges reuse
+ * .zavi-logo-marquee-mask. */
+@keyframes zavi-drift-left {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+@keyframes zavi-drift-right {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+.zavi-drift-left {
+  will-change: transform;
+  animation: zavi-drift-left 70s linear infinite;
+}
+.zavi-drift-right {
+  will-change: transform;
+  animation: zavi-drift-right 70s linear infinite;
+}
+.zavi-drift-row:hover .zavi-drift-left,
+.zavi-drift-row:hover .zavi-drift-right {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .zavi-drift-left,
+  .zavi-drift-right {
+    animation: none;
+  }
+}
+
+/* Growth home "What Zavi runs for you" — the SEO demo's "Applied" chip pops in
+ * as each fix is ticked. */
+@keyframes zavi-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.zavi-pop-in {
+  animation: zavi-pop-in 220ms ease-out both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .zavi-pop-in {
+    animation: none;
+  }
+}
+
+/* /channels/[slug] "Real work people ship" row — the post track is rendered
+ * twice and slides by -50% for a seamless loop (pauses on hover via the
+ * group-hover arbitrary property in the markup). */
+@keyframes zavi-ch-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .\[animation\:zavi-ch-marquee_50s_linear_infinite\] {
+    animation: none !important;
+  }
+}
+
+/* Growth home "Grow your business in three steps" — the tab rail's 5s progress
+ * underline, the panel cross-fade, and the three mock cards' timelines (website
+ * scan, growth-plan rows, Apply -> Applied swap). Ports the reference design's
+ * landing-6 section; the elements carry an inline animation-delay for stagger. */
+@keyframes zavi-how-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+.zavi-how-progress {
+  animation: zavi-how-progress 5s linear forwards;
+}
+
+@keyframes zavi-how-fade {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.zavi-how-fade {
+  animation: zavi-how-fade 400ms ease;
+}
+
+@keyframes zavi-wp-type {
+  0% {
+    width: 0;
+  }
+  40%,
+  100% {
+    width: 100%;
+  }
+}
+.zavi-wp-type {
+  animation: zavi-wp-type 2.4s steps(24) forwards;
+}
+
+@keyframes zavi-wp-bar {
+  0%,
+  42% {
+    width: 4%;
+  }
+  82%,
+  100% {
+    width: 100%;
+  }
+}
+.zavi-wp-bar {
+  width: 4%;
+  animation: zavi-wp-bar 3.6s ease-out forwards;
+}
+
+@keyframes zavi-step-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.zavi-step-reveal {
+  opacity: 0;
+  animation: zavi-step-reveal 450ms ease forwards;
+}
+
+@keyframes zavi-ap-hide {
+  0%,
+  44% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50%,
+  100% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+}
+@keyframes zavi-ap-show {
+  0%,
+  54% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  62%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+/* `backwards` is load-bearing, not decoration. These two are stacked in one
+ * slot and staggered per row with animation-delay (up to 1.5s). During a
+ * delay an element shows its OWN base style, not the animation's 0% frame —
+ * and both spans are opacity:1 by default, so every row rendered "Apply" and
+ * "Applied" on top of each other until its delay elapsed, worst on the last
+ * row. `backwards` applies the 0% frame through the delay, so "Applied"
+ * starts hidden. */
+.zavi-ap-hide {
+  animation: zavi-ap-hide 6.5s ease-in-out infinite backwards;
+}
+.zavi-ap-show {
+  animation: zavi-ap-show 6.5s ease-in-out infinite backwards;
+}
+
+/* Reduced motion: no timelines, and every element settles on its end state
+ * (typed URL complete, bar full, rows visible, "Applied" shown). */
+@media (prefers-reduced-motion: reduce) {
+  .zavi-how-progress,
+  .zavi-how-fade,
+  .zavi-wp-type,
+  .zavi-wp-bar,
+  .zavi-step-reveal,
+  .zavi-ap-hide,
+  .zavi-ap-show {
+    animation: none !important;
+  }
+  .zavi-wp-type {
+    width: 100%;
+  }
+  .zavi-wp-bar {
+    width: 100%;
+  }
+  .zavi-step-reveal {
+    opacity: 1;
+  }
+  .zavi-ap-hide {
+    opacity: 0;
+  }
+  .zavi-ap-show {
+    opacity: 1;
+  }
+}
+
+/* Growth home "Why teams pick Zavi" — the channel tiles' glow, the rotating
+ * channel card (typing dots, label/task fade, progress bar, metric reveal) and
+ * the always-on card (live pulse, timeline sweep). Ports the reference
+ * design's landing-6 section; stagger comes from inline animation-delay. */
+@keyframes zavi-wt-glow {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+.zavi-wt-glow {
+  animation: zavi-wt-glow 2.2s ease-in-out infinite;
+}
+
+@keyframes zavi-wt-bounce {
+  0%,
+  80%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  40% {
+    transform: translateY(-5px);
+    opacity: 1;
+  }
+}
+.zavi-wt-bounce {
+  animation: zavi-wt-bounce 1.2s ease-in-out infinite;
+}
+
+@keyframes zavi-wt-fade {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.zavi-wt-fade {
+  animation: zavi-wt-fade 400ms ease;
+}
+
+@keyframes zavi-wt-progress {
+  0%,
+  8% {
+    width: 6%;
+  }
+  58%,
+  100% {
+    width: 96%;
+  }
+}
+.zavi-wt-progress {
+  width: 6%;
+  animation: zavi-wt-progress 2.8s ease-out forwards;
+}
+
+@keyframes zavi-wt-reveal {
+  0%,
+  45% {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  62%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+.zavi-wt-reveal {
+  opacity: 0;
+  animation: zavi-wt-reveal 2.8s ease-in-out forwards;
+}
+
+@keyframes zavi-wt-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.zavi-wt-pulse {
+  animation: zavi-wt-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes zavi-wt-sweep {
+  0% {
+    left: 3%;
+  }
+  50% {
+    left: 95%;
+  }
+  100% {
+    left: 3%;
+  }
+}
+.zavi-wt-sweep {
+  left: 3%;
+  animation: zavi-wt-sweep 3.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zavi-wt-glow,
+  .zavi-wt-bounce,
+  .zavi-wt-fade,
+  .zavi-wt-progress,
+  .zavi-wt-reveal,
+  .zavi-wt-pulse,
+  .zavi-wt-sweep {
+    animation: none !important;
+  }
+  .zavi-wt-glow {
+    opacity: 1;
+  }
+  .zavi-wt-bounce {
+    opacity: 0.6;
+  }
+  .zavi-wt-progress {
+    width: 96%;
+  }
+  .zavi-wt-reveal {
+    opacity: 1;
+  }
+  .zavi-wt-pulse {
+    opacity: 1;
+  }
+}
+
+/* Growth home "Real ads, made and shipped by Zavi" — one row of ad mockups
+ * drifting RIGHT (the track is the set twice and starts at -50%), paused on
+ * hover, with the edges masked. */
+@keyframes zavi-ad-marquee {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+.zavi-ad-marquee {
+  will-change: transform;
+  animation: zavi-ad-marquee 46s linear infinite;
+}
+.zavi-ad-row:hover .zavi-ad-marquee {
+  animation-play-state: paused;
+}
+.zavi-ad-mask {
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 5%,
+    #000 95%,
+    transparent
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 5%,
+    #000 95%,
+    transparent
+  );
+}
+@media (prefers-reduced-motion: reduce) {
+  .zavi-ad-marquee {
+    animation: none;
+    transform: none;
+  }
+}
+
+/* Growth home "Connects to the tools you already run" — the same rightward
+ * drift as the ad marquee, slower; shares .zavi-ad-row (hover pause) and
+ * .zavi-ad-mask (edge fade). */
+.zavi-tool-marquee {
+  will-change: transform;
+  animation: zavi-ad-marquee 40s linear infinite;
+}
+.zavi-ad-row:hover .zavi-tool-marquee {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .zavi-tool-marquee {
+    animation: none;
+    transform: none;
+  }
+}
+
+/* Growth home "Meet your AI teammate" — the WhatsApp / Telegram panels
+ * (components/marketing/growth-home/ChatPreview.tsx). A turn plays as:
+ * messages slide in, Zavi types, then the answer card and its buttons. */
+@keyframes zavi-chat-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.zavi-chat-in {
+  animation: zavi-chat-in 320ms ease-out both;
+}
+
+@keyframes zavi-chat-step {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.zavi-chat-step {
+  animation: zavi-chat-step 320ms ease-out both;
+}
+
+@keyframes zavi-chat-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.zavi-chat-fade {
+  animation: zavi-chat-fade 240ms ease-out both;
+}
+
+@keyframes zavi-typing-dot {
+  0%,
+  60%,
+  100% {
+    opacity: 0.45;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+.zavi-typing-dot {
+  animation: zavi-typing-dot 1s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zavi-chat-in,
+  .zavi-chat-step,
+  .zavi-chat-fade,
+  .zavi-typing-dot {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Growth home "Marketing on autopilot for ..." — the line types itself in, the
+ * toggle pops, then the audience word swaps behind a blur. Reference timings. */
+@keyframes zavi-auto-caret {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+.zavi-auto-caret {
+  animation: zavi-auto-caret 0.9s steps(1) infinite;
+}
+
+@keyframes zavi-auto-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.zavi-auto-pop {
+  animation: zavi-auto-pop 0.35s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+
+@keyframes zavi-auto-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.zavi-auto-fade {
+  animation: zavi-auto-fade 0.4s ease both;
+}
+
+@keyframes zavi-auto-word-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.35em);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: blur(0);
+  }
+}
+.zavi-auto-word-in {
+  animation: zavi-auto-word-in 0.5s ease both;
+}
+
+@keyframes zavi-auto-word-out {
+  from {
+    opacity: 1;
+    transform: none;
+    filter: blur(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-0.35em);
+    filter: blur(6px);
+  }
+}
+.zavi-auto-word-out {
+  animation: zavi-auto-word-out 0.45s ease forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zavi-auto-caret,
+  .zavi-auto-pop,
+  .zavi-auto-fade,
+  .zavi-auto-word-in,
+  .zavi-auto-word-out {
+    animation: none !important;
+  }
+  .zavi-auto-caret {
+    opacity: 0;
+  }
+  .zavi-auto-word-out {
+    opacity: 0;
+  }
+}
+
+/* Growth home "Real ads, made and shipped by Zavi" — the cards ride a 3D
+ * cylinder (see GrowthRealAds) that turns once every 55s, matching the
+ * tryholo.ai/new carousel's on-screen speed. Hovering the stage pauses it. */
+@keyframes zavi-ad-spin {
+  from {
+    transform: rotateY(0deg);
+  }
+  to {
+    transform: rotateY(360deg);
+  }
+}
+.zavi-ad-cylinder {
+  transform-style: preserve-3d;
+  will-change: transform;
+  /* 55s a turn: with 16 seats a card fronts every ~3.4s, the reference's
+     cadence, without the cards racing past. */
+  animation: zavi-ad-spin 55s linear infinite;
+}
+.zavi-ad-stage:hover .zavi-ad-cylinder {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .zavi-ad-cylinder {
+    animation: none;
+  }
+}
+
+/* Arrival glow — the Reddit channel's "See all" jumps land on a card or section
+ * and let it breathe once so the eye finds it: a soft blurred halo swells
+ * around its edge, then fades out. The surface inside is never tinted. No border
+ * colour change and no zero-blur ring — those read as a hard outline. Colours
+ * come from --c-ink so it reads in both themes. Reduced motion gets one still
+ * halo that fades, no swell. */
+@keyframes arrivalGlow {
+  0% {
+    box-shadow:
+      0 0 0 0 rgb(var(--c-ink) / 0),
+      0 0 0 0 rgb(var(--c-ink) / 0);
+  }
+  25% {
+    box-shadow:
+      0 0 18px 2px rgb(var(--c-ink) / 0.16),
+      0 0 48px 10px rgb(var(--c-ink) / 0.1);
+  }
+  100% {
+    box-shadow:
+      0 0 0 0 rgb(var(--c-ink) / 0),
+      0 0 0 0 rgb(var(--c-ink) / 0);
+  }
+}
+@keyframes arrivalGlowStill {
+  0%,
+  70% {
+    box-shadow: 0 0 24px 4px rgb(var(--c-ink) / 0.12);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgb(var(--c-ink) / 0);
+  }
+}
+.arrival-glow {
+  animation: arrivalGlow 2600ms ease-in-out both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .arrival-glow {
+    animation-name: arrivalGlowStill;
+    animation-timing-function: ease-out;
+  }
+}
+
+/* Neutral share of a sentiment bar. Light grey on the light theme; on dark it
+ * reads near-white so it stands out from the empty track (the generated dark
+ * remap would otherwise turn #c9c9c9 into a near-black grey). */
+.sentiment-neutral {
+  background-color: #c9c9c9;
+}
+html.dark .workspace-shell .sentiment-neutral {
+  background-color: rgb(var(--c-ink) / 0.85);
+}
+
+:root {
+  --app-height: 100vh;
+  --app-height: 100svh;
+}
+
+@media (max-width: 639px) and (pointer: coarse) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  select,
+  textarea {
+    font-size: max(16px, 1em) !important;
+  }
+}
+
+.scroll-contain {
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.compact-safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.compact-safe-bottom .compact-safe-bottom {
+  padding-bottom: 0;
+}
+
+/* ── Browser-autofill detection ──────────────────────────────────────────────
+ * A page gets NO event when Chrome fills a saved credential on load: the
+ * browser writes `input.value` straight to the DOM, so React's state never
+ * updates and anything gated on that state (a submit button, a character
+ * counter) is left contradicting what the user can plainly see.
+ *
+ * The one signal Chrome and Safari do give is a CSS animation on the
+ * `:-webkit-autofill` pseudo-class. This keyframe changes nothing visually —
+ * it exists purely so `animationstart` fires and a listener can read the value
+ * back out of the DOM. The name is duplicated in app/login/page.tsx as
+ * AUTOFILL_ANIMATION; keep the two in step.
+ *
+ * Firefox does not implement the pseudo-class, so a listener must not rely on
+ * this alone — see the mount-time re-read in the same file.
+ *
+ * THE KEYFRAMES MUST DECLARE SOMETHING. An empty `from {} to {}` is what this
+ * started as, and the production build threw the whole rule away: cssnano
+ * discards empty rules, so the shipped CSS kept `animation-name:
+ * zavi-autofill-start` pointing at a keyframe that no longer existed, no
+ * animation ran, and `animationstart` never fired. The bug was invisible in
+ * dev and in the tests, which dispatch the event by hand. The declaration
+ * below is a custom property nothing reads, so it is still visually inert,
+ * but it gives the minifier something to keep.
+ */
+@keyframes zavi-autofill-start {
+  from {
+    --zavi-autofill: 0;
+  }
+  to {
+    --zavi-autofill: 1;
+  }
+}
+
+input:-webkit-autofill {
+  animation-name: zavi-autofill-start;
+  animation-duration: 1ms;
+}
+
+/* Chat run line (RunPanel, 2026-09-23): the in-flight status text shimmers so
+ * a closed panel still reads as alive. Only the text moves; reduced-motion
+ * users get the static muted line. */
+@keyframes zavi-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -150% 0;
+  }
+}
+.zavi-shimmer {
+  background-image: linear-gradient(
+    90deg,
+    rgb(var(--c-ink) / 0.5) 0%,
+    rgb(var(--c-ink) / 0.5) 40%,
+    rgb(var(--c-ink) / 0.9) 50%,
+    rgb(var(--c-ink) / 0.5) 60%,
+    rgb(var(--c-ink) / 0.5) 100%
+  );
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: zavi-shimmer 1.8s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .zavi-shimmer {
+    animation: none;
+    background: none;
+    color: rgb(var(--c-ink) / 0.6);
+  }
+}
+@keyframes zavi-breathe {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+@keyframes zavi-breathe-halo {
+  0%,
+  100% {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.35);
+    opacity: 0.35;
+  }
+}
+.zavi-breathe {
+  animation: zavi-breathe 2.4s ease-in-out infinite;
+}
+.zavi-breathe-halo {
+  animation: zavi-breathe-halo 2.4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .zavi-breathe,
+  .zavi-breathe-halo {
+    animation: none;
+  }
+  .zavi-breathe-halo {
+    opacity: 0;
+  }
+}
+
+/* Head-of-growth card (cgo): the state line eases in when autopilot flips. */
+@keyframes hogFade {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes apSweepX {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(400%);
+  }
+}
+
+/* Autopilot (HeadOfGrowth.tsx): the track's gradient drift, the seal's slow
+   turn, and the one-time "Welcome to Autopilot" badge. */
+@keyframes apDrift {
+  to {
+    background-position: 300% 0;
+  }
+}
+@keyframes apSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes apCeleb {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.6);
+  }
+  12% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.04);
+  }
+  20% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  80% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -60%) scale(0.96);
+  }
+}
+@keyframes apPing {
+  to {
+    box-shadow: 0 0 0 12px rgba(52, 199, 89, 0);
+  }
+}
+
+/* Growth leaderboard (/growth): score bars fill in, cards and rows rise in one
+   after another, the live dot pings, empty slots and the title shimmer. */
+@keyframes lbFill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+@keyframes lbRise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes lbPing {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  80%,
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+@keyframes lbSheen {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lb-anim,
+  .lb-anim * {
+    animation: none !important;
+  }
+}
+
+/* Input fields (global): every text field's placeholder is 15px medium.
+ * Unlayered so it sits above Tailwind's base; a field that needs a different
+ * placeholder size must say so with a placeholder: utility. */
+input::placeholder,
+textarea::placeholder {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.hover\:bg-\[\#fff8ea\]:hover {
+  border-color: rgba(255, 201, 61, 0.6);
+}
+
+:root {
+  --ca-bg: 255 255 255;
+  --ca-bg-subtle: 249 249 249;
+  --ca-surface-subtle: 240 240 240;
+  --ca-border: 240 240 240;
+  --ca-border-strong: 217 217 217;
+  --ca-text-xdark: 14 15 17;
+  --ca-text-dark: 31 31 31;
+  --ca-text-primary: 11 11 11;
+  --ca-text-secondary: 84 84 84;
+  --ca-action: 11 11 11;
+  --ca-action-hover: 40 40 40;
+  --ca-on-action: 255 255 255;
+  --ca-success: 1 112 55;
+  --ca-success-bg: 242 250 243;
+  --ca-mark: 255 243 196;
+  --ca-focus: 63 117 255;
+  --ca-danger: 203 32 41;
+  --ca-hover: rgb(0 0 0 / 0.04);
+  --ca-overlay: rgb(14 15 17 / 0.3);
+  --ca-shadow-sm: 0 1px 4px 0 rgb(14 15 17 / 0.05);
+  --ca-shadow-xl: 0 32px 64px -12px rgb(16 18 20 / 0.14);
+  --ca-text-muted: 89 89 89;
+  --ca-icon: 31 31 31;
+  --ca-icon-light: 89 89 89;
+  --ca-brand: 2 123 255;
+  --ca-brand-subtle: 230 242 255;
+  --ca-border-focus: 96 172 255;
+  --ca-shadow-md: 0 1px 4px 0 rgb(16 18 20 / 0.05), 0 1px 4px 0 rgb(16 18 20 / 0.1);
+  --ca-ring: 0 0 0 4px rgb(230 242 255), 0 1px 2px 0 rgb(16 24 40 / 0.05);
+}
+html.dark {
+  --ca-bg: 20 20 20;
+  --ca-bg-subtle: 31 31 31;
+  --ca-surface-subtle: 43 43 43;
+  --ca-border: 43 43 43;
+  --ca-border-strong: 64 64 64;
+  --ca-text-xdark: 236 236 236;
+  --ca-text-dark: 222 222 222;
+  --ca-text-primary: 240 240 240;
+  --ca-text-secondary: 160 160 160;
+  --ca-action: 240 240 240;
+  --ca-action-hover: 214 214 214;
+  --ca-on-action: 14 15 17;
+  --ca-success: 92 201 138;
+  --ca-success-bg: 18 40 28;
+  --ca-mark: 84 68 18;
+  --ca-focus: 96 150 255;
+  --ca-danger: 255 128 128;
+  --ca-hover: rgb(255 255 255 / 0.06);
+  --ca-overlay: rgb(0 0 0 / 0.6);
+  --ca-shadow-sm: 0 1px 4px 0 rgb(0 0 0 / 0.4);
+  --ca-shadow-xl: 0 32px 64px -12px rgb(0 0 0 / 0.6);
+  --ca-text-muted: 160 160 160;
+  --ca-icon: 222 222 222;
+  --ca-icon-light: 160 160 160;
+  --ca-brand: 96 150 255;
+  --ca-brand-subtle: 22 36 64;
+  --ca-border-focus: 96 150 255;
+  --ca-shadow-md: 0 1px 4px 0 rgb(0 0 0 / 0.4), 0 1px 4px 0 rgb(0 0 0 / 0.5);
+  --ca-ring: 0 0 0 4px rgb(22 36 64), 0 1px 2px 0 rgb(0 0 0 / 0.3);
+}

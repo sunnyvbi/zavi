@@ -1,0 +1,46 @@
+name = "${ZAVI_SITE_GATEWAY_WORKER_NAME}"
+main = "src/worker.ts"
+compatibility_date = "2026-09-01"
+workers_dev = false
+
+[[kv_namespaces]]
+binding = "HOSTS"
+id = "${ZAVI_STATIC_KV_NAMESPACE_ID}"
+
+[[services]]
+binding = "SIGNER"
+service = "${ZAVI_SITE_SIGNER_WORKER_NAME}"
+
+[[ratelimits]]
+name = "RL_READ"
+namespace_id = "${ZAVI_SITE_GATEWAY_RL_READ_NS}"
+simple = { limit = 300, period = 60 }
+
+[[ratelimits]]
+name = "RL_WRITE"
+namespace_id = "${ZAVI_SITE_GATEWAY_RL_WRITE_NS}"
+simple = { limit = 30, period = 60 }
+
+[[ratelimits]]
+name = "RL_SITE"
+namespace_id = "${ZAVI_SITE_GATEWAY_RL_SITE_NS}"
+simple = { limit = 3000, period = 60 }
+
+[[services]]
+binding = "FUNCTIONS"
+service = "${ZAVI_FN_DISPATCHER_WORKER_NAME}"
+
+[[ratelimits]]
+name = "RL_HOOK"
+namespace_id = "${ZAVI_SITE_GATEWAY_RL_HOOK_NS}"
+simple = { limit = 600, period = 60 }
+
+[[analytics_engine_datasets]]
+binding = "SHARD_METRICS"
+dataset = "zavi_site_gateway_shards"
+
+[vars]
+AUTH_BROKER_URL = "${ZAVI_API_ORIGIN}/api/public/site-auth"
+TURNSTILE_SITE_KEY = "${ZAVI_TURNSTILE_SITE_KEY}"
+PREVIEW_DOMAIN = "${SITE_PREVIEW_DOMAIN}"
+

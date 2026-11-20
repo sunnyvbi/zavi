@@ -1,0 +1,137 @@
+{
+  "schemaVersion": 1,
+  "collections": {
+    "submissions": {
+      "rules": {
+        "create": [
+          "anyone"
+        ],
+        "list": [
+          "owner",
+          "admin"
+        ],
+        "get": [
+          "owner",
+          "admin"
+        ],
+        "update": [
+          "admin"
+        ],
+        "delete": [
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "required": [
+          "name",
+          "body"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "email": {
+            "type": "string",
+            "maxLength": 320,
+            "format": "email"
+          },
+          "body": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "status": {
+            "type": "string",
+            "maxLength": 20,
+            "enum": [
+              "new",
+              "done"
+            ]
+          }
+        }
+      },
+      "fields": {
+        "status": {
+          "write": [
+            "admin"
+          ]
+        }
+      },
+      "indexes": {
+        "status": {
+          "type": "text",
+          "ops": [
+            "eq"
+          ],
+          "sort": false
+        }
+      }
+    }
+  },
+  "smoke": {
+    "journeys": [
+      {
+        "name": "home",
+        "path": "/",
+        "expect": "[data-zavi=home]"
+      },
+      {
+        "name": "login",
+        "path": "/login",
+        "expect": "[data-zavi=login-email]"
+      },
+      {
+        "name": "contact-create",
+        "path": "/",
+        "writes": true,
+        "steps": [
+          {
+            "fill": "[data-zavi=contact-name]",
+            "value": "{smoke}"
+          },
+          {
+            "fill": "[data-zavi=contact-body]",
+            "value": "{smoke} message"
+          },
+          {
+            "click": "[data-zavi=contact-submit]"
+          },
+          {
+            "expect": "[data-zavi=contact-sent]"
+          }
+        ]
+      },
+      {
+        "name": "visitor-denied",
+        "path": "/admin",
+        "expect": "[data-zavi=admin-signin]",
+        "steps": [
+          {
+            "deniedRead": "submissions"
+          },
+          {
+            "expectNoText": "{smoke}"
+          }
+        ],
+        "needs": "contact-create"
+      },
+      {
+        "name": "admin-sees-message",
+        "path": "/admin",
+        "as": "owner",
+        "steps": [
+          {
+            "expect": "[data-zavi=admin-shell]"
+          },
+          {
+            "expectText": "{smoke}"
+          }
+        ],
+        "needs": "contact-create"
+      }
+    ]
+  }
+}

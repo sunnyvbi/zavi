@@ -1,0 +1,198 @@
+{
+  "schemaVersion": 2,
+  "roles": [],
+  "capabilities": [],
+  "actions": {},
+  "aggregates": {
+    "avg_stars": {
+      "collection": "reviews",
+      "fn": "avg",
+      "field": "stars",
+      "filters": [
+        "movie_id"
+      ],
+      "principals": [
+        "admin"
+      ]
+    }
+  },
+  "collections": {
+    "movies": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "anyone"
+        ],
+        "get": [
+          "anyone"
+        ],
+        "create": [
+          "admin"
+        ],
+        "update": [
+          "admin"
+        ],
+        "delete": [
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "release_date": {
+            "type": "string",
+            "maxLength": 10,
+            "format": "date"
+          },
+          "rating": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 10
+          },
+          "genres": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 30
+            },
+            "maxItems": 8
+          },
+          "synopsis": {
+            "type": "string",
+            "maxLength": 3000
+          },
+          "poster_name": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "watch_url": {
+            "type": "string",
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "title",
+          "release_date"
+        ]
+      },
+      "fields": {},
+      "indexes": {
+        "release_date": {
+          "type": "timestamp",
+          "ops": [
+            "range"
+          ],
+          "sort": true
+        },
+        "rating": {
+          "type": "number",
+          "ops": [
+            "range"
+          ],
+          "sort": true
+        },
+        "title": {
+          "type": "text",
+          "ops": [
+            "prefix"
+          ],
+          "sort": false
+        }
+      },
+      "unique": [],
+      "references": {}
+    },
+    "posters": {
+      "kind": "files",
+      "rules": {
+        "list": [
+          "anyone"
+        ],
+        "get": [
+          "anyone"
+        ],
+        "create": [
+          "admin"
+        ],
+        "update": [
+          "admin"
+        ],
+        "delete": [
+          "admin"
+        ]
+      }
+    },
+    "reviews": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "anyone"
+        ],
+        "get": [
+          "anyone"
+        ],
+        "create": [
+          "signed_in"
+        ],
+        "update": [
+          "owner"
+        ],
+        "delete": [
+          "owner",
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "movie_id": {
+            "type": "string",
+            "maxLength": 36,
+            "format": "uuid"
+          },
+          "stars": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "comment": {
+            "type": "string",
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "movie_id",
+          "stars"
+        ]
+      },
+      "fields": {},
+      "indexes": {
+        "movie_id": {
+          "type": "text",
+          "ops": [
+            "eq"
+          ],
+          "sort": false
+        },
+        "stars": {
+          "type": "number",
+          "ops": [
+            "eq"
+          ],
+          "sort": false
+        }
+      },
+      "unique": [],
+      "references": {
+        "movie_id": {
+          "collection": "movies",
+          "on_delete": "cascade"
+        }
+      }
+    }
+  }
+}

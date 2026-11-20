@@ -1,0 +1,20 @@
+{
+  "_comment": "Shard migrations applied before the S7 migration protocol (services/site-shards/migration-protocol.ts). Frozen: never edit these files, never add to this list. Every file NOT listed here must pass the protocol lint.",
+  "files": {
+    "0001_core": "a7d7ead171e6f4475cf429f1426eb73ca609cfeb18c966019e2da6a9a0ed5fb6",
+    "0002_api": "340501ae24ec25346470cf6572d240126ac2a2484258204fd430fc21be4afa11",
+    "0003_storage": "910304d3e6b43ee8b14ad74f81240ad2db4d71fac9ffef2e5632167063197945",
+    "0004_membership_slots_perf": "0befc3086c39359a28ab4bed93b4a5cad6ccdc3fed259f10083246a8e61b9f34",
+    "0005_contracts_archive_reindex": "4b86a0a7acb25a06e75aabc05be3d3e90057e60b842ef83f5de0afea8e1a6523",
+    "0006_contract_v2": "222e3eafa2af6a4e9e0e8732887c771202bac02e3c94280fa938446a70c8a22c",
+    "0007_relational_slots_rls": "7c869ed955915a126d2c94c1bed5d6e313e10cbed8ee04d6b05ab8c6095b61b9",
+    "0008_relational_api": "a252503a5bf557b63a17f94725ba277492d073c23e83662d390e28feaf64ae68",
+    "0009_recipient_cap_quota": "7f5c84f30237cac092f1eaff1cb30e04dbbaecda1f9e6a85f65b186fe941f511",
+    "0010_release_on_delete": "2022f17229e6bbd5d043e160ef165dfe92265310e4d715913d8ed231e7914c2d",
+    "1001_access_token_hook": "562b45943fe84e00fbd47e957e716ab601a5d47839c535e887c413cdd5599bc8",
+    "1002_broker": "a083a63688d8deff819cb110f5047b64e0186b337fa70434791dbc724a9a4d88",
+    "1003_member_admin": "1fa3e30ad6f704f79311effd7f405a37dfd9d0c41f9d75b39288874164efa9ab",
+    "1004_signup_sessions": "5b8f3f21935ce60018e42e3cd16d22539e758f517e082916cb74a09112c1b204",
+    "1030_form_notifications": "c3cb7ecd351c88acd7cecb75a3dad9df45def66e37c7f68886c1187e4650ab89"
+  }
+}

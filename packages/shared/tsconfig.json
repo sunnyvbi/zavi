@@ -1,0 +1,31 @@
+{
+  // Composite project (Gap 4 slice 0, 2026-07-04): @zavi/shared now EMITS to
+  // dist so it can be consumed as a real built package by node at runtime.
+  // Previously `noEmit:true` — aspirational, nothing imported it. `composite`
+  // + `declaration` let the backend reference it via `tsc -b` and resolve its
+  // .d.ts. Consumers that read SOURCE (backend typecheck/vitest via tsconfig
+  // `paths`, web via Next `transpilePackages`) still work unchanged; this only
+  // ADDS the dist emit path for production runtime + future imports.
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "noEmit": false,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    // Emit CommonJS, NOT the base's `module:ESNext` + `moduleResolution:Bundler`.
+    // Bundler mode lets TS keep extensionless relative imports (a bundler fills
+    // them in); Node's native ESM resolver REJECTS extensionless subpaths, so an
+    // ESNext dist is unloadable by plain `node` — it throws ERR_MODULE_NOT_FOUND
+    // on `./types/agents`. The only dist consumer is the CommonJS backend
+    // (`node dist/server.js`), which requires CJS. Source-readers (backend
+    // typecheck/vitest via `paths`, web via Next transpile) are unaffected.
+    "module": "CommonJS",
+    "moduleResolution": "node"
+  },
+  // .json listed explicitly: a composite build emits only included files, and
+  // pricing/pricing.config.json must land in dist beside its loader.
+  "include": ["src/**/*", "src/**/*.json"]
+}

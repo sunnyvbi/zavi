@@ -1,0 +1,9 @@
+out/
+node_modules/
+
+*.mp4
+out/
+
+public/*.png
+public/*.mp4
+public/*.mp3

@@ -1,0 +1,618 @@
+.panel {
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+  color: rgb(var(--c-ink));
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: clamp(1.75rem, 3vw, 2.125rem);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+}
+
+.headerActions {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.iconButton,
+.closeButton,
+.cardMenuButton {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgb(var(--c-ink) / 0.2);
+  background: rgb(var(--c-cream));
+  color: rgb(var(--c-ink));
+  transition:
+    background 150ms ease,
+    border-color 150ms ease,
+    opacity 150ms ease;
+}
+
+.iconButton {
+  width: 44px;
+  height: 44px;
+  border-radius: 9px;
+}
+
+.iconButton:hover,
+.closeButton:hover,
+.cardMenuButton:hover {
+  border-color: rgb(var(--c-ink) / 0.42);
+  background: rgb(var(--c-ink) / 0.06);
+}
+
+.iconButton:disabled,
+.closeButton:disabled,
+.cardMenuButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
+
+.filterMenu,
+.cardMenu {
+  position: absolute;
+  z-index: 30;
+  padding: 0.375rem;
+  border: 1px solid rgb(var(--c-ink) / 0.2);
+  border-radius: 11px;
+  background: rgb(var(--c-cream));
+  box-shadow: 0 16px 44px rgb(0 0 0 / 0.22);
+}
+
+.filterMenu {
+  top: calc(100% + 0.625rem);
+  right: 56px;
+  width: 180px;
+}
+
+.filterMenu button,
+.cardMenu button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: rgb(var(--c-ink));
+  text-align: left;
+  transition: background 120ms ease;
+}
+
+.filterMenu button {
+  min-height: 42px;
+  padding: 0.625rem 0.75rem;
+  font-size: 0.9rem;
+}
+
+.filterMenu button:hover,
+.cardMenu button:hover {
+  background: rgb(var(--c-ink) / 0.07);
+}
+
+.cards {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.card,
+.skeletonCard,
+.messageCard,
+.emptyState {
+  border: 1px solid rgb(var(--c-ink) / 0.18);
+  background: rgb(var(--c-cream));
+}
+
+.card {
+  position: relative;
+  padding: 1.75rem 2rem 1.625rem;
+  border-radius: 12px;
+}
+
+.cardHeading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.25rem;
+}
+
+.goalTitle {
+  max-width: 760px;
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -0.02em;
+}
+
+.cardMenuButton {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  margin: -0.35rem -0.5rem 0 0;
+  border-color: transparent;
+  border-radius: 7px;
+  color: rgb(var(--c-ink-muted));
+}
+
+.cardMenu {
+  top: 3.5rem;
+  right: 1.35rem;
+  width: 150px;
+}
+
+.cardMenu button {
+  min-height: 36px;
+  padding: 0.5rem 0.625rem;
+  font-size: 0.82rem;
+}
+
+.cardMenu button:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.metricBlock {
+  margin-top: 1.125rem;
+}
+
+.detailLabel,
+.cardFooter dt {
+  margin: 0;
+  color: rgb(var(--c-ink-muted));
+  font-size: 0.78rem;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.detailValue,
+.cardFooter dd {
+  margin: 0.2rem 0 0;
+  color: rgb(var(--c-ink));
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.progressHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.currentAndTarget,
+.percentage {
+  margin: 0;
+  color: rgb(var(--c-ink));
+  font-size: 1.05rem;
+  font-variant-numeric: tabular-nums lining-nums;
+  line-height: 1.4;
+}
+
+.currentAndTarget strong,
+.percentage {
+  font-weight: 600;
+}
+
+.currentAndTarget span {
+  color: rgb(var(--c-ink-muted));
+}
+
+.progressTrack {
+  height: 10px;
+  margin-top: 0.75rem;
+  overflow: hidden;
+  border-radius: 4px;
+  background: rgb(var(--c-ink) / 0.13);
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: inherit;
+  background: rgb(var(--c-ink));
+  transition: width 240ms ease;
+}
+
+.cardFooter {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, 260px);
+  gap: 2rem;
+  margin: 1.55rem 0 0;
+}
+
+.dueDate {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.dueDate svg {
+  flex: 0 0 auto;
+  margin-bottom: 0.15rem;
+  color: rgb(var(--c-ink-muted));
+}
+
+.limitMessage {
+  color: rgb(var(--c-ink));
+}
+
+/* Errors read as errors: the app's danger red (tailwind `danger`), coral in dark. */
+.rowError,
+.fieldError,
+.formAlert {
+  color: #cb2029;
+}
+
+:global(html.dark) .rowError,
+:global(html.dark) .fieldError,
+:global(html.dark) .formAlert {
+  color: #ff6b6b;
+}
+
+.rowError {
+  margin: 1rem 0 0;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgb(var(--c-ink) / 0.12);
+  font-size: 0.78rem;
+}
+
+.skeletonCard {
+  padding: 1.75rem 2rem;
+  border-radius: 12px;
+}
+
+.messageCard,
+.emptyState {
+  padding: 3.5rem 1.5rem;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.messageCard p,
+.emptyState p {
+  margin: 0;
+  color: rgb(var(--c-ink));
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.emptyState span {
+  display: block;
+  max-width: 390px;
+  margin: 0.45rem auto 0;
+  color: rgb(var(--c-ink-muted));
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+
+.messageCard button {
+  margin-top: 0.85rem;
+  border: 0;
+  background: transparent;
+  color: rgb(var(--c-ink));
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.limitMessage {
+  margin: 0.9rem 0 0;
+  font-size: 0.76rem;
+  line-height: 1.5;
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-end;
+  background: rgb(0 0 0 / 0.48);
+}
+
+.drawer {
+  display: flex;
+  width: min(600px, calc(100vw - 2.75rem));
+  height: 100dvh;
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
+  border-left: 1px solid rgb(var(--c-ink) / 0.22);
+  background: rgb(var(--c-cream));
+  animation: drawer-enter 180ms ease-out both;
+}
+
+.drawer > form {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+}
+
+.drawerHeader {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 2rem 2rem 1.4rem;
+  border-bottom: 1px solid rgb(var(--c-ink) / 0.12);
+}
+
+.drawerHeader h2 {
+  margin: 0;
+  color: rgb(var(--c-ink));
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+}
+
+.drawerHeader p {
+  margin: 0.35rem 0 0;
+  color: rgb(var(--c-ink-muted));
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.closeButton {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  border-color: transparent;
+  border-radius: 7px;
+}
+
+.formBody {
+  display: grid;
+  min-height: 0;
+  flex: 1;
+  align-content: start;
+  gap: 1.1rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 1.5rem 2rem 2rem;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.field {
+  display: block;
+  min-width: 0;
+}
+
+.field > span {
+  display: block;
+  margin-bottom: 0.45rem;
+  color: rgb(var(--c-ink-muted));
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.field > span i {
+  color: inherit;
+  font-style: normal;
+}
+
+.control {
+  display: block;
+  width: 100%;
+  min-height: 46px;
+  box-sizing: border-box;
+  border: 1px solid rgb(var(--c-ink) / 0.22);
+  border-radius: 8px;
+  background: rgb(var(--c-cream));
+  color: rgb(var(--c-ink));
+  padding: 0.72rem 0.85rem;
+  font: inherit;
+  font-size: 0.88rem;
+  line-height: 1.4;
+  outline: none;
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.control::placeholder {
+  color: rgb(var(--c-ink-muted) / 0.72);
+}
+
+.control:focus {
+  border-color: rgb(var(--c-ink) / 0.65);
+  box-shadow: 0 0 0 3px rgb(var(--c-ink) / 0.08);
+}
+
+.control[aria-invalid="true"] {
+  border-color: rgb(203 32 41 / 0.6);
+  box-shadow: none;
+}
+
+.readOnlyControl {
+  cursor: default;
+  background: rgb(var(--c-ink) / 0.045);
+  color: rgb(var(--c-ink-muted));
+}
+
+.field small {
+  display: block;
+  margin-top: 0.4rem;
+  color: rgb(var(--c-ink-muted));
+  font-size: 0.7rem;
+  line-height: 1.45;
+}
+
+.fieldError {
+  margin: 0.38rem 0 0;
+  font-size: 0.72rem;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.formAlert {
+  margin: 0;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid rgb(203 32 41 / 0.3);
+  border-radius: 8px;
+  background: rgb(203 32 41 / 0.06);
+  font-size: 0.76rem;
+  line-height: 1.5;
+}
+
+.drawerActions {
+  display: flex;
+  flex: 0 0 auto;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  padding: 1rem 2rem;
+  border-top: 1px solid rgb(var(--c-ink) / 0.12);
+  background: rgb(var(--c-cream));
+}
+
+.cancelButton,
+.saveButton {
+  min-height: 40px;
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition:
+    opacity 140ms ease,
+    background 140ms ease;
+}
+
+.cancelButton {
+  border: 1px solid rgb(var(--c-ink) / 0.22);
+  background: transparent;
+  color: rgb(var(--c-ink));
+}
+
+.saveButton {
+  border: 1px solid rgb(var(--c-ink));
+  background: rgb(var(--c-ink));
+  color: rgb(var(--c-cream));
+}
+
+.cancelButton:hover,
+.saveButton:hover {
+  opacity: 0.78;
+}
+
+.cancelButton:disabled,
+.saveButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+}
+
+@media (max-width: 640px) {
+  .header {
+    margin-bottom: 1.5rem;
+  }
+
+  .headerActions {
+    gap: 0.5rem;
+  }
+
+  .iconButton {
+    width: 40px;
+    height: 40px;
+  }
+
+  .filterMenu {
+    right: 48px;
+  }
+
+  .card,
+  .skeletonCard {
+    padding: 1.35rem 1.25rem;
+  }
+
+  .goalTitle {
+    font-size: 1.08rem;
+  }
+
+  .cardFooter,
+  .formGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .cardFooter {
+    gap: 1rem;
+  }
+
+  .dueDate {
+    align-items: center;
+  }
+
+  .drawer {
+    width: 100%;
+    height: 100dvh;
+    border-left: 0;
+  }
+
+  .drawerHeader,
+  .formBody,
+  .drawerActions {
+    padding-right: 1.25rem;
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    padding-left: 1.25rem;
+  }
+}
+
+@keyframes drawer-enter {
+  from {
+    transform: translateX(100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drawer {
+    animation: none;
+  }
+
+  .drawer,
+  .iconButton,
+  .closeButton,
+  .cardMenuButton,
+  .filterMenu button,
+  .cardMenu button,
+  .progressFill,
+  .control,
+  .cancelButton,
+  .saveButton {
+    transition: none;
+  }
+}
+
+.cardMenuAnchor {
+  display: contents;
+}

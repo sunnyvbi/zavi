@@ -1,0 +1,284 @@
+name: deploy-latest
+
+on:
+  workflow_dispatch:
+    inputs:
+      skip_site_workers:
+        description: "EMERGENCY ONLY: do not deploy the -dev site Cloudflare Workers in this run; the staging backend ships against the ones already live."
+        required: false
+        default: false
+        type: boolean
+
+concurrency:
+  group: deployment-staging
+  cancel-in-progress: false
+
+env:
+  SSH_USERNAME: ubuntu
+  DEPLOY_DIR: /server/praxis-staging
+  PUBLIC_HOST: api-latest.zaviagent.com
+  CONTAINER_PORT: 4000
+  DEPLOY_BRANCH: development
+  PROD_SUPABASE_REF: wmycgyjsenvgtczlupoe
+  PROD_EC2_HOST: 184.169.192.250
+
+jobs:
+  guard-ref:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require the development branch
+        run: |
+          if [ "$GITHUB_REF" != "refs/heads/development" ]; then
+            echo "::error::deploy-latest deploys development only; dispatched from $GITHUB_REF. Re-run with the branch selector on development."
+            exit 1
+          fi
+
+  migrate-latest:
+    environment: staging
+    if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/development' }}
+    runs-on: ubuntu-latest
+    needs: guard-ref
+    steps:
+      - name: Checkout development
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Install pinned supabase CLI
+        uses: supabase/setup-cli@1dedf2c611547ede7232d26866dd3c56ab903bbb # v1
+        with:
+          version: 2.98.2
+
+      - name: Pin node
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 20
+
+      - name: Apply migrations to STAGING Supabase (fail closed on prod ref)
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.STAGING_SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.STAGING_SUPABASE_DB_PASSWORD }}
+          SUPABASE_DB_URL: ${{ secrets.STAGING_SUPABASE_DB_URL }}
+          SUPABASE_PROJECT_REF: ${{ secrets.STAGING_SUPABASE_PROJECT_REF }}
+        run: |
+          set -euo pipefail   # NOT set -x — would leak the password
+          if [ -z "${SUPABASE_ACCESS_TOKEN:-}" ] || [ -z "${SUPABASE_DB_PASSWORD:-}" ] || [ -z "${SUPABASE_DB_URL:-}" ] || [ -z "${SUPABASE_PROJECT_REF:-}" ]; then
+            echo "::error::STAGING_SUPABASE_* secrets missing — provision the staging project + wire secrets first. Failing closed."
+            exit 1
+          fi
+          if [ "$SUPABASE_PROJECT_REF" = "${PROD_SUPABASE_REF}" ] || [[ "$SUPABASE_DB_URL" == *"${PROD_SUPABASE_REF}"* ]]; then
+            echo "::error::staging deploy resolved the PROD Supabase ref (${PROD_SUPABASE_REF}). Refusing."
+            exit 1
+          fi
+          if [[ "$SUPABASE_DB_URL" != *"$SUPABASE_PROJECT_REF"* ]]; then
+            echo "::error::SUPABASE_DB_URL does not target SUPABASE_PROJECT_REF=$SUPABASE_PROJECT_REF. Refusing."
+            exit 1
+          fi
+          db_host="${SUPABASE_DB_URL#*@}"; db_host="${db_host%%/*}"; db_host="${db_host%%:*}"
+          if [[ "$db_host" != *.pooler.supabase.com ]]; then
+            echo "::error::SUPABASE_DB_URL must use a Supabase pooler host (*.pooler.supabase.com), not '$db_host'."
+            exit 1
+          fi
+          supabase link --project-ref "$SUPABASE_PROJECT_REF"
+          enc_pw=$(SUPABASE_DB_PASSWORD="$SUPABASE_DB_PASSWORD" python3 -c 'import os,urllib.parse;print(urllib.parse.quote(os.environ["SUPABASE_DB_PASSWORD"], safe=""))')
+          echo "::add-mask::$enc_pw"
+          db_hostport="${SUPABASE_DB_URL##*@}"
+          safe_db_url="postgresql://postgres.${SUPABASE_PROJECT_REF}:${enc_pw}@${db_hostport}"
+          echo "::add-mask::$safe_db_url"
+          supabase db push --db-url "$safe_db_url" --include-all --yes
+
+  build-image-latest:
+    if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/development' }}
+    runs-on: ubuntu-latest
+    needs: guard-ref
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout development
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ github.sha }}
+      - name: Log in to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+      - name: Build + push backend image (GHCR tag stays "staging" — prod owns :latest)
+        run: |
+          set -euo pipefail
+          export DOCKER_BUILDKIT=1
+          GHCR_OWNER="$(printf '%s' "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')"
+          IMG="ghcr.io/${GHCR_OWNER}/praxis-backend"
+          docker pull "$IMG:staging" || true
+          NODE_IMAGE="$(bash apps/backend/docker/main/pick-node-image.sh)"
+          docker build -f apps/backend/docker/main/Dockerfile \
+            --cache-from "$IMG:staging" \
+            --build-arg NODE_IMAGE="$NODE_IMAGE" \
+            --build-arg BUILDKIT_INLINE_CACHE=1 \
+            -t "$IMG:staging-${{ github.sha }}" -t "$IMG:staging" .
+          docker push "$IMG:staging-${{ github.sha }}"
+          docker push "$IMG:staging"
+
+  deploy-site-workers-latest:
+    environment: staging
+    if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/development' }}
+    runs-on: ubuntu-latest
+    needs: [guard-ref, migrate-latest]
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout development
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ github.sha }}
+      - name: Pin node
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 20
+      - name: Deploy -dev site Workers (signer -> static-host -> site functions -> gateway)
+        env:
+          SKIP_SITE_WORKERS: ${{ inputs.skip_site_workers }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          ZAVI_API_ORIGIN: ${{ vars.ZAVI_API_ORIGIN }}
+          SITE_PREVIEW_DOMAIN: ${{ vars.SITE_PREVIEW_DOMAIN }}
+          ZAVI_SITE_SIGNER_WORKER_NAME: ${{ vars.ZAVI_SITE_SIGNER_WORKER_NAME }}
+          ZAVI_SITE_GATEWAY_WORKER_NAME: ${{ vars.ZAVI_SITE_GATEWAY_WORKER_NAME }}
+          ZAVI_STATIC_WORKER_NAME: ${{ vars.ZAVI_STATIC_WORKER_NAME }}
+          ZAVI_STATIC_R2_BUCKET: ${{ vars.ZAVI_STATIC_R2_BUCKET }}
+          ZAVI_STATIC_KV_NAMESPACE_ID: ${{ vars.ZAVI_STATIC_KV_NAMESPACE_ID }}
+          ZAVI_SITE_GATEWAY_RL_READ_NS: ${{ vars.ZAVI_SITE_GATEWAY_RL_READ_NS }}
+          ZAVI_SITE_GATEWAY_RL_WRITE_NS: ${{ vars.ZAVI_SITE_GATEWAY_RL_WRITE_NS }}
+          ZAVI_SITE_GATEWAY_RL_SITE_NS: ${{ vars.ZAVI_SITE_GATEWAY_RL_SITE_NS }}
+          ZAVI_SITE_GATEWAY_RL_HOOK_NS: ${{ vars.ZAVI_SITE_GATEWAY_RL_HOOK_NS }}
+          ZAVI_TURNSTILE_SITE_KEY: ${{ vars.ZAVI_TURNSTILE_SITE_KEY }}
+          ZAVI_FN_DISPATCHER_WORKER_NAME: ${{ vars.ZAVI_FN_DISPATCHER_WORKER_NAME }}
+          ZAVI_FN_OUTBOUND_WORKER_NAME: ${{ vars.ZAVI_FN_OUTBOUND_WORKER_NAME }}
+          ZAVI_FN_TAIL_WORKER_NAME: ${{ vars.ZAVI_FN_TAIL_WORKER_NAME }}
+          ZAVI_FN_NAMESPACE: ${{ vars.ZAVI_FN_NAMESPACE }}
+          ZAVI_FN_DISPATCH_HOST: ${{ vars.ZAVI_FN_DISPATCH_HOST }}
+          CLOUDFLARE_ZONE_ID: ${{ vars.CLOUDFLARE_ZONE_ID }}
+          ZAVI_FN_RL_SITE_NS: ${{ vars.ZAVI_FN_RL_SITE_NS }}
+          ZAVI_FN_RL_EGRESS_NS: ${{ vars.ZAVI_FN_RL_EGRESS_NS }}
+        run: |
+          set -euo pipefail
+          if [ "$SKIP_SITE_WORKERS" = "true" ]; then
+            echo "::warning title=-dev site Workers NOT deployed (skip_site_workers)::The staging backend ships against the -dev Workers already live."
+            exit 0
+          fi
+          (cd apps/backend/cloudflare/email-worker && npm ci --no-audit --no-fund)
+          export WRANGLER="$GITHUB_WORKSPACE/apps/backend/cloudflare/email-worker/node_modules/.bin/wrangler"
+          bash scripts/ci/deploy-site-workers.sh --env dev
+
+  deploy-latest:
+    environment: staging
+    if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/development' }}
+    runs-on: ubuntu-latest
+    needs: [guard-ref, migrate-latest, build-image-latest, deploy-site-workers-latest]
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - name: Guard — refuse a prod-looking target
+        run: |
+          set -euo pipefail
+          if [ "${{ env.PUBLIC_HOST }}" = "api.zaviagent.com" ] || [ "${{ secrets.STAGING_EC2_HOST }}" = "${{ env.PROD_EC2_HOST }}" ]; then
+            echo "::error::staging deploy resolved a PROD host — refusing."
+            exit 1
+          fi
+          if [ -z "${{ secrets.STAGING_EC2_HOST }}" ]; then
+            echo "::error::STAGING_EC2_HOST secret unset — provision the staging box first."
+            exit 1
+          fi
+
+      - name: Install SSH key
+        uses: shimataro/ssh-key-action@87a8f067114a8ce263df83e9ed5c849953548bc3 # v2
+        with:
+          key: ${{ secrets.EC2_SSH_KEY_PRAXIS_STAGING }}
+          known_hosts: ${{ secrets.STAGING_EC2_HOST }}
+
+      - name: Deploy staging (box PULLS the runner-built image — never compiles)
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          GHCR_OWNER="$(printf '%s' "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')"
+          IMAGE_BACKEND="ghcr.io/${GHCR_OWNER}/praxis-backend:staging-${{ github.sha }}"
+          SSH_OPTS="-o StrictHostKeyChecking=no -o ServerAliveInterval=30 -o ServerAliveCountMax=10"
+
+          echo "$GHCR_TOKEN" | ssh $SSH_OPTS ${{ env.SSH_USERNAME }}@${{ secrets.STAGING_EC2_HOST }} \
+            "docker login ghcr.io -u '${{ github.actor }}' --password-stdin"
+
+          ssh $SSH_OPTS ${{ env.SSH_USERNAME }}@${{ secrets.STAGING_EC2_HOST }} \
+            "IMAGE_BACKEND='$IMAGE_BACKEND' DEPLOY_SHA='${{ github.sha }}' bash -s" <<'EOF'
+          set -euo pipefail
+          DEPLOY_DIR=/server/praxis-staging
+          if [ ! -d "$DEPLOY_DIR/.git" ]; then
+            echo "staging repo not present at $DEPLOY_DIR — clone it during box provisioning first."
+            exit 1
+          fi
+          cd "$DEPLOY_DIR"
+          # Keep the box's compose/nginx checkout in lockstep with the image commit.
+          # The exact commit validate/migrate/build used, not wherever
+          # development has moved to since the dispatch.
+          git fetch origin
+          git checkout development
+          git reset --hard "$DEPLOY_SHA"
+          # Pull the runner-built image and tag it as the box-local :latest the
+          # compose file references (image: praxis-backend:latest). No --build.
+          # The box's apps/backend/.env supplies EXECUTION_ENV=staging +
+          # PRAXIS_SECRETS_SECRET_ID=praxis-development, so boot-guard fail-closes
+          # on a prod ref.
+          # Free disk before the pull, as deploy.yml does for prod: every deploy pulls
+          # a new SHA-tagged image and nothing reclaimed the old ones, so the box
+          # filled up (2026-10-07: "no space left on device" extracting the layer).
+          # -a is safe: the running container still uses praxis-backend:latest, so
+          # its image is in use and never pruned.
+          df -h / | tail -1 || true
+          docker container prune -f || true
+          docker image prune -af || true
+          docker builder prune -af || true
+          df -h / | tail -1 || true
+          docker pull "$IMAGE_BACKEND"
+          docker tag "$IMAGE_BACKEND" praxis-backend:latest
+          # --env-file ./.env is REQUIRED: compose reads its interpolation .env from
+          # the compose-file dir (docker/main/), NOT from apps/backend/.env where the
+          # box holds EXECUTION_ENV=staging + PRAXIS_SECRETS_SECRET_ID=praxis-development.
+          # Without it both fall back to defaults (empty / praxis-envprod-1 = a PROD
+          # secret this staging role can't read) and the container crash-loops on boot.
+          if [ ! -f apps/backend/.env ]; then
+            echo "::error::apps/backend/.env missing on the staging box — it must hold EXECUTION_ENV=staging + PRAXIS_SECRETS_SECRET_ID=praxis-development."
+            exit 1
+          fi
+          # Presence is not enough: compose defaults a missing PRAXIS_SECRETS_SECRET_ID
+          # to praxis-envprod-1, and a missing EXECUTION_ENV disarms boot-guard.
+          # Exactly one definition of each key, with the staging value: a later
+          # duplicate line would win in compose. Then clear any value the login
+          # shell exported, which would override the file.
+          for kv in EXECUTION_ENV=staging PRAXIS_SECRETS_SECRET_ID=praxis-development; do
+            k="${kv%%=*}"
+            if [ "$(grep -cE "^[[:space:]]*(export[[:space:]]+)?$k[[:space:]]*=" apps/backend/.env)" != 1 ] || ! grep -qx "$kv" apps/backend/.env; then
+              echo "::error::apps/backend/.env must define $k exactly once, as $kv. Refusing."
+              exit 1
+            fi
+          done
+          unset EXECUTION_ENV PRAXIS_SECRETS_SECRET_ID
+          ( cd apps/backend && docker compose --env-file ./.env -f ./docker/main/docker-compose.yml up -d --no-deps --force-recreate praxis-backend )
+          HEALTHY=0
+          for i in $(seq 1 45); do
+            if curl -fsS -o /dev/null http://127.0.0.1:4000/health; then HEALTHY=1; echo "staging healthy after ${i}x2s"; break; fi
+            sleep 2
+          done
+          if [ "$HEALTHY" != "1" ]; then
+            echo "staging health check failed after 90s"
+            docker logs praxis-backend --tail 60 || true
+            exit 1
+          fi
+          EOF
+
+      - name: Sync staging Inngest functions
+        run: |
+          sleep 15
+          curl -fsS -X PUT "https://${{ env.PUBLIC_HOST }}/api/inngest" || true
+          sleep 5
+          curl -fsS -X PUT "https://${{ env.PUBLIC_HOST }}/api/inngest" \
+            && echo "  <- staging Inngest sync OK"
+        continue-on-error: true

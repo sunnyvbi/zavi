@@ -1,0 +1,43 @@
+{
+  // Production EMIT config. Extends the full tsconfig.json but drops test
+  // files from the compilation. The full tsconfig.json (which includes
+  // tests) is still what `npm run typecheck` uses, so CI keeps type-checking
+  // tests — they just don't get emitted into dist/ and don't bloat the
+  // build's memory/time footprint.
+  //
+  // Why this exists: tests were ~46% of the compiled file set (653 of 1407
+  // .ts files). Test files are the heaviest thing tsc chews (they pull in
+  // the full service graph + mocks + deep generic inference in assertions),
+  // and they have no business in a production dist/. Compiling them is what
+  // pushed `tsc` past the V8 heap ceiling on the ~1.9GB standalone box and
+  // SIGABRT'd the deploy (exit 134). Upcar's backend has always excluded
+  // tests from its build tsconfig for exactly this reason — this brings
+  // Praxis in line.
+  "extends": "./tsconfig.json",
+  // Emit-only overrides (Gap 4 slice 0). tsconfig.json dropped `rootDir` so
+  // typecheck can pull @zavi/shared SOURCE without TS6059; production emit needs
+  // it back, pinned to ./ so dist mirrors the source tree. And here @zavi/shared
+  // resolves via the BUILT package (dist .d.ts / dist JS), NOT source — so a
+  // future production import of it never drags shared source under this rootDir.
+  // `references` + the `tsc -b ../../packages/shared` in the build script emit
+  // shared/dist first; tsc-alias leaves the bare `@zavi/shared` specifier alone
+  // (it is not in `paths`), so node resolves it at runtime via node_modules.
+  "compilerOptions": {
+    "rootDir": "./",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "references": [{ "path": "../../packages/shared" }],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "src/services/provisioning/templates/*/files/**",
+    "**/__tests__/**",
+    "**/__mocks__/**",
+    "**/*.test.ts",
+    "**/*.spec.ts",
+    "**/test-utils/**",
+    "vitest.config.mts"
+  ]
+}

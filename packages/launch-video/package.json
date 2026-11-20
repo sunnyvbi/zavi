@@ -1,0 +1,24 @@
+{
+  "name": "@zavi/launch-video",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Brief-driven Remotion launch-video engine. Render a ~60-110s 1080p motion-graphics explainer (+ .srt) from a single VideoBrief JSON.",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "still": "remotion still src/index.ts LaunchVideo out/still.png",
+    "render": "remotion render src/index.ts LaunchVideo out/launch.mp4",
+    "render-cli": "node scripts/render.mjs"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.484",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "remotion": "4.0.484"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.7",
+    "typescript": "5.5.4"
+  }
+}

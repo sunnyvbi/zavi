@@ -1,0 +1,127 @@
+name: scheduled-dev-deploy
+
+on:
+  schedule:
+    - cron: '7 21 * * *'
+    - cron: '7 22 * * *'
+    - cron: '7 5 * * *'
+    - cron: '7 6 * * *'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: Deploy backend and web even if nothing changed
+        type: boolean
+        default: false
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: scheduled-dev-deploy
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      FORCE: ${{ inputs.force }}
+    steps:
+      - name: Time gate (2 PM / 10 PM Pacific)
+        id: gate
+        run: |
+          if [ "${{ github.event_name }}" != "schedule" ]; then
+            echo "go=true" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          hour="$(TZ=America/Los_Angeles date +%H)"
+          if [ "$hour" = "14" ] || [ "$hour" = "22" ]; then
+            echo "go=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "go=false" >> "$GITHUB_OUTPUT"
+            echo "Pacific hour is $hour; this cron is the off-DST twin, skipping."
+          fi
+
+      - name: Backend changed since last dev deploy?
+        id: backend
+        if: steps.gate.outputs.go == 'true'
+        run: |
+          if [ "$FORCE" = "true" ]; then echo "deploy=true" >> "$GITHUB_OUTPUT"; exit 0; fi
+          latest_status="$(gh api "repos/$REPO/actions/workflows/deploy-latest.yml/runs?per_page=1" -q '.workflow_runs[0].status // empty' 2>/dev/null || true)"
+          if [ -n "$latest_status" ] && [ "$latest_status" != "completed" ]; then
+            echo "deploy-latest is already $latest_status; skipping backend."
+            echo "deploy=false" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          last_sha="$(gh api "repos/$REPO/actions/workflows/deploy-latest.yml/runs?branch=development&status=success&per_page=1" -q '.workflow_runs[0].head_sha // empty' 2>/dev/null || true)"
+          if [ -z "$last_sha" ]; then
+            echo "No previous successful deploy-latest run found; deploying."
+            echo "deploy=true" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          if ! files="$(gh api "repos/$REPO/compare/${last_sha}...development" -q '.files[].filename' 2>/dev/null)"; then
+            echo "Compare API failed; deploying (fail-open)."
+            echo "deploy=true" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          if [ "$(printf '%s\n' "$files" | grep -c .)" -ge 300 ]; then
+            echo "deploy=true" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          relevant="$(printf '%s\n' "$files" | grep -vE '^(apps/(web|admin|mobile)/|docs/)|\.md$' | grep . || true)"
+          if [ -n "$relevant" ]; then
+            echo "Backend-relevant changes since $last_sha:"; printf '%s\n' "$relevant" | head -20
+            echo "deploy=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "No backend-relevant changes since $last_sha; skipping backend."
+            echo "deploy=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Web changed since last dev web deploy?
+        id: web
+        if: steps.gate.outputs.go == 'true'
+        run: |
+          if [ "$FORCE" = "true" ]; then echo "deploy=true" >> "$GITHUB_OUTPUT"; exit 0; fi
+          since="$(gh api "repos/$REPO/actions/workflows/deploy-web-dev.yml/runs?status=success&per_page=1" -q '.workflow_runs[0].created_at // empty' 2>/dev/null || true)"
+          if [ -z "$since" ]; then
+            echo "No previous successful deploy-web-dev run found; deploying."
+            echo "deploy=true" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          for path in apps/web packages package.json package-lock.json amplify.yml; do
+            count="$(gh api "repos/$REPO/commits?sha=development&since=${since}&path=${path}&per_page=1" -q 'length' 2>/dev/null || echo 1)"
+            if [ "$count" -gt 0 ] 2>/dev/null; then
+              echo "$path changed on development since $since; deploying web."
+              echo "deploy=true" >> "$GITHUB_OUTPUT"; exit 0
+            fi
+          done
+          echo "No web-relevant changes since $since; skipping web."
+          echo "deploy=false" >> "$GITHUB_OUTPUT"
+
+      - name: Admin changed since last dev admin deploy?
+        id: admin
+        if: steps.gate.outputs.go == 'true'
+        run: |
+          if [ "$FORCE" = "true" ]; then echo "deploy=true" >> "$GITHUB_OUTPUT"; exit 0; fi
+          since="$(gh api "repos/$REPO/actions/workflows/deploy-admin-dev.yml/runs?status=success&per_page=1" -q '.workflow_runs[0].created_at // empty' 2>/dev/null || true)"
+          if [ -z "$since" ]; then
+            echo "No previous successful deploy-admin-dev run found; deploying."
+            echo "deploy=true" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          for path in apps/admin packages package.json package-lock.json amplify.yml; do
+            count="$(gh api "repos/$REPO/commits?sha=development&since=${since}&path=${path}&per_page=1" -q 'length' 2>/dev/null || echo 1)"
+            if [ "$count" -gt 0 ] 2>/dev/null; then
+              echo "$path changed on development since $since; deploying admin."
+              echo "deploy=true" >> "$GITHUB_OUTPUT"; exit 0
+            fi
+          done
+          echo "No admin-relevant changes since $since; skipping admin."
+          echo "deploy=false" >> "$GITHUB_OUTPUT"
+
+      - name: Dispatch backend deploy (deploy-latest on development)
+        if: steps.backend.outputs.deploy == 'true'
+        run: gh workflow run deploy-latest.yml --repo "$REPO" --ref development
+
+      - name: Dispatch web deploy (Amplify development)
+        if: steps.web.outputs.deploy == 'true'
+        run: gh workflow run deploy-web-dev.yml --repo "$REPO" --ref main
+
+      - name: Dispatch admin deploy (Amplify praxis-admin development)
+        if: steps.admin.outputs.deploy == 'true'
+        run: gh workflow run deploy-admin-dev.yml --repo "$REPO" --ref main

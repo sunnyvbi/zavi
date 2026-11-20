@@ -1,0 +1,11 @@
+{
+  "slug": "bdraft1778147238",
+  "name": "Browser E2E Reviewer raft17",
+  "description": "Reviews listings for missing photos and flags.",
+  "model": "claude-sonnet-4-6",
+  "cost_class": "standard",
+  "cron": "",
+  "impact_classes": [],
+  "instructions": "# bdraft1778147238\n\nReview each new listing. Flag missing fields.",
+  "created_at": "2026-05-07T09:47:21.337Z"
+}

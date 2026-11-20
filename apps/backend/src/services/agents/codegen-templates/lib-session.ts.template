@@ -1,0 +1,77 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// BLESSED TEMPLATE — lib/session.ts  (signed, expiring session token)
+//
+// CONFIGURE, do NOT reinvent: copy verbatim into the generated app at
+// `lib/session.ts`. The ONLY thing you may change is MAX_AGE_S. Do not touch the
+// fail-closed secret accessor or the sign/verify shape below.
+//
+// SECURITY — this is the fail-closed pattern the SESSION_SECRET BASELINE mandates.
+// THE HOLE IT CLOSES (account takeover — NEVER reintroduce):
+//   signing with `process.env.SESSION_SECRET || 'change-me'` (or ANY literal
+//   fallback) lets anyone recompute the HMAC and forge a logged-in cookie for any
+//   user id with NO password. There is NO fallback here — a missing secret THROWS.
+//
+// RULES baked in (all non-negotiable):
+//   1. sessionSecret() reads process.env.SESSION_SECRET with NO fallback and THROWS
+//      when missing/empty (fail closed). NEVER `|| '<default>'`, NEVER `?? '<x>'`.
+//   2. BUILD-SAFE: the throw lives INSIDE the accessor, called at REQUEST time — not
+//      at module top-level. `next build` runs in the sandbox BEFORE SESSION_SECRET
+//      is injected; a top-level throw would fail the deploy. Call createSession /
+//      readSession only from route handlers / server actions / server components
+//      (Node runtime), never from Edge middleware (there, check cookie PRESENCE only).
+//   3. SESSION_SECRET is the ONLY signing key (HMAC-SHA256). Reject any cookie whose
+//      signature does not verify (timing-safe compare).
+//   4. The token carries an `exp` INSIDE the signed payload (not just cookie Max-Age,
+//      which the client controls). Verify rejects expired tokens. Set the cookie
+//      httpOnly, secure, sameSite:'lax'.
+//   5. uid is canonically a NUMBER end-to-end: createSession coerces with Number(),
+//      readSession coerces + Number.isInteger() — NEVER a `typeof uid !== "number"`
+//      hard-reject (a stringified pg BIGINT id would trip it and bounce every
+//      request to /login). Pairs with the int8 type-parser in lib/db.ts.
+//   • SESSION_SECRET is SERVER-ONLY — never NEXT_PUBLIC_, never logged, never sent
+//     to the browser. node:crypto/Buffer below are Node-runtime only.
+// ─────────────────────────────────────────────────────────────────────────────
+import "server-only";
+import { createHmac, timingSafeEqual } from "node:crypto";
+
+function sessionSecret(): string {
+  const s = process.env.SESSION_SECRET;
+  // No fallback — fail closed. NEVER `process.env.SESSION_SECRET || '<default>'`.
+  if (!s || s.length < 16) {
+    throw new Error(
+      "SESSION_SECRET is not set — refusing to sign/verify with a guessable key",
+    );
+  }
+  return s;
+}
+
+const MAX_AGE_S = 60 * 60 * 24 * 7; // 7 days
+
+function sign(payloadB64: string): string {
+  return createHmac("sha256", sessionSecret()).update(payloadB64).digest("base64url");
+}
+
+/** Canonical uid type = NUMBER (pg BIGINT ids arrive as strings; coerce on both
+ *  ends — see lib/db.ts int8 parser). Embeds an `exp` in the SIGNED payload. */
+export function createSession(uid: number | string): string {
+  const payload = { uid: Number(uid), exp: Math.floor(Date.now() / 1000) + MAX_AGE_S };
+  const b64 = Buffer.from(JSON.stringify(payload)).toString("base64url");
+  return `${b64}.${sign(b64)}`;
+}
+
+/** Verify signature (timing-safe) + expiry. Coerces uid — never hard-rejects on
+ *  `typeof`. Returns null on any bad/expired/forged token. */
+export function readSession(token: string | undefined): { uid: number } | null {
+  if (!token) return null;
+  const [b64, mac] = token.split(".");
+  if (!b64 || !mac) return null;
+  const expected = sign(b64);
+  const a = Buffer.from(mac);
+  const b = Buffer.from(expected);
+  if (a.length !== b.length || !timingSafeEqual(a, b)) return null; // bad signature
+  const { uid, exp } = JSON.parse(Buffer.from(b64, "base64url").toString());
+  if (!exp || exp < Math.floor(Date.now() / 1000)) return null; // expired
+  const id = Number(uid); // coerce: a stringified pg BIGINT id must still pass
+  if (!Number.isInteger(id)) return null;
+  return { uid: id };
+}

@@ -1,0 +1,254 @@
+{
+  "schemaVersion": 2,
+  "roles": [],
+  "capabilities": [
+    "payments",
+    "payouts",
+    "interval_overlap"
+  ],
+  "actions": {},
+  "aggregates": {},
+  "collections": {
+    "cars": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "anyone"
+        ],
+        "get": [
+          "anyone"
+        ],
+        "create": [
+          "signed_in"
+        ],
+        "update": [
+          "owner",
+          "admin"
+        ],
+        "delete": [
+          "owner",
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "make": {
+            "type": "string",
+            "maxLength": 40
+          },
+          "model": {
+            "type": "string",
+            "maxLength": 40
+          },
+          "year": {
+            "type": "integer",
+            "minimum": 1980,
+            "maximum": 2030
+          },
+          "daily_price_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10000000
+          },
+          "neighborhood": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "seats": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 15
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "available": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "make",
+          "model",
+          "year",
+          "daily_price_cents",
+          "neighborhood"
+        ]
+      },
+      "fields": {},
+      "indexes": {
+        "daily_price_cents": {
+          "type": "number",
+          "ops": [
+            "range"
+          ],
+          "sort": true
+        },
+        "neighborhood": {
+          "type": "text",
+          "ops": [
+            "eq"
+          ],
+          "sort": false
+        },
+        "available": {
+          "type": "text",
+          "ops": [
+            "eq"
+          ],
+          "sort": false
+        }
+      },
+      "unique": [],
+      "references": {}
+    },
+    "booking_requests": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "owner",
+          "recipient",
+          "admin"
+        ],
+        "get": [
+          "owner",
+          "recipient",
+          "admin"
+        ],
+        "create": [
+          "signed_in"
+        ],
+        "update": [],
+        "delete": [
+          "owner",
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "car_id": {
+            "type": "string",
+            "maxLength": 36,
+            "format": "uuid"
+          },
+          "start_date": {
+            "type": "string",
+            "maxLength": 10,
+            "format": "date"
+          },
+          "end_date": {
+            "type": "string",
+            "maxLength": 10,
+            "format": "date"
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 1000
+          },
+          "status": {
+            "type": "string",
+            "maxLength": 9,
+            "enum": [
+              "pending",
+              "accepted",
+              "declined",
+              "cancelled"
+            ]
+          }
+        },
+        "required": [
+          "car_id",
+          "start_date",
+          "end_date",
+          "status"
+        ]
+      },
+      "fields": {},
+      "indexes": {
+        "car_id": {
+          "type": "text",
+          "ops": [
+            "eq"
+          ],
+          "sort": false
+        },
+        "start_date": {
+          "type": "timestamp",
+          "ops": [
+            "range"
+          ],
+          "sort": true
+        }
+      },
+      "unique": [],
+      "references": {
+        "car_id": {
+          "collection": "cars",
+          "on_delete": "restrict"
+        }
+      },
+      "recipient": {
+        "reference": "car_id"
+      },
+      "states": {
+        "field": "status",
+        "values": [
+          "pending",
+          "accepted",
+          "declined",
+          "cancelled"
+        ],
+        "initial": "pending",
+        "transitions": [
+          {
+            "from": "pending",
+            "to": "accepted",
+            "principals": [
+              "recipient",
+              "admin"
+            ]
+          },
+          {
+            "from": "pending",
+            "to": "declined",
+            "principals": [
+              "recipient",
+              "admin"
+            ]
+          },
+          {
+            "from": "pending",
+            "to": "cancelled",
+            "principals": [
+              "owner",
+              "admin"
+            ]
+          }
+        ]
+      }
+    },
+    "car_photos": {
+      "kind": "files",
+      "rules": {
+        "list": [
+          "anyone"
+        ],
+        "get": [
+          "anyone"
+        ],
+        "create": [
+          "signed_in"
+        ],
+        "update": [
+          "owner"
+        ],
+        "delete": [
+          "owner",
+          "admin"
+        ]
+      }
+    }
+  }
+}

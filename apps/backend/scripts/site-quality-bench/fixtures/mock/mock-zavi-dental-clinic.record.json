@@ -1,0 +1,68 @@
+{
+  "run_id": "mock-zavi-dental-clinic",
+  "brief_id": "dental-clinic",
+  "system": "zavi",
+  "provenance": "mocked",
+  "captured_at": "2026-10-07T00:00:00.000Z",
+  "urls": {
+    "site": null
+  },
+  "screenshots": {
+    "desktop": "shots/mock-zavi-dental-clinic-desktop.png",
+    "mobile": "shots/mock-zavi-dental-clinic-mobile.png"
+  },
+  "timings": {
+    "to_first_preview_s": 95,
+    "to_usable_complete_s": 610
+  },
+  "cost": {
+    "usd": 1.8,
+    "source": "mocked: invented number"
+  },
+  "repairs": 0,
+  "failures": [],
+  "journeys": [
+    {
+      "name": "book_appointment",
+      "passed": true
+    }
+  ],
+  "requirement_coverage": [
+    {
+      "requirement": "Clinic name Brightside Dental is visible",
+      "met": false,
+      "evidence": "mocked: not checked"
+    },
+    {
+      "requirement": "Lists checkups, whitening, Invisalign and emergency care",
+      "met": true,
+      "evidence": "mocked: not checked"
+    },
+    {
+      "requirement": "Shows the dentists with bios",
+      "met": true,
+      "evidence": "mocked: not checked"
+    },
+    {
+      "requirement": "Shows opening hours",
+      "met": true,
+      "evidence": "mocked: not checked"
+    },
+    {
+      "requirement": "Lists accepted insurance",
+      "met": false,
+      "evidence": "mocked: not checked"
+    },
+    {
+      "requirement": "Shows patient reviews",
+      "met": true,
+      "evidence": "mocked: not checked"
+    },
+    {
+      "requirement": "Has an online booking flow",
+      "met": true,
+      "evidence": "mocked: not checked"
+    }
+  ],
+  "scores": null
+}

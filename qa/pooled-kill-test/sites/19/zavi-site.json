@@ -1,0 +1,272 @@
+{
+  "schemaVersion": 2,
+  "roles": [],
+  "capabilities": [],
+  "actions": {},
+  "aggregates": {},
+  "collections": {
+    "cakes": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "anyone"
+        ],
+        "get": [
+          "anyone"
+        ],
+        "create": [
+          "signed_in"
+        ],
+        "update": [
+          "owner",
+          "admin"
+        ],
+        "delete": [
+          "owner",
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "flavour": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "sizes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 6,
+              "enum": [
+                "6in",
+                "8in",
+                "10in",
+                "12in",
+                "tiered"
+              ]
+            },
+            "maxItems": 5
+          },
+          "price_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10000000
+          },
+          "city": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "occasion": {
+            "type": "string",
+            "maxLength": 11,
+            "enum": [
+              "birthday",
+              "wedding",
+              "baby_shower",
+              "anniversary",
+              "other"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000
+          }
+        },
+        "required": [
+          "title",
+          "flavour",
+          "sizes",
+          "price_cents",
+          "city",
+          "occasion"
+        ]
+      },
+      "fields": {},
+      "indexes": {
+        "city": {
+          "type": "text",
+          "ops": [
+            "eq"
+          ],
+          "sort": false
+        },
+        "occasion": {
+          "type": "text",
+          "ops": [
+            "eq"
+          ],
+          "sort": false
+        },
+        "price_cents": {
+          "type": "number",
+          "ops": [
+            "range"
+          ],
+          "sort": true
+        }
+      },
+      "unique": [],
+      "references": {}
+    },
+    "order_requests": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "owner",
+          "recipient",
+          "admin"
+        ],
+        "get": [
+          "owner",
+          "recipient",
+          "admin"
+        ],
+        "create": [
+          "signed_in"
+        ],
+        "update": [
+          "owner",
+          "admin"
+        ],
+        "delete": [
+          "owner",
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "cake_id": {
+            "type": "string",
+            "maxLength": 36,
+            "format": "uuid"
+          },
+          "needed_on": {
+            "type": "string",
+            "maxLength": 10,
+            "format": "date"
+          },
+          "size": {
+            "type": "string",
+            "maxLength": 6,
+            "enum": [
+              "6in",
+              "8in",
+              "10in",
+              "12in",
+              "tiered"
+            ]
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 1000
+          },
+          "status": {
+            "type": "string",
+            "maxLength": 9,
+            "enum": [
+              "pending",
+              "accepted",
+              "declined",
+              "cancelled"
+            ]
+          }
+        },
+        "required": [
+          "cake_id",
+          "needed_on",
+          "size",
+          "status"
+        ]
+      },
+      "fields": {},
+      "indexes": {
+        "cake_id": {
+          "type": "text",
+          "ops": [
+            "eq"
+          ],
+          "sort": false
+        },
+        "needed_on": {
+          "type": "timestamp",
+          "ops": [
+            "range"
+          ],
+          "sort": true
+        }
+      },
+      "unique": [],
+      "references": {
+        "cake_id": {
+          "collection": "cakes",
+          "on_delete": "restrict"
+        }
+      },
+      "recipient": {
+        "reference": "cake_id"
+      },
+      "states": {
+        "field": "status",
+        "values": [
+          "pending",
+          "accepted",
+          "declined",
+          "cancelled"
+        ],
+        "initial": "pending",
+        "transitions": [
+          {
+            "from": "pending",
+            "to": "accepted",
+            "principals": [
+              "recipient",
+              "admin"
+            ]
+          },
+          {
+            "from": "pending",
+            "to": "declined",
+            "principals": [
+              "recipient",
+              "admin"
+            ]
+          },
+          {
+            "from": "pending",
+            "to": "cancelled",
+            "principals": [
+              "owner"
+            ]
+          }
+        ]
+      }
+    },
+    "cake_photos": {
+      "kind": "files",
+      "rules": {
+        "list": [
+          "anyone"
+        ],
+        "get": [
+          "anyone"
+        ],
+        "create": [
+          "signed_in"
+        ],
+        "update": [
+          "owner"
+        ],
+        "delete": [
+          "owner",
+          "admin"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "run_id": "mock-lovable-home-services",
+  "brief_id": "home-services",
+  "system": "lovable",
+  "provenance": "mocked",
+  "captured_at": "2026-10-07T00:03:00.000Z",
+  "urls": {
+    "site": null
+  },
+  "screenshots": {
+    "desktop": "shots/mock-lovable-home-services-desktop.png",
+    "mobile": "shots/mock-lovable-home-services-mobile.png"
+  },
+  "timings": {
+    "to_first_preview_s": 11,
+    "to_usable_complete_s": 170
+  },
+  "cost": {
+    "usd": null,
+    "source": "mocked: competitor cost unknown"
+  },
+  "repairs": null,
+  "failures": [],
+  "journeys": [
+    {
+      "name": "request_quote",
+      "passed": true
+    }
+  ],
+  "requirement_coverage": [
+    {
+      "requirement": "Company name Northline Home Services is visible",
+      "met": false,
+      "evidence": "mocked: not checked"
+    },
+    {
+      "requirement": "Plumbing, electrical and HVAC listed",
+      "met": true,
+      "evidence": "mocked: not checked"
+    },
+    {
+      "requirement": "Licensed, insured and guarantee shown",
+      "met": true,
+      "evidence": "mocked: not checked"
+    },
+    {
+      "requirement": "24/7 emergency callouts",
+      "met": true,
+      "evidence": "mocked: not checked"
+    },
+    {
+      "requirement": "Service area shown",
+      "met": false,
+      "evidence": "mocked: not checked"
+    },
+    {
+      "requirement": "Customer testimonials",
+      "met": true,
+      "evidence": "mocked: not checked"
+    },
+    {
+      "requirement": "Phone number prominent",
+      "met": true,
+      "evidence": "mocked: not checked"
+    },
+    {
+      "requirement": "Quote request form",
+      "met": true,
+      "evidence": "mocked: not checked"
+    }
+  ],
+  "scores": null
+}

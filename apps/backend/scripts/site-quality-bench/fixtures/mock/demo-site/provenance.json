@@ -1,0 +1,6 @@
+{
+  "provenance": "hand_written_demo",
+  "brief_id": "dental-clinic",
+  "author": "written by hand for the benchmark harness, 2026-10-07",
+  "note": "Exists so collect and the screenshot step can run offline against a local static server. It is not output from Zavi or any other builder and must never be reported as one."
+}

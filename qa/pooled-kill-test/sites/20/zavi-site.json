@@ -1,0 +1,262 @@
+{
+  "schemaVersion": 2,
+  "roles": [],
+  "capabilities": [],
+  "actions": {},
+  "aggregates": {
+    "appointments_by_status": {
+      "collection": "appointments",
+      "fn": "count",
+      "filters": [
+        "barber_id",
+        "status"
+      ],
+      "principals": [
+        "admin"
+      ]
+    }
+  },
+  "collections": {
+    "barbers": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "anyone"
+        ],
+        "get": [
+          "anyone"
+        ],
+        "create": [
+          "admin"
+        ],
+        "update": [
+          "admin"
+        ],
+        "delete": [
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 60
+          },
+          "bio": {
+            "type": "string",
+            "maxLength": 400
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "fields": {},
+      "indexes": {},
+      "unique": [],
+      "references": {}
+    },
+    "services": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "anyone"
+        ],
+        "get": [
+          "anyone"
+        ],
+        "create": [
+          "admin"
+        ],
+        "update": [
+          "admin"
+        ],
+        "delete": [
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 10,
+            "enum": [
+              "cut",
+              "beard_trim",
+              "cut_beard"
+            ]
+          },
+          "price_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100000
+          },
+          "minutes": {
+            "type": "integer",
+            "minimum": 5,
+            "maximum": 240
+          }
+        },
+        "required": [
+          "name",
+          "price_cents",
+          "minutes"
+        ]
+      },
+      "fields": {},
+      "indexes": {},
+      "unique": [],
+      "references": {}
+    },
+    "appointments": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "anyone"
+        ],
+        "get": [
+          "anyone"
+        ],
+        "create": [
+          "anyone"
+        ],
+        "update": [
+          "admin"
+        ],
+        "delete": [
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "barber_id": {
+            "type": "string",
+            "maxLength": 36,
+            "format": "uuid"
+          },
+          "service": {
+            "type": "string",
+            "maxLength": 10,
+            "enum": [
+              "cut",
+              "beard_trim",
+              "cut_beard"
+            ]
+          },
+          "slot_start": {
+            "type": "string",
+            "maxLength": 40,
+            "format": "date-time"
+          },
+          "customer_name": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "phone": {
+            "type": "string",
+            "maxLength": 30
+          },
+          "status": {
+            "type": "string",
+            "maxLength": 9,
+            "enum": [
+              "booked",
+              "done",
+              "no_show",
+              "cancelled"
+            ]
+          }
+        },
+        "required": [
+          "barber_id",
+          "service",
+          "slot_start",
+          "customer_name",
+          "phone",
+          "status"
+        ]
+      },
+      "fields": {
+        "customer_name": {
+          "read": [
+            "admin"
+          ]
+        },
+        "phone": {
+          "read": [
+            "admin"
+          ]
+        }
+      },
+      "indexes": {
+        "slot_start": {
+          "type": "timestamp",
+          "ops": [
+            "eq",
+            "in",
+            "range"
+          ],
+          "sort": true
+        },
+        "barber_id": {
+          "type": "text",
+          "ops": [
+            "eq"
+          ],
+          "sort": false
+        }
+      },
+      "unique": [
+        {
+          "fields": [
+            "barber_id",
+            "slot_start"
+          ],
+          "nulls": "distinct"
+        }
+      ],
+      "references": {
+        "barber_id": {
+          "collection": "barbers",
+          "on_delete": "restrict"
+        }
+      },
+      "states": {
+        "field": "status",
+        "values": [
+          "booked",
+          "done",
+          "no_show",
+          "cancelled"
+        ],
+        "initial": "booked",
+        "transitions": [
+          {
+            "from": "booked",
+            "to": "done",
+            "principals": [
+              "admin"
+            ]
+          },
+          {
+            "from": "booked",
+            "to": "no_show",
+            "principals": [
+              "admin"
+            ]
+          },
+          {
+            "from": "booked",
+            "to": "cancelled",
+            "principals": [
+              "admin"
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

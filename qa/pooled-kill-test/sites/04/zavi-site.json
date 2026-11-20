@@ -1,0 +1,531 @@
+{
+  "schemaVersion": 2,
+  "roles": [
+    "recruiter"
+  ],
+  "capabilities": [],
+  "actions": {},
+  "aggregates": {
+    "applications_per_job": {
+      "collection": "applications",
+      "fn": "count",
+      "filters": [
+        "job_id",
+        "status"
+      ],
+      "principals": [
+        "admin"
+      ]
+    }
+  },
+  "collections": {
+    "profiles": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "signed_in"
+        ],
+        "get": [
+          "signed_in"
+        ],
+        "create": [
+          "signed_in"
+        ],
+        "update": [
+          "owner",
+          "admin"
+        ],
+        "delete": [
+          "owner",
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "full_name": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "profession": {
+            "type": "string",
+            "maxLength": 10,
+            "enum": [
+              "student",
+              "doctor",
+              "nurse",
+              "researcher",
+              "hospital",
+              "university",
+              "other"
+            ]
+          },
+          "specialty": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "institution": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "city": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "bio": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "verified": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "full_name",
+          "profession"
+        ]
+      },
+      "fields": {
+        "verified": {
+          "write": [
+            "admin"
+          ]
+        }
+      },
+      "indexes": {
+        "profession": {
+          "type": "text",
+          "ops": [
+            "eq"
+          ],
+          "sort": false
+        },
+        "city": {
+          "type": "text",
+          "ops": [
+            "eq",
+            "prefix"
+          ],
+          "sort": false
+        },
+        "verified": {
+          "type": "text",
+          "ops": [
+            "eq"
+          ],
+          "sort": false
+        }
+      },
+      "unique": [],
+      "references": {}
+    },
+    "jobs": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "anyone"
+        ],
+        "get": [
+          "anyone"
+        ],
+        "create": [
+          "admin",
+          "role:recruiter"
+        ],
+        "update": [
+          "owner",
+          "admin"
+        ],
+        "delete": [
+          "owner",
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "organisation": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "location": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 5000
+          },
+          "closes_on": {
+            "type": "string",
+            "maxLength": 10,
+            "format": "date"
+          },
+          "status": {
+            "type": "string",
+            "maxLength": 6,
+            "enum": [
+              "open",
+              "closed"
+            ]
+          }
+        },
+        "required": [
+          "title",
+          "organisation",
+          "description",
+          "status"
+        ]
+      },
+      "fields": {},
+      "indexes": {
+        "closes_on": {
+          "type": "timestamp",
+          "ops": [
+            "range"
+          ],
+          "sort": true
+        }
+      },
+      "unique": [],
+      "references": {},
+      "states": {
+        "field": "status",
+        "values": [
+          "open",
+          "closed"
+        ],
+        "initial": "open",
+        "read": {
+          "open": [
+            "anyone"
+          ],
+          "closed": [
+            "owner",
+            "admin"
+          ]
+        },
+        "transitions": [
+          {
+            "from": "open",
+            "to": "closed",
+            "principals": [
+              "owner",
+              "admin"
+            ]
+          },
+          {
+            "from": "closed",
+            "to": "open",
+            "principals": [
+              "owner",
+              "admin"
+            ]
+          }
+        ]
+      }
+    },
+    "applications": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "owner",
+          "recipient",
+          "admin"
+        ],
+        "get": [
+          "owner",
+          "recipient",
+          "admin"
+        ],
+        "create": [
+          "signed_in"
+        ],
+        "update": [],
+        "delete": [
+          "owner",
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "maxLength": 36,
+            "format": "uuid"
+          },
+          "cover_note": {
+            "type": "string",
+            "maxLength": 3000
+          },
+          "cv_text": {
+            "type": "string",
+            "maxLength": 5000
+          },
+          "status": {
+            "type": "string",
+            "maxLength": 11,
+            "enum": [
+              "submitted",
+              "shortlisted",
+              "rejected",
+              "withdrawn"
+            ]
+          }
+        },
+        "required": [
+          "job_id",
+          "status"
+        ]
+      },
+      "fields": {},
+      "indexes": {
+        "job_id": {
+          "type": "text",
+          "ops": [
+            "eq"
+          ],
+          "sort": false
+        }
+      },
+      "unique": [],
+      "references": {
+        "job_id": {
+          "collection": "jobs",
+          "on_delete": "cascade"
+        }
+      },
+      "recipient": {
+        "reference": "job_id"
+      },
+      "states": {
+        "field": "status",
+        "values": [
+          "submitted",
+          "shortlisted",
+          "rejected",
+          "withdrawn"
+        ],
+        "initial": "submitted",
+        "transitions": [
+          {
+            "from": "submitted",
+            "to": "shortlisted",
+            "principals": [
+              "recipient",
+              "admin"
+            ]
+          },
+          {
+            "from": "submitted",
+            "to": "rejected",
+            "principals": [
+              "recipient",
+              "admin"
+            ]
+          },
+          {
+            "from": "shortlisted",
+            "to": "rejected",
+            "principals": [
+              "recipient",
+              "admin"
+            ]
+          },
+          {
+            "from": "submitted",
+            "to": "withdrawn",
+            "principals": [
+              "owner"
+            ]
+          }
+        ]
+      }
+    },
+    "connections": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "owner",
+          "recipient",
+          "admin"
+        ],
+        "get": [
+          "owner",
+          "recipient",
+          "admin"
+        ],
+        "create": [
+          "signed_in"
+        ],
+        "update": [],
+        "delete": [
+          "owner",
+          "recipient",
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "profile_id": {
+            "type": "string",
+            "maxLength": 36,
+            "format": "uuid"
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 300
+          },
+          "status": {
+            "type": "string",
+            "maxLength": 8,
+            "enum": [
+              "pending",
+              "accepted",
+              "declined"
+            ]
+          }
+        },
+        "required": [
+          "profile_id",
+          "status"
+        ]
+      },
+      "fields": {},
+      "indexes": {
+        "profile_id": {
+          "type": "text",
+          "ops": [
+            "eq"
+          ],
+          "sort": false
+        }
+      },
+      "unique": [],
+      "references": {
+        "profile_id": {
+          "collection": "profiles",
+          "on_delete": "cascade"
+        }
+      },
+      "recipient": {
+        "reference": "profile_id"
+      },
+      "states": {
+        "field": "status",
+        "values": [
+          "pending",
+          "accepted",
+          "declined"
+        ],
+        "initial": "pending",
+        "transitions": [
+          {
+            "from": "pending",
+            "to": "accepted",
+            "principals": [
+              "recipient"
+            ]
+          },
+          {
+            "from": "pending",
+            "to": "declined",
+            "principals": [
+              "recipient"
+            ]
+          }
+        ]
+      }
+    },
+    "messages": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "owner",
+          "recipient",
+          "admin"
+        ],
+        "get": [
+          "owner",
+          "recipient",
+          "admin"
+        ],
+        "create": [
+          "signed_in"
+        ],
+        "update": [],
+        "delete": [
+          "owner",
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "profile_id": {
+            "type": "string",
+            "maxLength": 36,
+            "format": "uuid"
+          },
+          "body": {
+            "type": "string",
+            "maxLength": 2000
+          }
+        },
+        "required": [
+          "profile_id",
+          "body"
+        ]
+      },
+      "fields": {},
+      "indexes": {
+        "profile_id": {
+          "type": "text",
+          "ops": [
+            "eq"
+          ],
+          "sort": false
+        }
+      },
+      "unique": [],
+      "references": {
+        "profile_id": {
+          "collection": "profiles",
+          "on_delete": "cascade"
+        }
+      },
+      "recipient": {
+        "reference": "profile_id"
+      }
+    },
+    "cvs": {
+      "kind": "files",
+      "rules": {
+        "list": [
+          "owner",
+          "admin"
+        ],
+        "get": [
+          "owner",
+          "admin"
+        ],
+        "create": [
+          "signed_in"
+        ],
+        "update": [
+          "owner"
+        ],
+        "delete": [
+          "owner",
+          "admin"
+        ]
+      }
+    }
+  }
+}

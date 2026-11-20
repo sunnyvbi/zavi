@@ -1,0 +1,28 @@
+name: deploy-web-prod
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deployment-web-prod
+  cancel-in-progress: false
+
+jobs:
+  deploy-web:
+    environment: production
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Amplify build (main)
+        env:
+          WEBHOOK_URL: ${{ secrets.AMPLIFY_WEBHOOK_MAIN }}
+        run: |
+          if [ -z "$WEBHOOK_URL" ]; then
+            echo "::error::AMPLIFY_WEBHOOK_MAIN secret is not set"
+            exit 1
+          fi
+          curl -fsS -X POST -d '{}' -H 'Content-Type: application/json' "$WEBHOOK_URL"
+          echo
+          echo "Amplify build queued for main. Watch it in the Amplify console."

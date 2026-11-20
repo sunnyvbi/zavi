@@ -1,0 +1,74 @@
+
+services:
+  praxis-backend:
+    image: praxis-backend:latest
+    restart: always
+    container_name: praxis-backend
+    stop_grace_period: 120s
+    ports:
+      - "127.0.0.1:4000:4000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - NODE_ENV=production
+      - PORT=4000
+      - AWS_REGION=us-west-1
+      - PRAXIS_SECRETS_SECRET_ID=${PRAXIS_SECRETS_SECRET_ID:-praxis-envprod-1}
+      - EXECUTION_ENV=${EXECUTION_ENV:-}
+      - PRAXIS_CONTAINER_ROLE=canonical
+      - SHUTDOWN_GRACE_MS=110000
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000/livez"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 45s
+    mem_limit: 3g
+    memswap_limit: 4g
+    deploy:
+      resources:
+        limits:
+          memory: 3072m
+          cpus: "1.0"
+        reservations:
+          memory: 256m
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "5"
+
+  praxis-voice-pipeline:
+    image: praxis-voice-pipeline:latest
+    restart: unless-stopped
+    container_name: praxis-voice-pipeline
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - NODE_ENV=production
+      - AWS_REGION=us-west-1
+      - PRAXIS_SECRETS_SECRET_ID=${PRAXIS_SECRETS_SECRET_ID:-praxis-envprod-1}
+      - EXECUTION_ENV=${EXECUTION_ENV:-}
+      - PRAXIS_NODE_INTERNAL_BASE=http://praxis-backend:4000
+      - LIVEKIT_LOG_LEVEL=info
+    depends_on:
+      praxis-backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8000/internal/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 45s
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+          cpus: "0.5"
+        reservations:
+          memory: 128m
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

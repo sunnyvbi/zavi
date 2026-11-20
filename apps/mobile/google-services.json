@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "69760146757",
+    "project_id": "praxis-495820",
+    "storage_bucket": "praxis-495820.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:69760146757:android:3c7229bf146328f70e322c",
+        "android_client_info": {
+          "package_name": "com.zaviagent.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "69760146757-58ple90r7gd4olci5ukmkia99efkakk8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCNv76pxHYQQblBij1AlodFKvgv_Nb3CyA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "69760146757-58ple90r7gd4olci5ukmkia99efkakk8.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "69760146757-c24d8j60rtbk2geq67nr6o6givo2mks4.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.zaviagent.app",
+                "app_store_id": "6809340210"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

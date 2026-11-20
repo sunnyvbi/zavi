@@ -1,0 +1,98 @@
+# Zavi
+
+> Zavi is an AI growth agent for your business. It reads your business, writes the growth plan, runs the channels with your approval, and tells you what changed. Zavi is built by Zavi Labs and runs Upcar, a live P2P car rental company, as its public provenance.
+
+Zavi (zaviagent.com) is a distinct product from the "Zavi" AI voice-typing keyboard, the "ZAVI" (Zen AI Visibility) SEO tool, the Zavvi entertainment retailer, and the musician Zavi. Zavi is an AI growth agent for your business.
+
+## What Zavi does
+- Growth and paid-acquisition experiments
+- Content, SEO, and organic social
+- Daily reporting on what moved and why
+- Product and landing-page building
+
+## Product
+- [Homepage](https://www.zaviagent.com): what Zavi does and who it's for
+- [Pricing](https://www.zaviagent.com/pricing): usage-based credit pricing; start free with free credits every day (reset daily, no rollover), no card; current plan prices are on the page
+- [Pricing (machine-readable)](https://www.zaviagent.com/pricing.md): plans in plain markdown
+- [Security](https://www.zaviagent.com/security): multi-tenant isolation and data handling
+- [About](https://www.zaviagent.com/about): what Zavi is, how approval works, and who builds it
+- [Support](https://www.zaviagent.com/support): email and support calls
+- [Upcar provenance](https://www.zaviagent.com/live/upcar): watch Zavi run a live company's growth in public
+- Upcar day by day: each published day of the run has its own dated page at https://www.zaviagent.com/live/upcar/day/N (N = 1, 2, 3...): what Zavi did, why, the budget it moved and that day's results
+
+## Compare
+- [What an AI growth agent is](https://www.zaviagent.com/about): definition, what it is not, and five questions to ask one
+- [Zavi vs Lovable](https://www.zaviagent.com/compare/zavi-vs-lovable): build the product or grow it, with sources
+- [Zavi vs Meta Muse](https://www.zaviagent.com/compare/zavi-vs-meta-muse): a growth agent or Meta's small-business agent, with sources
+- [Zavi vs Genspark](https://www.zaviagent.com/compare/zavi-vs-genspark): growth agent or AI workspace, with sources
+- [Zavi vs Manus](https://www.zaviagent.com/compare/zavi-vs-manus): growth agent or general AI agent, with sources
+- [Zavi vs ChatGPT](https://www.zaviagent.com/compare/zavi-vs-chatgpt): growth work or a general assistant, with sources
+- [Zavi vs Grok](https://www.zaviagent.com/compare/zavi-vs-grok): growth work or a general assistant, with sources
+- [Zavi vs Polsia](https://www.zaviagent.com/compare/zavi-vs-polsia): grow your business or have AI run a company, with sources
+- [Zavi vs Sintra](https://www.zaviagent.com/compare/zavi-vs-sintra): a growth agent or a team of AI employees, with sources
+
+## Blog
+[All posts](https://www.zaviagent.com/blog): straight answers to the growth questions founders search for, answer first.
+- [Free website score checker: what the 5 checks actually measure](https://www.zaviagent.com/blog/free-website-score-checker)
+- [How to get my business to show up in ChatGPT](https://www.zaviagent.com/blog/how-to-get-my-business-to-show-up-in-chatgpt)
+- [AI growth agent: 5 things to check before you pay for one](https://www.zaviagent.com/blog/ai-growth-agent-what-to-check)
+- [How to get your first 10 customers without a marketing team or budget](https://www.zaviagent.com/blog/first-10-customers-without-a-marketing-team)
+- [Can AI run my Facebook ads? A real company's 30-day public test](https://www.zaviagent.com/blog/can-ai-run-my-facebook-ads)
+
+## Tools
+[All tools](https://www.zaviagent.com/tools): ask in a sentence and a finished file comes back, not a chat reply. Most need nothing connected.
+- [A launch video](https://www.zaviagent.com/launch-video): describe your product and a launch video arrives by email; no account needed
+- A report on how the business is doing: A PDF, attached to the reply
+- A document that makes a case: A PDF, attached to the reply
+- A blog post, ready to publish: An HTML file with up to 3 generated hero images
+- A deck I can actually present: A landscape 16:9 PDF, plus a link that opens the deck in a browser
+- A board or investor update: A landscape 16:9 PDF, plus a browser link
+- A spreadsheet I can pivot: An .xlsx workbook with typed columns and real numbers
+- A CSV for another system: A .csv file
+- A branded post image: Up to 3 different treatments of the same idea to choose between
+- A swipeable carousel: An ordered set of 2 to 10 panels, auto-named in posting order
+- A plain photo, no words: Up to 5 images per request
+- A clickable prototype of a screen: A link to a working HTML prototype with real buttons and a state machine
+
+## Use cases
+[All use cases](https://www.zaviagent.com/use-cases): what Zavi does for each kind of business.
+- [SaaS](https://www.zaviagent.com/use-cases/saas): Trial signups, traced to the source
+- [Startups](https://www.zaviagent.com/use-cases/startups): Launch it, then find users
+- [Ecommerce](https://www.zaviagent.com/use-cases/ecommerce): Orders and AOV, not just traffic
+- [Marketplaces](https://www.zaviagent.com/use-cases/marketplaces): Balance supply and demand by city
+- [Agencies](https://www.zaviagent.com/use-cases/agencies): One workspace per client
+- [Professional services](https://www.zaviagent.com/use-cases/professional-services): More discovery calls
+- [Small business](https://www.zaviagent.com/use-cases/small-business): A weekly plan for new customers
+- [Local services](https://www.zaviagent.com/use-cases/local-services): More calls from 'near me' searches
+- [Restaurants](https://www.zaviagent.com/use-cases/restaurants): Fill the quiet nights
+- [Real estate](https://www.zaviagent.com/use-cases/real-estate): Listing appointments and buyer leads
+- [Healthcare practices](https://www.zaviagent.com/use-cases/healthcare): New patients from nearby searches
+- [Financial advisors](https://www.zaviagent.com/use-cases/financial-advisors): Consultations with the right clients
+- [Law firms](https://www.zaviagent.com/use-cases/law-firms): Consultations by practice area
+
+## Channels
+[All channels](https://www.zaviagent.com/channels): one page per channel agent.
+One agent per growth channel. Changes wait for your approval, or you set a spend cap the ad agents stay inside. Some channels are read-only or planned today, so each page describes the intended agent.
+- [Meta Ads Agent](https://www.zaviagent.com/channels/meta-ads): Reads every ad set daily, moves budget to what sells, pauses what doesn't, and drafts the next creative to test. Every change waits for your yes.
+- [Google Ads Agent](https://www.zaviagent.com/channels/google-ads): Cuts wasted search spend, finds the keywords that actually convert, and rewrites the ads that don't. You approve every move.
+- [TikTok Ads Agent](https://www.zaviagent.com/channels/tiktok-ads): Tests creative fast, scales the winners, and switches off the rest before they burn budget.
+- [Reddit Ads Agent](https://www.zaviagent.com/channels/reddit-ads): Reaches niche communities with ads that read like they belong there, and trims the ones that don't land.
+- [LinkedIn Ads Agent](https://www.zaviagent.com/channels/linkedin-ads): Targets by role and company, drafts the copy, and reports what each campaign really costs per lead.
+- [YouTube Ads Agent](https://www.zaviagent.com/channels/youtube-ads): Runs and trims video campaigns, finds the placements that convert, and cuts the ones that only rack up views.
+- [SEO Agent](https://www.zaviagent.com/channels/seo): Audits your site, finds the keyword gaps, drafts the pages and fixes that close them, and tracks what ranks.
+- [GEO Agent](https://www.zaviagent.com/channels/geo): Checks whether your brand shows up when people ask ChatGPT, Claude, Perplexity or Gemini about your category, then drafts the content that gets you cited.
+- [Email Agent](https://www.zaviagent.com/channels/email): Writes and schedules the sends that bring people back: win-backs, launches, and the follow-ups you never get to.
+- [SMS Agent](https://www.zaviagent.com/channels/sms): Short, timed nudges for the moments that matter: abandoned carts, reminders, and re-orders.
+- [Instagram Agent](https://www.zaviagent.com/channels/instagram): Plans posts and Reels around what your audience actually engages with, and drafts captions in your voice.
+- [X Agent](https://www.zaviagent.com/channels/x): Drafts posts and threads in your voice, finds the conversations worth joining, and hands you the drafts to edit and post.
+- [Reddit Agent](https://www.zaviagent.com/channels/reddit): Finds high-intent threads, drafts replies that actually help, and turns Reddit into customers while respecting each community's rules.
+- [YouTube Agent](https://www.zaviagent.com/channels/youtube): Hooks, briefs, and clips: Zavi finds the topics your audience searches for and drafts the video plan to match.
+- [TikTok Agent](https://www.zaviagent.com/channels/tiktok): Short video ideas that land, drafted from what's working in your niche this week.
+- [UGC Video Agent](https://www.zaviagent.com/channels/ugc): Finds a creator to film a video you own, writes the brief they shoot from, and spells out the usage rights before anyone films.
+
+## Who it's for
+Founders and growth teams at any business who want to move a number without hiring a larger team.
+
+## Company
+- Zavi Labs — https://www.linkedin.com/company/zavi-labs/
+- X — https://x.com/zaviagent

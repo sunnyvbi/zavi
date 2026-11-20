@@ -1,0 +1,169 @@
+import { describe, expect, it } from "vitest";
+import { LOADING, growthHeadline, type HeadlineInputs, type ReadyHeadline } from "./growthHeadline";
+
+const ready = (i: HeadlineInputs) => growthHeadline(i) as ReadyHeadline;
+
+const ran = { slug: "seo", name: "SEO", ranAt: "2026-09-20", running: false };
+const idle = { slug: "meta_ads", name: "Meta Ads", ranAt: null, running: false };
+
+// Everything known and nothing missing: the only state that may say "Nothing
+// needs you right now".
+const all: HeadlineInputs = {
+  pending: 0,
+  activeGoals: 1,
+  measurement: { kind: "none" },
+  channels: [ran],
+  rivals: 2,
+  brandVoiceSet: true,
+};
+
+describe("growthHeadline, first true wins", () => {
+  it("1. actions waiting for an OK outrank everything", () => {
+    const h = ready({ ...all, pending: 3, activeGoals: 0, channels: [idle] });
+    expect(h.kind).toBe("review");
+    expect(h.text).toBe("3 actions wait for your OK.");
+    expect(h.action).toEqual({ kind: "review", label: "Review 3" });
+    expect(ready({ ...all, pending: 1 }).text).toBe("1 action waits for your OK.");
+  });
+
+  it("noGoalFirst puts the missing goal ahead of the waiting count, even while approvals load", () => {
+    const h = ready({ ...all, pending: 6, activeGoals: 0, noGoalFirst: true });
+    expect(h.kind).toBe("no_goal");
+    expect(h.text).toBe("I have no goal to work toward yet.");
+    expect(h.action).toEqual({ kind: "add_goal", label: "Add a goal" });
+    expect(ready({ ...all, pending: LOADING, activeGoals: 0, noGoalFirst: true }).kind).toBe("no_goal");
+    expect(ready({ ...all, pending: 6, activeGoals: 1, noGoalFirst: true }).kind).toBe("review");
+    expect(ready({ ...all, pending: 6, activeGoals: null, noGoalFirst: true }).kind).toBe("review");
+    expect(ready({ ...all, pending: 6, activeGoals: 0 }).kind).toBe("review");
+  });
+
+  it("1. says N+ when the list behind the count hit its cap", () => {
+    const h = ready({ ...all, pending: 137, pendingCapped: true });
+    expect(h.text).toBe("137+ actions wait for your OK.");
+    expect(h.action).toEqual({ kind: "review", label: "Review 137+" });
+  });
+
+  it("2. no active goal asks for one", () => {
+    const h = ready({ ...all, activeGoals: 0, measurement: { kind: "manual", goalId: "g" } });
+    expect(h.kind).toBe("no_goal");
+    expect(h.action.kind).toBe("add_goal");
+  });
+
+  it("3. a goal read from a missing connector asks to connect THAT connector", () => {
+    const h = ready({ ...all, measurement: { kind: "connect", slug: "stripe", name: "Stripe" }, channels: [idle] });
+    expect(h.kind).toBe("unmeasured");
+    expect(h.text).toBe("I can't measure your goal yet.");
+    expect(h.action).toEqual({ kind: "connect", label: "Connect Stripe", slug: "stripe" });
+  });
+
+  it("3. a manual goal asks for this week's number", () => {
+    const h = ready({ ...all, measurement: { kind: "manual", goalId: "g1" } });
+    expect(h.text).toBe("I need this week's number for your goal.");
+    expect(h.action).toEqual({ kind: "enter_number", label: "Enter this week's number", goalId: "g1" });
+  });
+
+  it("3. an unmeasured goal no single button fixes asks, and never says nothing needs you", () => {
+    const h = ready({ ...all, measurement: { kind: "other" } });
+    expect(h.kind).toBe("unmeasured");
+    expect(h.action.kind).toBe("ask");
+  });
+
+  it("3 does not fire when every goal is measured, or measurement is unknown", () => {
+    expect(ready({ ...all, measurement: { kind: "none" } }).kind).not.toBe("unmeasured");
+    const unknown = ready({ ...all, measurement: null });
+    expect(unknown.kind).not.toBe("unmeasured");
+    expect(unknown.text).not.toMatch(/Nothing (else )?needs you/);
+  });
+
+  it("4. nothing has run offers to start the first plan channel", () => {
+    const h = ready({ ...all, channels: [idle, { ...idle, slug: "seo", name: "SEO" }] });
+    expect(h.kind).toBe("nothing_ran");
+    expect(h.text).toBe("Nothing has run yet. Start Meta Ads?");
+    expect(h.action).toEqual({ kind: "start_run", label: "Start Meta Ads", slug: "meta_ads" });
+  });
+
+  it("4 never offers Start while a run is going, or when run state is unknown", () => {
+    expect(ready({ ...all, channels: [{ ...idle, running: true }] }).kind).toBe("waiting");
+    expect(ready({ ...all, channels: null }).kind).not.toBe("nothing_ran");
+  });
+
+  it("5. no rivals asks for them", () => {
+    const h = ready({ ...all, rivals: 0, brandVoiceSet: false });
+    expect(h.kind).toBe("no_rivals");
+    expect(h.action.kind).toBe("add_rivals");
+  });
+
+  it("6. no brand voice asks for one", () => {
+    const h = ready({ ...all, brandVoiceSet: false });
+    expect(h.kind).toBe("no_voice");
+    expect(h.action.kind).toBe("set_voice");
+  });
+
+  it("7. a run going, or none back yet, is waiting", () => {
+    expect(ready({ ...all, channels: [{ ...ran, running: true }] }).text).toBe(
+      "Waiting for the first run. Nothing else needs you.",
+    );
+    expect(ready({ ...all, channels: [] }).kind).toBe("waiting");
+  });
+
+  it("8. says nothing needs you only when everything is known and done", () => {
+    const h = ready(all);
+    expect(h.kind).toBe("clear");
+    expect(h.text).toBe("Nothing needs you right now.");
+    expect(h.action.kind).toBe("ask");
+  });
+
+  it("never says nothing needs you when an input is unknown", () => {
+    for (const key of Object.keys(all) as Array<keyof HeadlineInputs>) {
+      const h = ready({ ...all, [key]: null });
+      expect(h.kind, key).not.toBe("clear");
+      expect(h.text, key).not.toMatch(/Nothing (else )?needs you/);
+    }
+    expect(ready({ ...all, pending: null }).action).toEqual({ kind: "recheck", label: "Check again" });
+  });
+
+  it("keeps every line to twelve words or fewer, with no em dash", () => {
+    const states: HeadlineInputs[] = [
+      { ...all, pending: 12 },
+      { ...all, activeGoals: 0 },
+      { ...all, measurement: { kind: "manual", goalId: "g" } },
+      { ...all, measurement: { kind: "connect", slug: "operator_db", name: "Operator DB" } },
+      { ...all, channels: [{ ...idle, name: "LinkedIn Organic" }] },
+      { ...all, rivals: 0 },
+      { ...all, brandVoiceSet: false },
+      { ...all, channels: [] },
+      all,
+      { ...all, pending: null },
+    ];
+    for (const s of states) {
+      const { text } = ready(s);
+      expect(text.split(/\s+/).length, text).toBeLessThanOrEqual(12);
+      expect(text).not.toContain("\u2014");
+    }
+  });
+});
+
+describe("growthHeadline while reads are loading", () => {
+  it("stops at the first step whose input is still loading", () => {
+    // Approvals not back: no lower line may show, even if one is true.
+    expect(growthHeadline({ ...all, pending: LOADING, measurement: { kind: "manual", goalId: "g" } })).toEqual({
+      kind: "loading",
+    });
+    expect(growthHeadline({ ...all, measurement: LOADING, rivals: 0 }).kind).toBe("loading");
+    expect(growthHeadline({ ...all, channels: LOADING, rivals: 0 }).kind).toBe("loading");
+    expect(growthHeadline({ ...all, rivals: LOADING, brandVoiceSet: false }).kind).toBe("loading");
+    expect(growthHeadline({ ...all, brandVoiceSet: LOADING }).kind).toBe("loading");
+  });
+
+  it("still decides a step above a loading input", () => {
+    expect(growthHeadline({ ...all, pending: 145, measurement: LOADING, channels: LOADING }).kind).toBe("review");
+    expect(growthHeadline({ ...all, measurement: { kind: "manual", goalId: "g" }, rivals: LOADING }).kind).toBe(
+      "unmeasured",
+    );
+  });
+
+  it("gives the unknown line only for a FAILED input", () => {
+    expect(growthHeadline({ ...all, pending: null }).kind).toBe("unknown");
+    expect(growthHeadline({ ...all, pending: LOADING }).kind).toBe("loading");
+  });
+});

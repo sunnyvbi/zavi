@@ -1,0 +1,265 @@
+{
+  "$comment": "The one place Zavi's self-serve prices and credits are set. Loaded and validated by pricing-config.ts; the backend (tiers.ts, plans.ts, GET /api/public/pricing) and the web fallback both read it. Stripe prices must match: each STRIPE_PRICE_<TIER>_MONTHLY at monthly_usd, each STRIPE_PRICE_<TIER>_6MO at six_month_usd recurring every six_month_term_months. Checkout refuses a six-month Stripe price that disagrees. Credits here are DEFAULTS: system_config.blob.tier_credits and free_daily_credits still override them live, and the SQL fallbacks (_tier_monthly_credits) must stay equal to monthly_credits.",
+  "currency": "usd",
+  "six_month_term_months": 6,
+  "daily_credits": 1000,
+  "tiers": {
+    "free": {
+      "name": "Free",
+      "monthly_usd": 0,
+      "six_month_usd": 0,
+      "monthly_credits": 0
+    },
+    "starter": {
+      "name": "Starter",
+      "monthly_usd": 20,
+      "six_month_usd": 60,
+      "monthly_credits": 8000
+    },
+    "growth": {
+      "name": "Growth",
+      "monthly_usd": 120,
+      "six_month_usd": 360,
+      "monthly_credits": 48000
+    },
+    "pro": {
+      "name": "Pro",
+      "monthly_usd": 240,
+      "six_month_usd": 720,
+      "monthly_credits": 96000
+    }
+  },
+  "$comment_topup": "One-time credit packs, in whole USD. Each must equal a paid tier's monthly_usd: the pack grants that tier's monthly credit pool.",
+  "topup_usd_packs": [
+    20,
+    120,
+    240
+  ],
+  "$comment_features": "What every pricing card lists, in order: the public /pricing page shows every row on every card (checked from min_tier up, dashed below), the in-app Upgrade page shows each tier's own rows under 'Everything in <lower tier>, plus:'. A channel row lists each channel as its own line. min_tier must match the backend gate (tiers.ts DEFAULT_TIER_AGENT_MIN) for the row's agents / channel slugs; a backend test fails if it does not. A channel with no slug has no engine yet.",
+  "features": [
+    {
+      "key": "plan",
+      "label": "Website analysis and 30-day growth plan",
+      "min_tier": "free",
+      "agents": [
+        "onboarding-discovery",
+        "growth-lead"
+      ]
+    },
+    {
+      "key": "chat",
+      "label": "Chat with Zavi: growth, product, support and chief-of-staff advisors",
+      "min_tier": "free",
+      "agents": [
+        "operator",
+        "growth-lead",
+        "pm",
+        "support-lead",
+        "chief-of-staff"
+      ]
+    },
+    {
+      "key": "research",
+      "label": "Research and competitor analysis",
+      "min_tier": "free",
+      "agents": [
+        "research"
+      ]
+    },
+    {
+      "key": "audit",
+      "label": "SEO and AI-visibility audit of your site",
+      "min_tier": "free",
+      "agents": [
+        "seo-geo"
+      ]
+    },
+    {
+      "key": "decks",
+      "label": "Slides and pitch decks",
+      "min_tier": "free",
+      "agents": [
+        "operator"
+      ]
+    },
+    {
+      "key": "docs",
+      "label": "PDF reports, docs and spreadsheets",
+      "min_tier": "free",
+      "agents": [
+        "operator"
+      ]
+    },
+    {
+      "key": "wireframes",
+      "label": "Clickable wireframes and prototypes",
+      "min_tier": "free",
+      "agents": [
+        "operator"
+      ]
+    },
+    {
+      "key": "images",
+      "label": "AI images and social graphics",
+      "min_tier": "free",
+      "agents": [
+        "operator"
+      ]
+    },
+    {
+      "key": "build",
+      "label": "Build and publish websites and apps (uses your credits)",
+      "min_tier": "free",
+      "agents": [
+        "product-builder"
+      ]
+    },
+    {
+      "key": "content",
+      "label": "Content and design agent",
+      "min_tier": "starter",
+      "agents": [
+        "content-design"
+      ]
+    },
+    {
+      "key": "video",
+      "label": "AI UGC videos",
+      "min_tier": "starter",
+      "channels": [
+        {
+          "name": "AI UGC Videos",
+          "slug": "generated_video"
+        }
+      ]
+    },
+    {
+      "key": "browser",
+      "label": "Browser agent that does tasks on the web for you",
+      "min_tier": "starter",
+      "agents": [
+        "browser-operator"
+      ]
+    },
+    {
+      "key": "engineer",
+      "label": "Engineer agent that ships code to your repo",
+      "min_tier": "pro",
+      "agents": [
+        "engineer"
+      ]
+    },
+    {
+      "key": "fundraising",
+      "label": "Fundraising agent",
+      "min_tier": "pro",
+      "agents": [
+        "fundraising"
+      ]
+    },
+    {
+      "key": "organic",
+      "label": "Organic channels",
+      "min_tier": "starter",
+      "channels": [
+        {
+          "name": "SEO",
+          "slug": "seo"
+        },
+        {
+          "name": "AI Answers (GEO)",
+          "slug": "geo"
+        },
+        {
+          "name": "LinkedIn",
+          "slug": "linkedin_organic"
+        },
+        {
+          "name": "Reddit",
+          "slug": "reddit_organic"
+        },
+        {
+          "name": "X",
+          "slug": "x_organic"
+        },
+        {
+          "name": "Instagram",
+          "slug": "instagram_organic"
+        },
+        {
+          "name": "Pinterest",
+          "slug": "pinterest_organic"
+        }
+      ]
+    },
+    {
+      "key": "organic_growth",
+      "label": "More organic channels",
+      "min_tier": "growth",
+      "channels": [
+        {
+          "name": "UGC Videos (real creators)",
+          "slug": "ugc"
+        },
+        {
+          "name": "TikTok",
+          "slug": "tiktok_organic"
+        },
+        {
+          "name": "YouTube",
+          "slug": "youtube_organic"
+        }
+      ]
+    },
+    {
+      "key": "ads",
+      "label": "Paid ads",
+      "min_tier": "pro",
+      "channels": [
+        {
+          "name": "Google/YouTube Ads",
+          "slug": "google_ads"
+        },
+        {
+          "name": "Meta Ads",
+          "slug": "meta_ads"
+        },
+        {
+          "name": "ChatGPT Ads",
+          "slug": "chatgpt_ads"
+        },
+        {
+          "name": "LinkedIn Ads",
+          "slug": "linkedin_ads"
+        },
+        {
+          "name": "Reddit Ads",
+          "slug": "reddit_ads"
+        },
+        {
+          "name": "TikTok Ads",
+          "slug": "tiktok_ads"
+        },
+        {
+          "name": "X Ads",
+          "slug": "x_ads"
+        }
+      ]
+    },
+    {
+      "key": "more",
+      "label": "Email and SMS channels",
+      "min_tier": "pro",
+      "channels": [
+        {
+          "name": "Email",
+          "slug": "email_marketing"
+        },
+        {
+          "name": "SMS",
+          "slug": "sms"
+        }
+      ]
+    }
+  ]
+}

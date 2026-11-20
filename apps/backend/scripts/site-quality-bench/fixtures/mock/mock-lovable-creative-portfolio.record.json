@@ -1,0 +1,48 @@
+{
+  "run_id": "mock-lovable-creative-portfolio",
+  "brief_id": "creative-portfolio",
+  "system": "lovable",
+  "provenance": "mocked",
+  "captured_at": "2026-10-07T00:05:00.000Z",
+  "urls": {
+    "site": null
+  },
+  "screenshots": {
+    "desktop": "shots/mock-lovable-creative-portfolio-desktop.png",
+    "mobile": "shots/mock-lovable-creative-portfolio-mobile.png"
+  },
+  "timings": {
+    "to_first_preview_s": 8,
+    "to_usable_complete_s": 140
+  },
+  "cost": {
+    "usd": null,
+    "source": "mocked: competitor cost unknown"
+  },
+  "repairs": null,
+  "failures": [],
+  "journeys": [
+    {
+      "name": "contact_illustrator",
+      "passed": true
+    }
+  ],
+  "requirement_coverage": [
+    {
+      "requirement": "Gallery of work",
+      "met": true,
+      "evidence": "mocked: not checked"
+    },
+    {
+      "requirement": "About the illustrator",
+      "met": true,
+      "evidence": "mocked: not checked"
+    },
+    {
+      "requirement": "Contact path for clients",
+      "met": false,
+      "evidence": "mocked: not checked"
+    }
+  ],
+  "scores": null
+}

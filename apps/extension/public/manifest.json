@@ -1,0 +1,41 @@
+{
+  "manifest_version": 3,
+  "name": "Zavi",
+  "version": "0.1.0",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAn/RXL2uLsk4OyBsbPr6tkHQ64geqekBHAl3fWOa9ZqFkE4vwl3EvkEzKw+n9l47Nnf8ttY0wInomEC2apqSS7RcnS9fhpyg+S4w8ypD3Tjqsx9hM4W5rnM7+C9unf1eHpa4wxnsvL+CtO8JCA9hBUSHfend40B9of1tkRTtwtZ0nk0C2WC3USnpwxw7Fdq+FD5dpzSBnLArFNUYGX/ITugLrrsLJJebZDW4+Hk3e6LlvzsExBEhLpt6cNw65bxBS+EWdA7dgZCdoxDJBehxFDwSlpSzESD39FpIxFhwkdI/sjbJ2b04ycu6v7+HoeD9K/1Zycx0UyvFs/1OEZ0FIAQIDAQAB",
+  "description": "Ask Zavi to do something in the tab you're on. It clicks and types for you, and asks before anything that clearly spends money.",
+  "minimum_chrome_version": "125",
+  "action": {
+    "default_title": "Open Zavi",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "background": {
+    "service_worker": "service-worker.js",
+    "type": "module"
+  },
+  "permissions": [
+    "sidePanel",
+    "activeTab",
+    "identity",
+    "storage",
+    "debugger"
+  ],
+  "host_permissions": [
+    "https://api.zaviagent.com/*"
+  ],
+  "optional_host_permissions": [
+    "<all_urls>"
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
+}

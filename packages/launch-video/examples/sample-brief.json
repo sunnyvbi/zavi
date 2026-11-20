@@ -1,0 +1,146 @@
+{
+  "product": {
+    "name": "Zavi",
+    "oneLiner": "Do 10x more on your marketplace. You just ask.",
+    "url": "https://zaviagent.com"
+  },
+  "brand": {
+    "primaryColor": "#5B6CFF",
+    "accentColor": "#22D3EE",
+    "bgColor": "#0B0E14"
+  },
+  "audience": "marketplace founders running lean teams",
+  "tone": "bold",
+  "cta": {
+    "text": "Build your team",
+    "url": "https://zaviagent.com"
+  },
+  "aspect": "16:9",
+  "beats": [
+    {
+      "kind": "hook",
+      "durationFrames": 150,
+      "headline": "Do 10x more on your marketplace. You just ask.",
+      "sub": "Zavi is an AI cofounder team that runs the work, not just the advice.",
+      "vo": {
+        "srtText": "Do ten times more on your marketplace. You just ask."
+      }
+    },
+    {
+      "kind": "chat",
+      "durationFrames": 180,
+      "eyebrow": "In your Slack",
+      "headline": "Ask in plain English. It ships.",
+      "messages": [
+        {
+          "speaker": "You",
+          "monogram": "YO",
+          "accent": "#5B6CFF",
+          "mention": "@Engineer",
+          "body": "the checkout button is broken on mobile. Can you fix it?"
+        },
+        {
+          "speaker": "Zavi Engineer",
+          "monogram": "ZE",
+          "accent": "#1264A3",
+          "reply": {
+            "badge": "APP",
+            "role": "Engineer",
+            "statusDot": "green",
+            "body": "Found it. A null guard was missing. Opened PR #4821 against main with a fix + a test. Ready for review."
+          }
+        },
+        {
+          "speaker": "Zavi Growth",
+          "monogram": "ZG",
+          "accent": "#167F50",
+          "reply": {
+            "badge": "APP",
+            "role": "Head of Growth",
+            "statusDot": "blue",
+            "body": "While you were out I sourced 12 new hosts in Austin and queued the welcome sequence."
+          }
+        }
+      ],
+      "vo": {
+        "srtText": "Ask in plain English, in your Slack. It ships."
+      }
+    },
+    {
+      "kind": "cardwall",
+      "durationFrames": 180,
+      "eyebrow": "Your cofounder team",
+      "headline": "Nine specialists. One ask away.",
+      "cards": [
+        {
+          "label": "Engineer",
+          "accent": "#5B9CF5",
+          "headline": "Opens real pull requests",
+          "body": "From a Slack message to a reviewed PR against your repo.",
+          "footer": "12 PRs this week"
+        },
+        {
+          "label": "Growth",
+          "accent": "#3ECF8E",
+          "headline": "Sources supply that sticks",
+          "body": "Finds, ranks, and onboards new hosts in your top markets.",
+          "footer": "+38 hosts"
+        },
+        {
+          "label": "Ads",
+          "accent": "#F0B429",
+          "headline": "Runs the campaigns",
+          "body": "Reads your ad accounts, proposes cuts and scales, ships them.",
+          "footer": "ROAS 4.2x"
+        },
+        {
+          "label": "Support",
+          "accent": "#EF6A5A",
+          "headline": "Clears the inbox",
+          "body": "Triages, drafts, and routes, grounded in live operating data.",
+          "footer": "94% deflected"
+        },
+        {
+          "label": "Research",
+          "accent": "#A78BFA",
+          "headline": "Watches the rivals",
+          "body": "Flags pricing gaps and feature moves before they cost you.",
+          "footer": "5 competitors"
+        },
+        {
+          "label": "Ops",
+          "accent": "#22D3EE",
+          "headline": "Catches the leaks",
+          "body": "Reverts a bad deploy, flags a payout anomaly, keeps it running.",
+          "footer": "day & night"
+        }
+      ],
+      "vo": {
+        "srtText": "Nine specialists, one ask away."
+      }
+    },
+    {
+      "kind": "metric",
+      "durationFrames": 150,
+      "eyebrow": "Real provenance",
+      "metrics": [
+        {
+          "stat": "$1.2M",
+          "label": "GMV run on a real P2P marketplace, not a synthetic demo."
+        }
+      ],
+      "vo": {
+        "srtText": "Battle-tested on a real, one-point-two-million-dollar marketplace."
+      }
+    },
+    {
+      "kind": "cta",
+      "durationFrames": 150,
+      "headline": "Your cofounder team is one connection away.",
+      "vo": {
+        "srtText": "Your cofounder team is one connection away. Build your team at zaviagent dot com."
+      }
+    }
+  ],
+  "music": {}
+}

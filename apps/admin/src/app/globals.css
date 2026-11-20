@@ -1,0 +1,236 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Zavi Modern SaaS palette — Option A
+ * design-system/praxis/MASTER.md
+ *
+ * Token names retained from manuscript era for migration parity.
+ * Values mapped to navy / sky / ivory.
+ */
+:root {
+  --paper: #F8FAFC;        /* slate-50  — page bg */
+  --paper-deep: #EFF6FF;   /* sky-50    — section tint */
+  --ink: #020617;          /* slate-950 — primary text */
+  --ash: #334155;          /* slate-700, secondary text */
+  --brick: #0369A1;        /* sky-700   — CTA / accent */
+  --brick-dark: #075985;   /* sky-800   — CTA hover */
+  --rule: #E2E8F0;         /* slate-200 — hairline */
+
+  /* Option A "comfortable" admin tokens (wireframes/zavi-admin-themes.html) */
+  --text: #0F172A;         /* slate-900, primary text */
+  --text-2: #334155;       /* slate-700, secondary text */
+  --text-3: #475569;       /* slate-600, tertiary text + labels */
+  --accent-a: #0369A1;     /* sky-700 */
+  --card-border: #E2E8F0;
+  --card-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 8px 24px -14px rgba(15,23,42,0.16);
+}
+
+html, body {
+  background: var(--paper);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-size: 15px;
+  line-height: 1.5;
+  font-feature-settings: "kern", "liga", "clig", "calt";
+  background-image:
+    radial-gradient(1200px 600px at 20% -10%, #E0F2FE 0%, transparent 60%),
+    radial-gradient(1000px 500px at 100% 0%, rgba(3,105,161,0.05), transparent 55%);
+  background-attachment: fixed;
+}
+
+/* Manuscript paper-grain neutralized (was multiply-noise overlay) */
+.paper-grain::before { content: none; }
+
+/* Tabular figures for stats */
+.tabular { font-variant-numeric: tabular-nums lining-nums; }
+
+/* Hairline rules — remapped from ink to slate-200 */
+.rule-thin { border-color: rgba(15, 23, 42, 0.08); }
+.rule-thick { border-color: rgba(15, 23, 42, 0.18); }
+
+/* Dropcap retained but tuned for sans serif */
+.dropcap::first-letter {
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  font-size: 4.6rem;
+  line-height: 0.86;
+  float: left;
+  padding: 0.35rem 0.65rem 0 0;
+  color: var(--brick);
+  font-weight: 600;
+}
+
+/* Glass card primitive, Option A "comfortable" */
+.glass-card {
+  background: rgba(255,255,255,0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--card-shadow);
+  border-radius: 14px;
+}
+
+/*
+ * Admin readability layer (Option A). Applies to every dashboard page without
+ * editing 70 files:
+ *  1. Faint slate-400/500 text is lifted one step (labels were too light to
+ *     read). :where() keeps specificity equal to the utility, so hover:,
+ *     group-hover: and responsive variants still win.
+ *  2. The narrow centred page column (max-w-4xl..7xl mx-auto) widens to
+ *     1440px so wide screens stop showing a big empty band.
+ *  3. Section labels (uppercase micro-text) use the 12.5px / 600 / .06em spec.
+ */
+:where(.admin-main) .text-slate-400 { color: #64748B; }
+:where(.admin-main) .text-slate-500 { color: #475569; }
+.admin-main > .mx-auto.max-w-4xl,
+.admin-main > .mx-auto.max-w-5xl,
+.admin-main > .mx-auto.max-w-6xl,
+.admin-main > .mx-auto.max-w-7xl { max-width: 1440px; }
+.admin-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-3);
+}
+.glass-card-strong {
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(15,23,42,0.10);
+  box-shadow: 0 10px 30px -12px rgba(15,23,42,0.18);
+  border-radius: 16px;
+}
+
+/* Subtle entrance (kept; less theatrical than manuscript rise) */
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.rise { animation: riseIn 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.rise-d1 { animation-delay: 0.04s; }
+.rise-d2 { animation-delay: 0.10s; }
+.rise-d3 { animation-delay: 0.18s; }
+.rise-d4 { animation-delay: 0.26s; }
+.rise-d5 { animation-delay: 0.34s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .rise { animation: none; }
+}
+
+/* Wipe + caret + marquee + lnk kept as no-op or simplified (used by current page; will be removed in Phase 2) */
+@keyframes wipeIn {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+.wipe { transform-origin: left; animation: wipeIn 0.8s cubic-bezier(0.7, 0, 0.2, 1) 0.15s both; }
+
+@keyframes blinkCaret {
+  0%, 60% { opacity: 1; }
+  61%, 100% { opacity: 0; }
+}
+.caret { animation: blinkCaret 1.1s steps(1) infinite; }
+
+@keyframes drift {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.marquee-track { animation: drift 38s linear infinite; }
+
+a.lnk {
+  background-image: linear-gradient(transparent calc(100% - 1px), currentColor 1px);
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  transition: background-size 0.3s cubic-bezier(0.65, 0, 0.35, 1);
+}
+a.lnk:hover { background-size: 0 100%; background-position: right; }
+
+::selection { background: var(--brick); color: #ffffff; }
+/*
+ ---break---
+ */
+@layer base {
+  .theme {
+    --font-heading: var(--font-body);
+    --font-sans: var(--font-body);
+  }
+  :root {
+    /* Align shadcn tokens with admin paper/ink palette */
+    --background: var(--paper);
+    --foreground: var(--ink);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.145 0 0);
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.145 0 0);
+    --primary: var(--brick);
+    --primary-foreground: #ffffff;
+    --secondary: oklch(0.97 0 0);
+    --secondary-foreground: oklch(0.205 0 0);
+    --muted: oklch(0.97 0 0);
+    --muted-foreground: oklch(0.556 0 0);
+    --accent: oklch(0.97 0 0);
+    --accent-foreground: oklch(0.205 0 0);
+    --destructive: oklch(0.577 0.245 27.325);
+    --border: oklch(0.922 0 0);
+    --input: oklch(0.922 0 0);
+    --ring: oklch(0.708 0 0);
+    --chart-1: oklch(0.87 0 0);
+    --chart-2: oklch(0.556 0 0);
+    --chart-3: oklch(0.439 0 0);
+    --chart-4: oklch(0.371 0 0);
+    --chart-5: oklch(0.269 0 0);
+    --radius: 0.625rem;
+    --sidebar: oklch(0.985 0 0);
+    --sidebar-foreground: oklch(0.145 0 0);
+    --sidebar-primary: oklch(0.205 0 0);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.97 0 0);
+    --sidebar-accent-foreground: oklch(0.205 0 0);
+    --sidebar-border: oklch(0.922 0 0);
+    --sidebar-ring: oklch(0.708 0 0);
+  }
+  .dark {
+    --background: oklch(0.145 0 0);
+    --foreground: oklch(0.985 0 0);
+    --card: oklch(0.205 0 0);
+    --card-foreground: oklch(0.985 0 0);
+    --popover: oklch(0.205 0 0);
+    --popover-foreground: oklch(0.985 0 0);
+    --primary: oklch(0.922 0 0);
+    --primary-foreground: oklch(0.205 0 0);
+    --secondary: oklch(0.269 0 0);
+    --secondary-foreground: oklch(0.985 0 0);
+    --muted: oklch(0.269 0 0);
+    --muted-foreground: oklch(0.708 0 0);
+    --accent: oklch(0.269 0 0);
+    --accent-foreground: oklch(0.985 0 0);
+    --destructive: oklch(0.704 0.191 22.216);
+    --border: oklch(1 0 0 / 10%);
+    --input: oklch(1 0 0 / 15%);
+    --ring: oklch(0.556 0 0);
+    --chart-1: oklch(0.87 0 0);
+    --chart-2: oklch(0.556 0 0);
+    --chart-3: oklch(0.439 0 0);
+    --chart-4: oklch(0.371 0 0);
+    --chart-5: oklch(0.269 0 0);
+    --sidebar: oklch(0.205 0 0);
+    --sidebar-foreground: oklch(0.985 0 0);
+    --sidebar-primary: oklch(0.488 0.243 264.376);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.269 0 0);
+    --sidebar-accent-foreground: oklch(0.985 0 0);
+    --sidebar-border: oklch(1 0 0 / 10%);
+    --sidebar-ring: oklch(0.556 0 0);
+  }
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}

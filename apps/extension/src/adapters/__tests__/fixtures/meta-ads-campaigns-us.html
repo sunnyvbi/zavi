@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<!--
+  Fixture: Meta Ads Manager, Campaigns tab, US account, "Last 7 days".
+
+  Deliberately structured the way the real thing is, not the way a test wants it
+  to be: an ARIA grid built out of nested <div>s (no <table>, no <tr>, no <th>),
+  several layers of layout wrappers between a row and its cells, a leading
+  checkbox column with no header text, a CPM column that must NOT be read as the
+  impressions column, an all-empty row that must yield nulls rather than zeros,
+  and Meta's pinned "Results from 3 campaigns" summary footer that must NOT be
+  counted as a campaign.
+-->
+<html lang="en">
+<head><title>Ads Manager</title></head>
+<body>
+  <div id="mount_0_0">
+    <div role="banner" class="_2ph- _a8-u">
+      <div class="_1a2b">
+        <div aria-label="Ad Account" role="button" class="_3c4d">
+          <span class="_5e6f">Upcar Rental (act_1029384756)</span>
+        </div>
+      </div>
+      <div class="_7g8h">
+        <div role="button" aria-label="Date range">
+          <span dir="auto">Last 7 days</span>
+        </div>
+      </div>
+    </div>
+
+    <div role="tablist" class="_9i0j">
+      <div role="tab" aria-selected="true" tabindex="0"><span dir="auto">Campaigns</span></div>
+      <div role="tab" aria-selected="false" tabindex="-1"><span dir="auto">Ad sets</span></div>
+      <div role="tab" aria-selected="false" tabindex="-1"><span dir="auto">Ads</span></div>
+    </div>
+
+    <div class="_1k2l _ads-table-shell">
+      <div role="grid" aria-label="Campaigns table" aria-rowcount="4" class="_3m4n">
+
+        <div role="rowgroup" class="_5o6p">
+          <div role="row" aria-rowindex="1" class="_7q8r _header">
+            <div class="_cellwrap"><div role="columnheader" aria-colindex="1" class="_9s0t"><span aria-label="Select all"></span></div></div>
+            <div class="_cellwrap"><div role="columnheader" aria-colindex="2"><div class="_1u2v"><span dir="auto">Campaign name</span></div></div></div>
+            <div class="_cellwrap"><div role="columnheader" aria-colindex="3"><span dir="auto">Delivery</span></div></div>
+            <div class="_cellwrap"><div role="columnheader" aria-colindex="4"><span dir="auto">Amount spent (USD)</span></div></div>
+            <div class="_cellwrap"><div role="columnheader" aria-colindex="5"><span dir="auto">Impressions</span></div></div>
+            <div class="_cellwrap"><div role="columnheader" aria-colindex="6"><span dir="auto">Link clicks</span></div></div>
+            <div class="_cellwrap"><div role="columnheader" aria-colindex="7"><span dir="auto">Cost per result</span></div></div>
+            <div class="_cellwrap"><div role="columnheader" aria-colindex="8"><span dir="auto">Purchase ROAS (return on ad spend)</span></div></div>
+            <div class="_cellwrap"><div role="columnheader" aria-colindex="9"><span dir="auto">Cost per 1,000 impressions (CPM)</span></div></div>
+          </div>
+        </div>
+
+        <div role="rowgroup" class="_3w4x _virtualized">
+
+          <div role="row" aria-rowindex="2" class="_5y6z">
+            <div class="_cellwrap"><div role="gridcell" aria-colindex="1"><input type="checkbox" /></div></div>
+            <div class="_cellwrap"><div role="gridcell" aria-colindex="2"><div class="_7a8b"><span class="_9c0d" dir="auto">Prospecting &mdash; Broad US</span></div></div></div>
+            <div class="_cellwrap"><div role="gridcell" aria-colindex="3"><span class="_1e2f" dir="auto">Active</span></div></div>
+            <div class="_cellwrap"><div role="gridcell" aria-colindex="4"><span dir="auto">$1,234.56</span></div></div>
+            <div class="_cellwrap"><div role="gridcell" aria-colindex="5"><span dir="auto">412,908</span></div></div>
+            <div class="_cellwrap"><div role="gridcell" aria-colindex="6"><span dir="auto">3,219</span></div></div>
+            <div class="_cellwrap"><div role="gridcell" aria-colindex="7"><span dir="auto">$18.42</span></div></div>
+            <div class="_cellwrap"><div role="gridcell" aria-colindex="8"><span dir="auto">2.13</span></div></div>
+            <div class="_cellwrap"><div role="gridcell" aria-colindex="9"><span dir="auto">$2.99</span></div></div>
+          </div>
+
+          <div role="row" aria-rowindex="3" class="_5y6z">
+            <div class="_cellwrap"><div role="gridcell" aria-colindex="1"><input type="checkbox" /></div></div>
+            <div class="_cellwrap"><div role="gridcell" aria-colindex="2"><div class="_7a8b"><span class="_9c0d" dir="auto">Retargeting &mdash; 30d ATC</span></div></div></div>
+            <div class="_cellwrap"><div role="gridcell" aria-colindex="3"><span class="_1e2f" dir="auto">Not delivering</span></div></div>
+            <div class="_cellwrap"><div role="gridcell" aria-colindex="4"><span dir="auto">&mdash;</span></div></div>
+            <div class="_cellwrap"><div role="gridcell" aria-colindex="5"><span dir="auto">&mdash;</span></div></div>
+            <div class="_cellwrap"><div role="gridcell" aria-colindex="6"><span dir="auto">-</span></div></div>
+            <div class="_cellwrap"><div role="gridcell" aria-colindex="7"><span dir="auto">&mdash;</span></div></div>
+            <div class="_cellwrap"><div role="gridcell" aria-colindex="8"><span dir="auto">&mdash;</span></div></div>
+            <div class="_cellwrap"><div role="gridcell" aria-colindex="9"><span dir="auto">&mdash;</span></div></div>
+          </div>
+
+          <div role="row" aria-rowindex="4" class="_5y6z">
+            <div class="_cellwrap"><div role="gridcell" aria-colindex="1"><input type="checkbox" /></div></div>
+            <div class="_cellwrap"><div role="gridcell" aria-colindex="2"><div class="_7a8b"><span class="_9c0d" dir="auto">Lookalike 1% &mdash; Purchasers</span></div></div></div>
+            <div class="_cellwrap"><div role="gridcell" aria-colindex="3"><span class="_1e2f" dir="auto">Active</span></div></div>
+            <div class="_cellwrap"><div role="gridcell" aria-colindex="4"><span dir="auto">$87.00</span></div></div>
+            <div class="_cellwrap"><div role="gridcell" aria-colindex="5"><span dir="auto">12,041</span></div></div>
+            <div class="_cellwrap"><div role="gridcell" aria-colindex="6"><span dir="auto">210</span></div></div>
+            <div class="_cellwrap"><div role="gridcell" aria-colindex="7"><span dir="auto">$43.50</span></div></div>
+            <div class="_cellwrap"><div role="gridcell" aria-colindex="8"><span dir="auto">0.98</span></div></div>
+            <div class="_cellwrap"><div role="gridcell" aria-colindex="9"><span dir="auto">$7.22</span></div></div>
+          </div>
+
+        </div>
+
+        <div role="rowgroup" class="_footer">
+          <div role="row" aria-rowindex="5" class="_summary">
+            <div class="_cellwrap"><div role="gridcell" aria-colindex="1"></div></div>
+            <div class="_cellwrap"><div role="gridcell" aria-colindex="2"><span dir="auto">Results from 3 campaigns</span></div></div>
+            <div class="_cellwrap"><div role="gridcell" aria-colindex="3"><span dir="auto">&mdash;</span></div></div>
+            <div class="_cellwrap"><div role="gridcell" aria-colindex="4"><span dir="auto">$1,321.56</span></div></div>
+            <div class="_cellwrap"><div role="gridcell" aria-colindex="5"><span dir="auto">424,949</span></div></div>
+            <div class="_cellwrap"><div role="gridcell" aria-colindex="6"><span dir="auto">3,429</span></div></div>
+            <div class="_cellwrap"><div role="gridcell" aria-colindex="7"><span dir="auto">$19.15</span></div></div>
+            <div class="_cellwrap"><div role="gridcell" aria-colindex="8"><span dir="auto">2.01</span></div></div>
+            <div class="_cellwrap"><div role="gridcell" aria-colindex="9"><span dir="auto">$3.11</span></div></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <script>window.__bootstrap = {"session":"abc123"};</script>
+</body>
+</html>

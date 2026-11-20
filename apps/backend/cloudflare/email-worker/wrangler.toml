@@ -1,0 +1,13 @@
+name = "zavi-agentmail-inbound"
+main = "worker.js"
+compatibility_date = "2024-09-23"
+
+[[r2_buckets]]
+binding = "RAW_MIME"
+bucket_name = "zavi-agentmail-raw"
+
+[vars]
+PRAXIS_EMAIL_WEBHOOK_URL = "https://api.zaviagent.com/api/webhooks/email"
+
+TRUSTED_AUTHSERV_ID = "mx.cloudflare.net"
+

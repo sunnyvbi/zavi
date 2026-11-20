@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light dark;
+}
+
+html,
+body {
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+fieldset {
+  min-width: 0;
+}
+
+body {
+  @apply bg-white text-gray-900 antialiased;
+}
+
+img,
+video,
+iframe,
+canvas {
+  max-width: 100%;
+}

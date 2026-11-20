@@ -1,0 +1,213 @@
+name: pr-gate
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+
+concurrency:
+  group: pr-gate-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  fast-gate:
+    if: ${{ github.event.pull_request.draft == false }}
+    runs-on: ${{ github.event.pull_request.head.repo.full_name == github.repository && vars.CI_RUNNER || 'ubuntu-latest' }}
+    permissions:
+      contents: read
+      statuses: write
+    timeout-minutes: 25
+    name: fast PR gate (typecheck · migration-collision · prompt-lint)
+    outputs:
+      ts: ${{ steps.ts.outputs.run }}
+      ext: ${{ steps.ts.outputs.ext }}
+      conn: ${{ steps.ts.outputs.conn }}
+      install: ${{ steps.install.outcome }}
+      tcb: ${{ steps.tcb.outcome }}
+      tcw: ${{ steps.tcw.outcome }}
+      tce: ${{ steps.tce.outcome }}
+      tcc: ${{ steps.tcc.outcome }}
+      conn_test: ${{ steps.conn_test.outcome }}
+      conn_build: ${{ steps.conn_build.outcome }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: ${{ runner.environment == 'github-hosted' && 'npm' || '' }} # self-hosted Mac keeps ~/.npm on disk; uploading it only fills the repo cache and hangs the post step
+      - name: touches the backend security surface?
+        id: sec
+        run: |
+          set -euo pipefail
+          files=$(git diff --name-only HEAD^1 HEAD)
+          if grep -E '^(apps/backend/src/|apps/backend/scripts/|apps/backend/\.tenant-scan-allowlist$|apps/backend/\.route-auth-allowlist$|supabase/migrations/)' <<<"$files" >/dev/null; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: touches TypeScript?
+        id: ts
+        run: |
+          set -euo pipefail
+          files=$(git diff --name-only HEAD^1 HEAD)
+          install='^(package\.json|package-lock\.json|\.npmrc|tsconfig[^/]*\.json)$|^patches/'
+          if grep -E "^(apps/backend|apps/web|packages)/.*\.(ts|tsx|mts|cts|js|jsx|mjs|cjs|json)$|$install" <<<"$files" >/dev/null; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          fi
+          if grep -E "^apps/extension/|$install" <<<"$files" >/dev/null; then
+            echo "ext=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ext=false" >> "$GITHUB_OUTPUT"
+          fi
+          if grep -E "^apps/connector/|^packages/shared/src/db-guard/|^packages/shared/(package|tsconfig[^/]*)\.json$|$install" <<<"$files" >/dev/null; then
+            echo "conn=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "conn=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: tenant-isolation scan
+        if: steps.sec.outputs.run == 'true'
+        working-directory: apps/backend
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: node scripts/scan-tenant-isolation.mjs --base "origin/$BASE_REF"
+      - name: route-auth scan (GAP 21)
+        if: steps.sec.outputs.run == 'true'
+        working-directory: apps/backend
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: node scripts/scan-route-auth.mjs --base "origin/$BASE_REF"
+      - name: no new text-lock tests
+        run: node scripts/ci/no-text-lock-tests.mjs --range HEAD^1..HEAD
+      - name: list pages that render a changed shared UI component
+        if: ${{ !cancelled() }}
+        run: node scripts/ci/shared-ui-consumers.mjs --range HEAD^1..HEAD
+      - name: new migrations must not reuse a version on main
+        if: ${{ !cancelled() }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          node scripts/ci/migration-version-unique.mjs \
+            --main-ref origin/main --range HEAD^1..HEAD --fetch-main --status-sha "$HEAD_SHA"
+      - name: install (TypeScript PRs only)
+        id: install
+        if: ${{ !cancelled() && (steps.ts.outputs.run == 'true' || steps.ts.outputs.ext == 'true' || steps.ts.outputs.conn == 'true') }}
+        run: npm ci
+      - name: typecheck backend
+        id: tcb
+        if: ${{ !cancelled() && steps.ts.outputs.run == 'true' && steps.install.outcome == 'success' }}
+        run: npm run typecheck -w @zavi/backend
+      - name: typecheck web
+        id: tcw
+        if: ${{ !cancelled() && steps.ts.outputs.run == 'true' && steps.install.outcome == 'success' }}
+        env:
+          NODE_OPTIONS: --max-old-space-size=8192
+        run: npm run typecheck -w @zavi/web
+      - name: typecheck extension
+        id: tce
+        if: ${{ !cancelled() && steps.ts.outputs.ext == 'true' && steps.install.outcome == 'success' }}
+        run: npm run typecheck -w @zavi/extension
+      - name: typecheck connector
+        id: tcc
+        if: ${{ !cancelled() && steps.ts.outputs.conn == 'true' && steps.install.outcome == 'success' }}
+        run: npm run typecheck -w @zavi/connector
+      - name: connector tests
+        id: conn_test
+        if: ${{ !cancelled() && steps.ts.outputs.conn == 'true' && steps.install.outcome == 'success' }}
+        run: npm test -w @zavi/connector
+      - name: connector build
+        id: conn_build
+        if: ${{ !cancelled() && steps.ts.outputs.conn == 'true' && steps.install.outcome == 'success' }}
+        run: npm run build -w @zavi/connector
+
+  connector-image-build:
+    if: ${{ github.event.pull_request.draft == false }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    name: connector image builds (docker buildx, no push)
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: touches the connector image?
+        id: conn
+        run: |
+          set -euo pipefail
+          files=$(git diff --name-only HEAD^1 HEAD)
+          if grep -E '^apps/connector/|^packages/shared/src/db-guard/|^packages/shared/(package|tsconfig[^/]*)\.json$|^(package\.json|package-lock\.json|\.npmrc)$' <<<"$files" >/dev/null; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
+        if: steps.conn.outputs.run == 'true'
+      - name: build the image (linux/amd64, not pushed)
+        if: steps.conn.outputs.run == 'true'
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
+        with:
+          context: .
+          file: apps/connector/Dockerfile
+          platforms: linux/amd64
+          push: false
+          load: true
+          tags: zavi-connector:pr
+          build-args: |
+            CONNECTOR_VERSION=0.0.0-pr
+      - name: the image starts as a non-root user and holds the bundle
+        if: steps.conn.outputs.run == 'true'
+        run: |
+          set -euo pipefail
+          test "$(docker run --rm --entrypoint id zavi-connector:pr -u)" != "0"
+          docker run --rm --entrypoint test zavi-connector:pr -f /app/apps/connector/dist/main.js
+
+  pr-types:
+    if: ${{ always() && github.event.pull_request.draft == false }}
+    needs: [fast-gate, connector-image-build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      statuses: write
+    name: post the pr-types status
+    steps:
+      - name: post the pr-types status
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          TS: ${{ needs.fast-gate.outputs.ts }}
+          EXT: ${{ needs.fast-gate.outputs.ext }}
+          CONN: ${{ needs.fast-gate.outputs.conn }}
+          INSTALL: ${{ needs.fast-gate.outputs.install }}
+          TCB: ${{ needs.fast-gate.outputs.tcb }}
+          TCW: ${{ needs.fast-gate.outputs.tcw }}
+          TCE: ${{ needs.fast-gate.outputs.tce }}
+          TCC: ${{ needs.fast-gate.outputs.tcc }}
+          CONN_TEST: ${{ needs.fast-gate.outputs.conn_test }}
+          CONN_BUILD: ${{ needs.fast-gate.outputs.conn_build }}
+          IMAGE: ${{ needs.connector-image-build.result }}
+        run: |
+          set -uo pipefail
+          state=success; desc="no TypeScript change"
+          if [ "$TS" != true ] && [ "$TS" != false ]; then state=error; desc="change detection did not run"; fi
+          if [ "$TS" = true ] || [ "$EXT" = true ] || [ "$CONN" = true ]; then
+            desc="typecheck passed"
+            [ "$INSTALL" = success ] || state=failure
+            if [ "$TS" = true ]; then [ "$TCB" = success ] && [ "$TCW" = success ] || state=failure; fi
+            if [ "$EXT" = true ]; then [ "$TCE" = success ] || state=failure; fi
+            if [ "$CONN" = true ]; then [ "$TCC" = success ] && [ "$CONN_TEST" = success ] && [ "$CONN_BUILD" = success ] || state=failure; fi
+          fi
+          if [ "$IMAGE" != success ]; then state=failure; desc="connector image build or non-root smoke failed"; fi
+          [ "$state" = failure ] && [ "$desc" = "typecheck passed" ] && desc="typecheck failed"
+          curl -fsS -X POST \
+            -H "Authorization: Bearer $GITHUB_TOKEN" -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/$REPO/statuses/$HEAD_SHA" \
+            -d "{\"state\":\"$state\",\"context\":\"pr-types\",\"description\":\"$desc\",\"target_url\":\"$RUN_URL\"}" >/dev/null \
+            || echo "::warning::could not post the pr-types status (fork PR token is read-only)"

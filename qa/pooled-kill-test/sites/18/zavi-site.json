@@ -1,0 +1,221 @@
+{
+  "schemaVersion": 2,
+  "roles": [],
+  "capabilities": [],
+  "actions": {},
+  "aggregates": {
+    "total_outstanding": {
+      "collection": "invoices",
+      "fn": "sum",
+      "field": "amount_cents",
+      "filters": [
+        "status"
+      ],
+      "principals": [
+        "admin"
+      ]
+    },
+    "paid_in_month": {
+      "collection": "invoices",
+      "fn": "sum",
+      "field": "amount_cents",
+      "filters": [
+        "status",
+        "paid_month"
+      ],
+      "principals": [
+        "admin"
+      ]
+    }
+  },
+  "collections": {
+    "clients": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "admin"
+        ],
+        "get": [
+          "admin"
+        ],
+        "create": [
+          "admin"
+        ],
+        "update": [
+          "admin"
+        ],
+        "delete": [
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "email": {
+            "type": "string",
+            "maxLength": 320,
+            "format": "email"
+          },
+          "company": {
+            "type": "string",
+            "maxLength": 160
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "fields": {},
+      "indexes": {},
+      "unique": [],
+      "references": {}
+    },
+    "invoices": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "admin"
+        ],
+        "get": [
+          "admin"
+        ],
+        "create": [
+          "admin"
+        ],
+        "update": [
+          "admin"
+        ],
+        "delete": [
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "maxLength": 36,
+            "format": "uuid"
+          },
+          "number": {
+            "type": "string",
+            "maxLength": 40
+          },
+          "amount_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000000
+          },
+          "issue_date": {
+            "type": "string",
+            "maxLength": 10,
+            "format": "date"
+          },
+          "due_date": {
+            "type": "string",
+            "maxLength": 10,
+            "format": "date"
+          },
+          "paid_on": {
+            "type": "string",
+            "maxLength": 10,
+            "format": "date"
+          },
+          "paid_month": {
+            "type": "string",
+            "maxLength": 7
+          },
+          "status": {
+            "type": "string",
+            "maxLength": 6,
+            "enum": [
+              "unpaid",
+              "paid"
+            ]
+          }
+        },
+        "required": [
+          "client_id",
+          "number",
+          "amount_cents",
+          "issue_date",
+          "due_date",
+          "status"
+        ]
+      },
+      "fields": {},
+      "indexes": {
+        "due_date": {
+          "type": "timestamp",
+          "ops": [
+            "range"
+          ],
+          "sort": true
+        },
+        "client_id": {
+          "type": "text",
+          "ops": [
+            "eq"
+          ],
+          "sort": false
+        },
+        "paid_month": {
+          "type": "text",
+          "ops": [
+            "eq"
+          ],
+          "sort": false
+        },
+        "amount_cents": {
+          "type": "number",
+          "ops": [
+            "range"
+          ],
+          "sort": false
+        }
+      },
+      "unique": [
+        {
+          "fields": [
+            "number"
+          ],
+          "nulls": "distinct"
+        }
+      ],
+      "references": {
+        "client_id": {
+          "collection": "clients",
+          "on_delete": "restrict"
+        }
+      },
+      "states": {
+        "field": "status",
+        "values": [
+          "unpaid",
+          "paid"
+        ],
+        "initial": "unpaid",
+        "transitions": [
+          {
+            "from": "unpaid",
+            "to": "paid",
+            "principals": [
+              "admin"
+            ]
+          },
+          {
+            "from": "paid",
+            "to": "unpaid",
+            "principals": [
+              "admin"
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

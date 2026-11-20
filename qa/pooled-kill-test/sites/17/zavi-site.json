@@ -1,0 +1,347 @@
+{
+  "schemaVersion": 2,
+  "roles": [],
+  "capabilities": [],
+  "actions": {},
+  "aggregates": {},
+  "collections": {
+    "listings": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "anyone"
+        ],
+        "get": [
+          "anyone"
+        ],
+        "create": [
+          "signed_in"
+        ],
+        "update": [
+          "owner",
+          "admin"
+        ],
+        "delete": [
+          "owner",
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "brand": {
+            "type": "string",
+            "maxLength": 7,
+            "enum": [
+              "apple",
+              "samsung",
+              "google",
+              "oneplus",
+              "xiaomi",
+              "other"
+            ]
+          },
+          "model": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "storage_gb": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4096
+          },
+          "condition": {
+            "type": "string",
+            "maxLength": 9,
+            "enum": [
+              "new",
+              "like_new",
+              "good",
+              "fair",
+              "for_parts"
+            ]
+          },
+          "price_cents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100000000
+          },
+          "city": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "contact_phone": {
+            "type": "string",
+            "maxLength": 30
+          },
+          "status": {
+            "type": "string",
+            "maxLength": 9,
+            "enum": [
+              "available",
+              "sold",
+              "removed"
+            ]
+          }
+        },
+        "required": [
+          "brand",
+          "model",
+          "condition",
+          "price_cents",
+          "city",
+          "contact_phone",
+          "status"
+        ]
+      },
+      "fields": {
+        "contact_phone": {
+          "read": [
+            "signed_in"
+          ]
+        }
+      },
+      "indexes": {
+        "brand": {
+          "type": "text",
+          "ops": [
+            "eq"
+          ],
+          "sort": false
+        },
+        "price_cents": {
+          "type": "number",
+          "ops": [
+            "range"
+          ],
+          "sort": true
+        },
+        "city": {
+          "type": "text",
+          "ops": [
+            "eq"
+          ],
+          "sort": false
+        }
+      },
+      "unique": [],
+      "references": {},
+      "states": {
+        "field": "status",
+        "values": [
+          "available",
+          "sold",
+          "removed"
+        ],
+        "initial": "available",
+        "read": {
+          "available": [
+            "anyone"
+          ],
+          "sold": [
+            "anyone"
+          ],
+          "removed": [
+            "owner",
+            "admin"
+          ]
+        },
+        "transitions": [
+          {
+            "from": "available",
+            "to": "sold",
+            "principals": [
+              "owner",
+              "admin"
+            ]
+          },
+          {
+            "from": "available",
+            "to": "removed",
+            "principals": [
+              "owner",
+              "admin"
+            ]
+          },
+          {
+            "from": "sold",
+            "to": "available",
+            "principals": [
+              "owner",
+              "admin"
+            ]
+          }
+        ]
+      }
+    },
+    "listing_photos": {
+      "kind": "files",
+      "rules": {
+        "list": [
+          "anyone"
+        ],
+        "get": [
+          "anyone"
+        ],
+        "create": [
+          "signed_in"
+        ],
+        "update": [
+          "owner"
+        ],
+        "delete": [
+          "owner",
+          "admin"
+        ]
+      }
+    },
+    "messages": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "owner",
+          "recipient",
+          "admin"
+        ],
+        "get": [
+          "owner",
+          "recipient",
+          "admin"
+        ],
+        "create": [
+          "signed_in"
+        ],
+        "update": [],
+        "delete": [
+          "owner",
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "listing_id": {
+            "type": "string",
+            "maxLength": 36,
+            "format": "uuid"
+          },
+          "body": {
+            "type": "string",
+            "maxLength": 2000
+          }
+        },
+        "required": [
+          "listing_id",
+          "body"
+        ]
+      },
+      "fields": {},
+      "indexes": {
+        "listing_id": {
+          "type": "text",
+          "ops": [
+            "eq"
+          ],
+          "sort": false
+        }
+      },
+      "unique": [],
+      "references": {
+        "listing_id": {
+          "collection": "listings",
+          "on_delete": "cascade"
+        }
+      },
+      "recipient": {
+        "reference": "listing_id"
+      }
+    },
+    "reports": {
+      "kind": "records",
+      "rules": {
+        "list": [
+          "admin"
+        ],
+        "get": [
+          "admin"
+        ],
+        "create": [
+          "signed_in"
+        ],
+        "update": [
+          "admin"
+        ],
+        "delete": [
+          "admin"
+        ]
+      },
+      "schema": {
+        "type": "object",
+        "properties": {
+          "listing_id": {
+            "type": "string",
+            "maxLength": 36,
+            "format": "uuid"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 14,
+            "enum": [
+              "scam",
+              "stolen",
+              "wrong_category",
+              "other"
+            ]
+          },
+          "details": {
+            "type": "string",
+            "maxLength": 1000
+          },
+          "status": {
+            "type": "string",
+            "maxLength": 8,
+            "enum": [
+              "open",
+              "resolved"
+            ]
+          }
+        },
+        "required": [
+          "listing_id",
+          "reason",
+          "status"
+        ]
+      },
+      "fields": {},
+      "indexes": {},
+      "unique": [],
+      "references": {
+        "listing_id": {
+          "collection": "listings",
+          "on_delete": "cascade"
+        }
+      },
+      "states": {
+        "field": "status",
+        "values": [
+          "open",
+          "resolved"
+        ],
+        "initial": "open",
+        "transitions": [
+          {
+            "from": "open",
+            "to": "resolved",
+            "principals": [
+              "admin"
+            ]
+          }
+        ]
+      }
+    }
+  }
+}
